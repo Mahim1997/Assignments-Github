@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SubstitutionRunner {
 
@@ -214,6 +216,8 @@ public class SubstitutionRunner {
                 return i;
             }
         }
+        Set<String> set = new HashSet<>();
+
         return -1;
     }
 
@@ -296,25 +300,62 @@ public class SubstitutionRunner {
         return givenLettersWithAlpha;
 
     }
-//a = 97 , A = 65
 
+    private void addToMapping(char c_cipher, char c_word) {
+        this.mapping.add(new Mapping(c_cipher, c_word));
+        Set<Mapping> targetSet = new HashSet<>(this.mapping);
+        this.mapping = new ArrayList<>(targetSet);
+    }
+
+    private void replaceCipherText(int basePointer, StringMap wordWithAlpha) {
+        System.out.println("==>>Inside replaceCipherText , basePointer = " + basePointer + " , word = " + wordWithAlpha.getStr1());
+        //First do the Mapping
+        for (int i = 0; i < wordWithAlpha.getStr1().length(); i++) {
+            int pointer = basePointer + i;
+            char c_cipher = this.cipherText.charAt(pointer);
+            char c_word = wordWithAlpha.getStr1().charAt(i);
+            if (c_cipher != c_word) {
+                //Get the Mapping
+                addToMapping(c_cipher, c_word);
+//                System.out.println("After add to mapping, print mapping ... "); Util.printMapping(mapping);
+            }
+
+        }
+        int len = wordWithAlpha.getStr1().length();
+        //Now replace cipher text
+        String str = "";
+        for (int pointer = 0; pointer < this.cipherText.length(); pointer++) {
+            if (pointer < basePointer) {
+                str += this.cipherText.charAt(pointer);
+            } else if (pointer >= basePointer && pointer < (basePointer + len)) {
+                int i = pointer - basePointer;
+                str += wordWithAlpha.getStr1().charAt(i);
+            } else {
+                str += this.cipherText.charAt(pointer);
+            }
+        }
+        this.cipherText = str;
+        this.cipherText_Phases.add(str);
+        System.out.println("After replacing cipher text ... printin cipher text ... ");
+        System.out.println(this.cipherText);
+    }
+
+//a = 97 , A = 65
     private void checkCipherTextsAndMap(List<StringMap> givenLettersWithAlpha) {
         for (int iter = 0; iter < givenLettersWithAlpha.size(); iter++) {
 
             StringMap wordWithAlpha = givenLettersWithAlpha.get(iter); //eg.e@@e@@@e@
             int pos = replaceCipherPhase2PerWord(wordWithAlpha, cipherText);
+            //Replace the cipher Text
+
+            replaceCipherText(pos, wordWithAlpha);
 
         }
     }
 
     private int replaceCipherPhase2PerWord(StringMap wordWithAlpha, String cipherText) {
         //str1 is normal text, str2 is @ wala text
-//        System.out.println("Inside findIndexOfFirstChar ... wordAlpha = " + wordWithAlpha.getStr2() + " , cipherText is THE SAME");
 
-//        int cipherPointerFirst = 0;
-//        int cipherPointerLast = 0;
-//        int wordPointerFirst = 0;
-//        int wordPointerLast = 0;
         int basePointerCipher = 0, nextCipher = 0, basePointerWord = 0;
 
         while (true) {
@@ -328,7 +369,7 @@ public class SubstitutionRunner {
                 break;
             } else {
                 //Not found pattern matching still searching ..... 
-//                System.out.println("Inside else condition , baseCipher = " + baseCipher + " , baseWord = " + baseWord + " , nextCipher = " + nextCipher
+//                System.out.println("Inside else condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher
 //                 + " , comparing cipherLetter = " + cip + " , cipherWord = " + cword);
                 if (isSmallLetter(cip) && isSmallLetter(cword)) {
                     if (cip == cword) {
@@ -353,7 +394,7 @@ public class SubstitutionRunner {
 
         }
 
-        return -1;
+        return basePointerCipher;
     }
 
     private boolean isSmallLetter(char c) {
@@ -373,4 +414,5 @@ public class SubstitutionRunner {
     private boolean isAlpha(char cword) {
         return (cword == ALPHA_CHAR);
     }
+
 }
