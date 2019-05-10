@@ -156,15 +156,14 @@ public class SubstitutionRunner {
         for (int i = 0; i < 3; i++) {
             this.mapping.add(new Mapping(this.mostFreqThreeChars[i], this.mostFreqThreeCharsCipher[i]));
         }
-        Util.printMapping(this.mapping);
+//        Util.printMapping(this.mapping);
     }
 
     //------------------------------------------------------------------------------------------------------------------------
     private void runDecryption() {
         System.out.println("Inside decryption .... ");
 
-        printThings();
-
+//        printThings();
         gatherCipherTextInfo();
 
         this.cipherText_Phases.add(this.cipherText);
@@ -179,6 +178,36 @@ public class SubstitutionRunner {
 
         //Phase 3. Check for these @ symbols in the '1st phase decoded' cipher text
         changeCipherText_Phase2(givenLettersWithAlpha);
+
+        //Print Solution Thus Far
+        this.plainTextDecoded = this.cipherText;    //After iterations
+        System.out.println("Plain Text is: \n" + this.plainTextDecoded);
+        System.out.println("\nMapping is: ");
+        Util.printMapping(mapping);
+
+        //Phase 4. Encode
+        encodeText();
+        System.out.println("Encoded Text is: \n" + this.cipherText);
+
+        //Accuracy
+        int numMatchedChars = this.mapping.size();
+        double acc = (numMatchedChars / 26.0) * 100;
+        System.out.println("Accuracy (Number of Matched Chars)  = " + numMatchedChars + ", in Percent (Number of Matched Chars out of 26) = " + acc + "%");
+    }
+
+    private void encodeText() {
+        String s = "";
+        for (int i = 0; i < this.plainTextDecoded.length(); i++) {
+            char c = this.plainTextDecoded.charAt(i);
+            char mappedChar = c;
+            for (int k = 0; k < this.mapping.size(); k++) {
+                if (this.mapping.get(k).plainTextChar == c) {
+                    mappedChar = this.mapping.get(k).cipherTextChar;
+                }
+            }
+            s += mappedChar;
+        }
+        this.cipherText = s;
     }
 
     //------------------------------------------------------------------------------------------------------------------------
@@ -207,7 +236,7 @@ public class SubstitutionRunner {
         }
         this.cipherText = str;
 
-        System.out.println(this.cipherText);
+//        System.out.println(this.cipherText);
     }
 
     private int posOf_UsingPlainText(char c, List<Mapping> map) {
@@ -241,8 +270,7 @@ public class SubstitutionRunner {
             words_given_withMappedChars.add(s);
 
         }
-//        Util.printList(words_given_withMappedChars);
-//        return words_given_withMappedChars;
+
         for (int i = 0; i < this.presentWords.size(); i++) {
             strMap.add(new StringMap(this.presentWords.get(i), words_given_withMappedChars.get(i)));
         }
@@ -254,8 +282,8 @@ public class SubstitutionRunner {
         //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
         List<StringMap> toDoString = sortWithRespectToFrequency(givenLettersWithAlpha);
 
-        System.out.println("\nAfter Sorting ..... ");
-        Util.printListStringMap(givenLettersWithAlpha);
+//        System.out.println("\nAfter Sorting ..... ");
+//        Util.printListStringMap(givenLettersWithAlpha);
         System.out.println("");
 
         checkCipherTextsAndMap(givenLettersWithAlpha);
@@ -309,7 +337,7 @@ public class SubstitutionRunner {
     }
 
     private void replaceCipherText(int basePointer, StringMap wordWithAlpha) {
-        System.out.println("==>>Inside replaceCipherText , basePointer = " + basePointer + " , word = " + wordWithAlpha.getStr1());
+//        System.out.println("==>>Inside replaceCipherText , basePointer = " + basePointer + " , word = " + wordWithAlpha.getStr1());
         //First do the Mapping
 //        if(basePointer == this.cipherText.length() - 1){
 //            return ;
@@ -327,11 +355,11 @@ public class SubstitutionRunner {
         }
         int len = wordWithAlpha.getStr1().length();
         //Now replace cipher text
-        System.out.println("Before replaceCipherWRTMapping ... printing Mapping ");
-        Util.printMapping(mapping);
+//        System.out.println("Before replaceCipherWRTMapping ... printing Mapping ");
+//        Util.printMapping(mapping);
         replaceCipherTextWithRespectToMapping();
-        System.out.println("After changin cipher, printin cipher ... ");
-        System.out.println(this.cipherText);
+//        System.out.println("After changin cipher, printin cipher ... ");
+//        System.out.println(this.cipherText);
     }
 
     private Mapping findMapping(char capitalLetter) {
@@ -418,15 +446,15 @@ public class SubstitutionRunner {
             char cword = wordWithAlpha.getStr2().charAt(basePointerWord);
 
             if (basePointerCipher == (this.cipherText.length() - 1)) {
-                break ;
+                break;
             }
             if (nextCipher == (this.cipherText.length() - 1)) {
-                break ;
+                break;
             }
 
             if (basePointerWord == (wordWithAlpha.getStr2().length() - 1)) {
                 //Found the pattern matching
-                System.out.println("-->>>PATTERN MATCHING FOUND BASE Pointer = " + basePointerCipher + " , for word = " + wordWithAlpha.getStr2());
+//                System.out.println("-->>>PATTERN MATCHING FOUND BASE Pointer = " + basePointerCipher + " , for word = " + wordWithAlpha.getStr2());
                 break;
             } else {
                 //Not found pattern matching still searching ..... 
