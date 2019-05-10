@@ -23,6 +23,7 @@ public class SubstitutionRunner {
     private List<String> presentWords = new ArrayList<>();
 
     private CipherTextInfo[] cipherLettersInfo = new CipherTextInfo[26];
+    
     private List<Mapping> mapping = new ArrayList<>();
 
     private String plainTextDecoded;
@@ -171,7 +172,7 @@ public class SubstitutionRunner {
         this.cipherText_Phases.add(this.cipherText);
 
         //Phase 2 [Pass 1 using letter distances]
-        List<String> givenLettersWithAlpha = tryLetterDistances();  //eg. atlantis experiment laboratory timeline
+        List<StringMap> givenLettersWithAlpha = tryLetterDistances();  //eg. atlantis experiment laboratory timeline
         //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
 
         //Phase 3. Check for these @ symbols in the '1st phase decoded' cipher text
@@ -216,7 +217,8 @@ public class SubstitutionRunner {
         return -1;
     }
 
-    private List<String> tryLetterDistances() {
+    private List<StringMap> tryLetterDistances() {
+        List<StringMap> strMap = new ArrayList<>();
         List<String> words_given_withMappedChars = new ArrayList<>();
         for (int i = 0; i < this.presentWords.size(); i++) {
             String word = this.presentWords.get(i);
@@ -236,16 +238,20 @@ public class SubstitutionRunner {
 
         }
 //        Util.printList(words_given_withMappedChars);
-        return words_given_withMappedChars;
+//        return words_given_withMappedChars;
+        for(int i=0; i<this.presentWords.size(); i++){
+            strMap.add(new StringMap(this.presentWords.get(i),words_given_withMappedChars.get(i)));
+        }
+        return strMap;
     }
 
-    private void changeCipherText_Phase2(List<String> givenLettersWithAlpha) {
+    private void changeCipherText_Phase2(List<StringMap> givenLettersWithAlpha) {
         //eg. atlantis experiment laboratory timeline
         //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
-        List<String> toDoString = sortWithRespectToFrequency(givenLettersWithAlpha);
+        List<StringMap> toDoString = sortWithRespectToFrequency(givenLettersWithAlpha);
 
         System.out.println("\nAfter Sorting ..... ");
-        Util.printList(givenLettersWithAlpha);
+        Util.printListStringMap(givenLettersWithAlpha);
         System.out.println("");
 
         checkCipherTextsAndMap(givenLettersWithAlpha);
@@ -261,26 +267,26 @@ public class SubstitutionRunner {
         return false;
     }
 
-    private List<String> sortWithRespectToFrequency(List<String> givenLettersWithAlpha) {
+    private List<StringMap> sortWithRespectToFrequency(List<StringMap> givenLettersWithAlpha) {
 
-        Collections.sort(givenLettersWithAlpha, new Comparator<String>() {
+        Collections.sort(givenLettersWithAlpha, new Comparator<StringMap>() {
             @Override
-            public int compare(String o1, String o2) {
+            public int compare(StringMap o1, StringMap o2) {
                 int cnt1 = 0, cnt2 = 0;
-                for (int i = 0; i < o1.length(); i++) {
-                    char c = o1.charAt(i);
+                for (int i = 0; i < o1.getStr1().length(); i++) {
+                    char c = o1.getStr1().charAt(i);
                     if (isIn(c)) {
                         cnt1++;
                     }
                 }
-                for (int i = 0; i < o2.length(); i++) {
-                    char c = o2.charAt(i);
+                for (int i = 0; i < o2.getStr1().length(); i++) {
+                    char c = o2.getStr1().charAt(i);
                     if (isIn(c)) {
                         cnt2++;
                     }
                 }
                 if (cnt1 == cnt2) {
-                    return (o2.length() - o1.length());
+                    return (o2.getStr1().length() - o1.getStr1().length());
                 } else {
                     return (cnt2 - cnt1);
                 }
@@ -292,13 +298,38 @@ public class SubstitutionRunner {
     }
 //a = 97 , A = 65
 
-    private void checkCipherTextsAndMap(List<String> givenLettersWithAlpha) {
+    private void checkCipherTextsAndMap(List<StringMap> givenLettersWithAlpha) {
         for (int iter = 0; iter < givenLettersWithAlpha.size(); iter++) {
 
-            String wordWithAlpha = givenLettersWithAlpha.get(iter); //eg.e@@e@@@e@
-            int pos = findIndexOfFirstChar(wordWithAlpha, cipherText);
+            StringMap wordWithAlpha = givenLettersWithAlpha.get(iter); //eg.e@@e@@@e@
+            int pos = replaceCipherPhase2PerWord(wordWithAlpha, cipherText);
 
         }
+    }
+
+    private int replaceCipherPhase2PerWord(StringMap wordWithAlpha, String cipherText) {
+        System.out.println("Inside findIndexOfFirstChar ... wordAlpha = " + wordWithAlpha.getStr1() + " , cipherText is THE SAME");
+
+        int cipherPointerFirst = 0;
+        int cipherPointerLast = 0;
+        int wordPointerFirst = 0;
+        int wordPointerLast = 0;
+
+        while (true) {
+
+            char cip = cipherText.charAt(cipherPointerFirst);
+            char cword = wordWithAlpha.getStr1().charAt(wordPointerFirst);
+            if (isSmallLetter(cip) && isSmallLetter(cword)) {
+                if (cip == cword) {
+                    cipherPointerFirst++;
+//                    wordPointerFirst++;
+                    wordPointerLast++;
+                }
+            }
+
+        }
+
+        return -1;
     }
 
     private boolean isSmallLetter(char c) {
@@ -314,30 +345,4 @@ public class SubstitutionRunner {
         }
         return false;
     }
-
-    private int findIndexOfFirstChar(String wordWithAlpha, String cipherText) {
-        System.out.println("Inside findIndexOfFirstChar ... wordAlpha = " + wordWithAlpha + " , cipherText is THE SAME");
-
-        int cipherPointerFirst = 0;
-        int cipherPointerLast = 0;
-        int wordPointerFirst = 0;
-        int wordPointerLast = 0;
-
-        while (true) {
-
-            char cip = cipherText.charAt(cipherPointerFirst);
-            char cword = wordWithAlpha.charAt(wordPointerFirst);
-            if(isSmallLetter(cip) && isSmallLetter(cword)){
-                if(cip == cword){
-                    cipherPointerFirst++;
-//                    wordPointerFirst++;
-                    wordPointerLast++;
-                }
-            }
-
-        }
-
-        return -1;
-    }
-
 }
