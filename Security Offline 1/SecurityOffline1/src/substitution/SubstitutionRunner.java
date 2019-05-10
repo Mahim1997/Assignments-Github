@@ -13,6 +13,7 @@ public class SubstitutionRunner {
     private String INITIAL_CIPHER_TEXT;
 
     private String cipherText;
+    private List<String> cipherText_Phases = new ArrayList<>();
     //mostFreqThreeChars[0] has the highest frequency, mostFreqThreeChars[1] has 2nd highest and so on
     private char[] mostFreqThreeChars = new char[3];
 
@@ -154,6 +155,7 @@ public class SubstitutionRunner {
         Util.printMapping(this.mapping);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------
     private void runDecryption() {
         System.out.println("Inside decryption .... ");
 
@@ -161,10 +163,21 @@ public class SubstitutionRunner {
 
         gatherCipherTextInfo();
 
-        changeCipherText_ThreeMostFreqLetters();
+        this.cipherText_Phases.add(this.cipherText);
 
+        //Phase 1 [Three most frequent letters map]
+        changeCipherText_ThreeMostFreqLetters_Phase1();
+        this.cipherText_Phases.add(this.cipherText);
+
+        //Phase 2 [Pass 1 using letter distances]
+        List<String> givenLettersWithAlpha = tryLetterDistances();  //eg. atlantis experiment laboratory timeline
+                                                                    //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
+
+        //Phase 3. Check for these @ symbols in the '1st phase decoded' cipher text
+        changeCipherText_Phase2(givenLettersWithAlpha);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------
     private int whereIsIn(char c, List<Mapping> map) {
         for (int i = 0; i < map.size(); i++) {
             char cT = map.get(i).cipherTextChar;
@@ -175,7 +188,7 @@ public class SubstitutionRunner {
         return -1;
     }
 
-    private void changeCipherText_ThreeMostFreqLetters() {
+    private void changeCipherText_ThreeMostFreqLetters_Phase1() {
         String str = "";
         for (int i = 0; i < this.cipherText.length(); i++) {
             char c = this.cipherText.charAt(i);
@@ -191,6 +204,45 @@ public class SubstitutionRunner {
         this.cipherText = str;
 
         System.out.println(this.cipherText);
+    }
+
+    private int posOf_UsingPlainText(char c, List<Mapping> map){
+        for(int i=0; i<map.size(); i++){
+            if(map.get(i).plainTextChar == c){
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    private List<String> tryLetterDistances() {
+        List<String> words_given_withMappedChars = new ArrayList<>();
+        for(int i=0; i<this.presentWords.size(); i++){
+            String word = this.presentWords.get(i);
+            
+            String s = "";
+            for(int j=0; j<word.length(); j++){
+                char c = word.charAt(j);
+                int pos = posOf_UsingPlainText(c, mapping);
+                if(pos != -1){
+                    //EXISTS
+                    s += c;
+                }else{
+                    s += "@";
+                }
+            }
+            words_given_withMappedChars.add(s);
+            
+        }
+        Util.printList(words_given_withMappedChars);
+        return words_given_withMappedChars;
+    }
+
+    private void changeCipherText_Phase2(List<String> givenLettersWithAlpha) {
+        //eg. atlantis experiment laboratory timeline
+        //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
+        
+        
     }
 
 }
