@@ -311,9 +311,9 @@ public class SubstitutionRunner {
     private void replaceCipherText(int basePointer, StringMap wordWithAlpha) {
         System.out.println("==>>Inside replaceCipherText , basePointer = " + basePointer + " , word = " + wordWithAlpha.getStr1());
         //First do the Mapping
-        if(basePointer == this.cipherText.length() - 1){
-            return ;
-        }
+//        if(basePointer == this.cipherText.length() - 1){
+//            return ;
+//        }
         for (int i = 0; i < wordWithAlpha.getStr1().length(); i++) {
             int pointer = basePointer + i;
             char c_cipher = this.cipherText.charAt(pointer);
@@ -413,15 +413,15 @@ public class SubstitutionRunner {
         int basePointerCipher = 0, nextCipher = 0, basePointerWord = 0;
 
         while (true) {
-            System.out.println("=>> Inside while loop condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher);
+//            System.out.println("=>> Inside while loop condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher);
             char cip = cipherText.charAt(nextCipher);
             char cword = wordWithAlpha.getStr2().charAt(basePointerWord);
 
             if (basePointerCipher == (this.cipherText.length() - 1)) {
-                return -1;
+                break ;
             }
             if (nextCipher == (this.cipherText.length() - 1)) {
-                return -1;
+                break ;
             }
 
             if (basePointerWord == (wordWithAlpha.getStr2().length() - 1)) {
@@ -430,8 +430,8 @@ public class SubstitutionRunner {
                 break;
             } else {
                 //Not found pattern matching still searching ..... 
-                System.out.println("Inside else condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher
-                        + " , comparing cipherLetter = " + cip + " , plain word = " + cword + ", word = " + wordWithAlpha.getStr2());
+//                System.out.println("Inside else condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher
+//                        + " , comparing cipherLetter = " + cip + " , plain word = " + cword + ", word = " + wordWithAlpha.getStr2());
                 if (isSmallLetter(cip) && isSmallLetter(cword)) {
                     if (cip == cword) {
                         nextCipher++;
