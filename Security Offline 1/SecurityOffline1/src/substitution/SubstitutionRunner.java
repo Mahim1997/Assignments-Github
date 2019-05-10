@@ -3,6 +3,7 @@ package substitution;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -171,7 +172,7 @@ public class SubstitutionRunner {
 
         //Phase 2 [Pass 1 using letter distances]
         List<String> givenLettersWithAlpha = tryLetterDistances();  //eg. atlantis experiment laboratory timeline
-                                                                    //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
+        //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
 
         //Phase 3. Check for these @ symbols in the '1st phase decoded' cipher text
         changeCipherText_Phase2(givenLettersWithAlpha);
@@ -206,33 +207,33 @@ public class SubstitutionRunner {
         System.out.println(this.cipherText);
     }
 
-    private int posOf_UsingPlainText(char c, List<Mapping> map){
-        for(int i=0; i<map.size(); i++){
-            if(map.get(i).plainTextChar == c){
+    private int posOf_UsingPlainText(char c, List<Mapping> map) {
+        for (int i = 0; i < map.size(); i++) {
+            if (map.get(i).plainTextChar == c) {
                 return i;
             }
         }
         return -1;
     }
-    
+
     private List<String> tryLetterDistances() {
         List<String> words_given_withMappedChars = new ArrayList<>();
-        for(int i=0; i<this.presentWords.size(); i++){
+        for (int i = 0; i < this.presentWords.size(); i++) {
             String word = this.presentWords.get(i);
-            
+
             String s = "";
-            for(int j=0; j<word.length(); j++){
+            for (int j = 0; j < word.length(); j++) {
                 char c = word.charAt(j);
                 int pos = posOf_UsingPlainText(c, mapping);
-                if(pos != -1){
+                if (pos != -1) {
                     //EXISTS
                     s += c;
-                }else{
+                } else {
                     s += "@";
                 }
             }
             words_given_withMappedChars.add(s);
-            
+
         }
         Util.printList(words_given_withMappedChars);
         return words_given_withMappedChars;
@@ -241,8 +242,75 @@ public class SubstitutionRunner {
     private void changeCipherText_Phase2(List<String> givenLettersWithAlpha) {
         //eg. atlantis experiment laboratory timeline
         //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
-        
-        
+        List<String> toDoString = sortWithRespectToFrequency(givenLettersWithAlpha);
+
+    }
+
+    private boolean isIn(char c) {
+        for (int k = 0; k < mostFreqThreeChars.length; k++) {
+            if (c == mostFreqThreeChars[k]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> sortWithRespectToFrequency(List<String> givenLettersWithAlpha) {
+        System.out.println("\nInside bla bla bla");
+
+        //Sort wrt NUMBER OF FREQ LETTERS
+        /*Collections.sort(givenLettersWithAlpha, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int cnt1 = 0, cnt2 = 0;
+                for (int i = 0; i < o1.length(); i++) {
+                    char c = o1.charAt(i);
+                    if (isIn(c)) {
+                        cnt1++;
+                    }
+                }
+                for (int i = 0; i < o2.length(); i++) {
+                    char c = o2.charAt(i);
+                    if (isIn(c)) {
+                        cnt2++;
+                    }
+                }
+//                System.out.println("Cnt1 = " + cnt1 + " for str1 = " + o1 + ", AND Cnt2 = " + cnt2 + " for str2 = " + o2);
+                return (cnt2 - cnt1);
+            }
+        });
+        */
+        Util.printList(givenLettersWithAlpha);
+        System.out.println("");
+        //Sort wrt Length
+        Collections.sort(givenLettersWithAlpha, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int cnt1 = 0, cnt2 = 0;
+                for (int i = 0; i < o1.length(); i++) {
+                    char c = o1.charAt(i);
+                    if (isIn(c)) {
+                        cnt1++;
+                    }
+                }
+                for (int i = 0; i < o2.length(); i++) {
+                    char c = o2.charAt(i);
+                    if (isIn(c)) {
+                        cnt2++;
+                    }
+                }
+//                System.out.println("Cnt1 = " + cnt1 + " for str1 = " + o1 + ", AND Cnt2 = " + cnt2 + " for str2 = " + o2);
+                if (cnt1 == cnt2) {
+                    return (o2.length() - o1.length());
+                } else {
+                    return (cnt2 - cnt1);
+                }
+            }
+        });
+        Util.printList(givenLettersWithAlpha);
+
+        return null;
+
     }
 
 }
