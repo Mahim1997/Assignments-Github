@@ -17,7 +17,7 @@ public class SubstitutionRunner {
     private List<String> cipherText_Phases = new ArrayList<>();
     //mostFreqThreeChars[0] has the highest frequency, mostFreqThreeChars[1] has 2nd highest and so on
     private char[] mostFreqThreeChars = new char[3];
-
+    private char ALPHA_CHAR = '@';
     private char[] mostFreqThreeCharsCipher = new char[3];
 
     private List<String> presentWords = new ArrayList<>();
@@ -229,13 +229,13 @@ public class SubstitutionRunner {
                     //EXISTS
                     s += c;
                 } else {
-                    s += "@";
+                    s += (ALPHA_CHAR);  //ALPHA_CHAR = '@'
                 }
             }
             words_given_withMappedChars.add(s);
 
         }
-        Util.printList(words_given_withMappedChars);
+//        Util.printList(words_given_withMappedChars);
         return words_given_withMappedChars;
     }
 
@@ -243,6 +243,12 @@ public class SubstitutionRunner {
         //eg. atlantis experiment laboratory timeline
         //for at@a@t@@ e@@e@@@e@t @a@@@at@@@ t@@e@@@e 
         List<String> toDoString = sortWithRespectToFrequency(givenLettersWithAlpha);
+
+        System.out.println("\nAfter Sorting ..... ");
+        Util.printList(givenLettersWithAlpha);
+        System.out.println("");
+
+        checkCipherTextsAndMap(givenLettersWithAlpha);
 
     }
 
@@ -256,33 +262,7 @@ public class SubstitutionRunner {
     }
 
     private List<String> sortWithRespectToFrequency(List<String> givenLettersWithAlpha) {
-        System.out.println("\nInside bla bla bla");
 
-        //Sort wrt NUMBER OF FREQ LETTERS
-        /*Collections.sort(givenLettersWithAlpha, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                int cnt1 = 0, cnt2 = 0;
-                for (int i = 0; i < o1.length(); i++) {
-                    char c = o1.charAt(i);
-                    if (isIn(c)) {
-                        cnt1++;
-                    }
-                }
-                for (int i = 0; i < o2.length(); i++) {
-                    char c = o2.charAt(i);
-                    if (isIn(c)) {
-                        cnt2++;
-                    }
-                }
-//                System.out.println("Cnt1 = " + cnt1 + " for str1 = " + o1 + ", AND Cnt2 = " + cnt2 + " for str2 = " + o2);
-                return (cnt2 - cnt1);
-            }
-        });
-        */
-        Util.printList(givenLettersWithAlpha);
-        System.out.println("");
-        //Sort wrt Length
         Collections.sort(givenLettersWithAlpha, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
@@ -299,7 +279,6 @@ public class SubstitutionRunner {
                         cnt2++;
                     }
                 }
-//                System.out.println("Cnt1 = " + cnt1 + " for str1 = " + o1 + ", AND Cnt2 = " + cnt2 + " for str2 = " + o2);
                 if (cnt1 == cnt2) {
                     return (o2.length() - o1.length());
                 } else {
@@ -307,10 +286,58 @@ public class SubstitutionRunner {
                 }
             }
         });
-        Util.printList(givenLettersWithAlpha);
 
-        return null;
+        return givenLettersWithAlpha;
 
+    }
+//a = 97 , A = 65
+
+    private void checkCipherTextsAndMap(List<String> givenLettersWithAlpha) {
+        for (int iter = 0; iter < givenLettersWithAlpha.size(); iter++) {
+
+            String wordWithAlpha = givenLettersWithAlpha.get(iter); //eg.e@@e@@@e@
+            int pos = findIndexOfFirstChar(wordWithAlpha, cipherText);
+
+        }
+    }
+
+    private boolean isSmallLetter(char c) {
+        if (c >= 'a' && c <= 'z') {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isCapitalLetter(char c) {
+        if (c >= 'A' && c <= 'Z') {
+            return true;
+        }
+        return false;
+    }
+
+    private int findIndexOfFirstChar(String wordWithAlpha, String cipherText) {
+        System.out.println("Inside findIndexOfFirstChar ... wordAlpha = " + wordWithAlpha + " , cipherText is THE SAME");
+
+        int cipherPointerFirst = 0;
+        int cipherPointerLast = 0;
+        int wordPointerFirst = 0;
+        int wordPointerLast = 0;
+
+        while (true) {
+
+            char cip = cipherText.charAt(cipherPointerFirst);
+            char cword = wordWithAlpha.charAt(wordPointerFirst);
+            if(isSmallLetter(cip) && isSmallLetter(cword)){
+                if(cip == cword){
+                    cipherPointerFirst++;
+//                    wordPointerFirst++;
+                    wordPointerLast++;
+                }
+            }
+
+        }
+
+        return -1;
     }
 
 }
