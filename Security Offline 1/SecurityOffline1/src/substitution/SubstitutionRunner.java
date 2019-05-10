@@ -302,7 +302,8 @@ public class SubstitutionRunner {
     }
 
     private void addToMapping(char c_cipher, char c_word) {
-        this.mapping.add(new Mapping(c_cipher, c_word));
+        this.mapping.add(new Mapping(c_word, c_cipher));    //Aage plainText then CipherText
+
         Set<Mapping> targetSet = new HashSet<>(this.mapping);
         this.mapping = new ArrayList<>(targetSet);
     }
@@ -310,6 +311,9 @@ public class SubstitutionRunner {
     private void replaceCipherText(int basePointer, StringMap wordWithAlpha) {
         System.out.println("==>>Inside replaceCipherText , basePointer = " + basePointer + " , word = " + wordWithAlpha.getStr1());
         //First do the Mapping
+        if(basePointer == this.cipherText.length() - 1){
+            return ;
+        }
         for (int i = 0; i < wordWithAlpha.getStr1().length(); i++) {
             int pointer = basePointer + i;
             char c_cipher = this.cipherText.charAt(pointer);
@@ -323,33 +327,83 @@ public class SubstitutionRunner {
         }
         int len = wordWithAlpha.getStr1().length();
         //Now replace cipher text
-        String str = "";
-        for (int pointer = 0; pointer < this.cipherText.length(); pointer++) {
-            if (pointer < basePointer) {
-                str += this.cipherText.charAt(pointer);
-            } else if (pointer >= basePointer && pointer < (basePointer + len)) {
-                int i = pointer - basePointer;
-                str += wordWithAlpha.getStr1().charAt(i);
-            } else {
-                str += this.cipherText.charAt(pointer);
-            }
-        }
-        this.cipherText = str;
-        this.cipherText_Phases.add(str);
-        System.out.println("After replacing cipher text ... printin cipher text ... ");
+        System.out.println("Before replaceCipherWRTMapping ... printing Mapping ");
+        Util.printMapping(mapping);
+        replaceCipherTextWithRespectToMapping();
+        System.out.println("After changin cipher, printin cipher ... ");
         System.out.println(this.cipherText);
     }
 
+    private Mapping findMapping(char capitalLetter) {
+        for (int i = 0; i < this.mapping.size(); i++) {
+            if (this.mapping.get(i).cipherTextChar == capitalLetter) {
+                return this.mapping.get(i);
+            }
+        }
+        return null;
+    }
+
+    private void replaceCipherTextWithRespectToMapping() {
+        String str = "";
+        for (int i = 0; i < this.cipherText.length(); i++) {
+            char c = this.cipherText.charAt(i);
+            if (isCapitalLetter(c)) {
+                //Check if mapping exists
+                Mapping m = findMapping(c);
+                if (m != null) {
+                    str += m.getPlainTextChar();
+
+                } else {
+                    str += c;
+                }
+            } else {
+                str += c;
+            }
+
+        }
+
+        this.cipherText_Phases.add(str);
+        this.cipherText = str;
+    }
 //a = 97 , A = 65
+
+    private boolean isInMap(char c) {
+        for (int i = 0; i < this.mapping.size(); i++) {
+            if (this.mapping.get(i).plainTextChar == c) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void checkCipherTextsAndMap(List<StringMap> givenLettersWithAlpha) {
         for (int iter = 0; iter < givenLettersWithAlpha.size(); iter++) {
 
             StringMap wordWithAlpha = givenLettersWithAlpha.get(iter); //eg.e@@e@@@e@
             int pos = replaceCipherPhase2PerWord(wordWithAlpha, cipherText);
-            //Replace the cipher Text
 
+            //Replace the cipher Text
             replaceCipherText(pos, wordWithAlpha);
 
+            //update the list
+            updateList(givenLettersWithAlpha);
+        }
+    }
+
+    private void updateList(List<StringMap> givenLettersWithAlpha) {
+        for (int iter = 0; iter < givenLettersWithAlpha.size(); iter++) {
+            StringMap wa = givenLettersWithAlpha.get(iter);
+            String s = "";
+            String s1 = wa.getStr1();
+            for (int i = 0; i < wa.getStr2().length(); i++) {
+                char c1 = s1.charAt(i);
+                if (isInMap(c1)) {
+                    s += c1;
+                } else {
+                    s += ALPHA_CHAR;
+                }
+            }
+            wa.setStr2(s);
         }
     }
 
@@ -359,18 +413,25 @@ public class SubstitutionRunner {
         int basePointerCipher = 0, nextCipher = 0, basePointerWord = 0;
 
         while (true) {
-
+            System.out.println("=>> Inside while loop condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher);
             char cip = cipherText.charAt(nextCipher);
             char cword = wordWithAlpha.getStr2().charAt(basePointerWord);
 
+            if (basePointerCipher == (this.cipherText.length() - 1)) {
+                return -1;
+            }
+            if (nextCipher == (this.cipherText.length() - 1)) {
+                return -1;
+            }
+
             if (basePointerWord == (wordWithAlpha.getStr2().length() - 1)) {
                 //Found the pattern matching
-                System.out.println("-->>>PATTERN MATCHING FOUND BASE Pointer = " + basePointerCipher + " , for word = " + wordWithAlpha.getStr1());
+                System.out.println("-->>>PATTERN MATCHING FOUND BASE Pointer = " + basePointerCipher + " , for word = " + wordWithAlpha.getStr2());
                 break;
             } else {
                 //Not found pattern matching still searching ..... 
-//                System.out.println("Inside else condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher
-//                 + " , comparing cipherLetter = " + cip + " , cipherWord = " + cword);
+                System.out.println("Inside else condition , baseCipher = " + basePointerCipher + " , baseWord = " + basePointerWord + " , nextCipher = " + nextCipher
+                        + " , comparing cipherLetter = " + cip + " , plain word = " + cword + ", word = " + wordWithAlpha.getStr2());
                 if (isSmallLetter(cip) && isSmallLetter(cword)) {
                     if (cip == cword) {
                         nextCipher++;
