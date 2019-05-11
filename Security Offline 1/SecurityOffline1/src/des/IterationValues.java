@@ -45,7 +45,7 @@ public class IterationValues {
         Ki is derived from this rotated key by applying yet another 56-bit transposition to it according to CP_2 array.
         A different 48-bit subset of the 56 bits is extracted and permuted on each round
          */
-        for (int i = 0; i < shortenedKeyLength; i++) {
+        for (int i = 0; i < 48; i++) {
             int pos = CP_2[i] - 1;
             this.keys_48bits_ThisIteration[i] = mergedKeys[pos];
         }
@@ -117,8 +117,8 @@ public class IterationValues {
         System.out.println("After XORING expandedNumber and KEY [48 bits] we get :");
         Helper.printBooleanArray(result_xor);
 
-//        System.out.println("PBox Output is [32 bits] : ");
-//        Helper.printBooleanArray(PBox_Output);
+        System.out.println("PBox Output is [32 bits] : ");
+        Helper.printBooleanArray(PBox_Output);
 //
 //        System.out.println("Right 32 bits is : ");
 //        Helper.printBooleanArray(this.right32BitsPlainText);
