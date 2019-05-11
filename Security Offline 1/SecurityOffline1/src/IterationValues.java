@@ -120,7 +120,7 @@ public class IterationValues {
 
     }
 
-    private void obtainThisIterationKey(boolean[] shortenedKeys) {
+    public void obtainThisIterationKey(boolean[] shortenedKeys) {
         //R_i = L_(i-1) XOR f(R_(i-1), K_i)
         //First we get  each 28 bits of key
         left28bitsKeys = Helper.getNumBits(shortenedKeys, 0, 28);
