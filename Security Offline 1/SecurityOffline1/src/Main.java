@@ -6,7 +6,9 @@ import substitution.SubstitutionRunner;
 public class Main {
 
     static int SUBSTITUTION = 0;
-    static int mode = SUBSTITUTION;
+    static int DES = 1;
+    
+    static int mode = DES;
 
     public static void main(String[] args) {
 
