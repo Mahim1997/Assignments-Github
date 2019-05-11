@@ -4,24 +4,28 @@ import static des.Helper.*;
 
 public class IterationValues {
 
-
     private boolean[] left32BitsPlainText = new boolean[32];
     private boolean[] right32BitsPlainText = new boolean[32];
     private boolean[] left28bitsKeys = new boolean[28];
     private boolean[] right28bitsKeys = new boolean[28];
 
     int shortenedKeyLength = 28;
-    
+
     //PUBLIC VARIABLES FOR NEXT ITERATIONS ... 
     public boolean[] fullDataPlainText = new boolean[64];
-    public boolean[] keys_48bits_ThisIteration = new boolean[48];    
-    public int iterationNumber;    
+    public boolean[] keys_48bits_ThisIteration = new boolean[48];
+    public int iterationNumber;
 
     public IterationValues(int iterationNumber) {
         this.iterationNumber = iterationNumber;
     }
+    public boolean encryptMode = true;  //=false for decrypt mode
 
     public IterationValues() {
+    }
+
+    public void setKeyForThisIteration(boolean[] key) {
+        System.arraycopy(key, 0, this.keys_48bits_ThisIteration, 0, key.length);
     }
 
     public void completeThisIteration(boolean[] transposePaddedBits, boolean[] shortenedKeys) {
@@ -30,26 +34,8 @@ public class IterationValues {
 
         this.left32BitsPlainText = right32BitsPreviousPaddedBits; //L_i = R_(i-1)
 
-        //R_i = L_(i-1) XOR f(R_(i-1), K_i)
-        //First we get  each 28 bits of key
-        left28bitsKeys = Helper.getNumBits(shortenedKeys, 0, 28);
-        right28bitsKeys = Helper.getNumBits(shortenedKeys, 1, 28);
-
-        //Now we rotate left according to SHIFT array
-        int numRotation = SHIFT[iterationNumber];
-        left28bitsKeys = Helper.leftRotate(left28bitsKeys, numRotation);
-        right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
-
-        boolean[] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);   //MERGING OKAY
-
-        //Key_in_round_i[0] = modified_key[13], ....
-        /*
-        Ki is derived from this rotated key by applying yet another 56-bit transposition to it according to CP_2 array.
-        A different 48-bit subset of the 56 bits is extracted and permuted on each round
-         */
-        for (int i = 0; i < 48; i++) {
-            int pos = CP_2[i] - 1;
-            this.keys_48bits_ThisIteration[i] = mergedKeys[pos];
+        if (encryptMode) {
+            obtainThisIterationKey(shortenedKeys);
         }
 
         //------------------------------------------- FUNCTIONS begin --------------------------------------------------------
@@ -90,8 +76,7 @@ public class IterationValues {
 
         //Obtain full data of this iteration
         this.fullDataPlainText = Helper.mergeBooleanArray(this.left32BitsPlainText, this.right32BitsPlainText);
-                
-        
+
         // ------------------------------------------------------------------------------------------------------------------
         //------------------------------------------ PRINTING THINGS ------------------------------------------------------
 //        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
@@ -106,7 +91,6 @@ public class IterationValues {
 //        Helper.printBooleanArray(keys_48bits_ThisIteration);
 //
 //        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-
         System.out.println("-------------------------------------------Iteration " + this.iterationNumber + " -----------------------------------------------------------------------");
 
         System.out.println("Just Copying prev right to current left, i.e. L(i) = R(i-1) [32 bits] we get [64 BITS now]");
@@ -133,11 +117,33 @@ public class IterationValues {
 
         System.out.println("Full data after Iteration " + this.iterationNumber + " : ");
         Helper.printBooleanArray(this.fullDataPlainText);
-        
+
         System.out.println("------------------------------------------------------------------------------------------------------------------");
 
     }
 
- 
+    private void obtainThisIterationKey(boolean[] shortenedKeys) {
+        //R_i = L_(i-1) XOR f(R_(i-1), K_i)
+        //First we get  each 28 bits of key
+        left28bitsKeys = Helper.getNumBits(shortenedKeys, 0, 28);
+        right28bitsKeys = Helper.getNumBits(shortenedKeys, 1, 28);
+
+        //Now we rotate left according to SHIFT array
+        int numRotation = SHIFT[iterationNumber];
+        left28bitsKeys = Helper.leftRotate(left28bitsKeys, numRotation);
+        right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
+
+        boolean[] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);   //MERGING OKAY
+
+        //Key_in_round_i[0] = modified_key[13], ....
+        /*
+        Ki is derived from this rotated key by applying yet another 56-bit transposition to it according to CP_2 array.
+        A different 48-bit subset of the 56 bits is extracted and permuted on each round
+         */
+        for (int i = 0; i < 48; i++) {
+            int pos = CP_2[i] - 1;
+            this.keys_48bits_ThisIteration[i] = mergedKeys[pos];
+        }
+    }
 
 }
