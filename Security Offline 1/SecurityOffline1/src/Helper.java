@@ -1,5 +1,4 @@
 
-
 import java.util.List;
 
 public class Helper {
@@ -7,8 +6,7 @@ public class Helper {
     public static int SHORTENED_KEY_LEN = 56;
     public static int FULL_KEY_LEN = 64;
     public static char SPECIAL_CHARACTER = '@';
-    
-    
+
     public static int[] PI = {58, 50, 42, 34, 26, 18, 10, 2,
         60, 52, 44, 36, 28, 20, 12, 4,
         62, 54, 46, 38, 30, 22, 14, 6,
@@ -292,12 +290,37 @@ public class Helper {
 
     public static String removePadding(String plainTextBack) {
         String str = "";
-        for(int i=0; i<plainTextBack.length(); i++){
-            if(plainTextBack.charAt(i) == SPECIAL_CHARACTER){
+        for (int i = 0; i < plainTextBack.length(); i++) {
+            if (plainTextBack.charAt(i) == SPECIAL_CHARACTER) {
                 break;
             }
             str += plainTextBack.charAt(i);
         }
         return str;
+    }
+
+    public static boolean[] shortenTheKeys(boolean[] key) {
+        //modified_key[0] = key[56] = CP_1[0] - 1 ... Use the help of CP_1 matrix
+        boolean[] modified_data = new boolean[Helper.SHORTENED_KEY_LEN];
+
+        for (int i = 0; i < Helper.CP_1.length; i++) {
+            int pos = Helper.CP_1[i] - 1;
+            modified_data[i] = key[pos];
+        }
+
+        return modified_data;
+    }
+
+    public static boolean[] transpose(boolean[] data) {
+        boolean[] transposed_data = new boolean[data.length];
+
+        //Take Help From PI matrix
+        for (int i = 0; i < Helper.PI.length; i++) {
+            int whichPos = Helper.PI[i] - 1;   //eg. PI[0] - 1 = 58 - 1 = 57
+            //transpose_data[0] = data[57];
+            transposed_data[i] = data[whichPos];
+        }
+
+        return transposed_data;
     }
 }

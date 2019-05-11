@@ -41,11 +41,11 @@ public class Main {
 
         List<String> characterStrings64bits = divideBy64bits(inputWholePlainText);
         int howMany = characterStrings64bits.size();
-        DES_Runner[] runners = new DES_Runner[howMany]; //Each working on 64bit block/chunk
+        DES_Encryptor[] runners = new DES_Encryptor[howMany]; //Each working on 64bit block/chunk
 
         //Initialise each
         for(int i=0; i<runners.length; i++){
-            runners[i] = new DES_Runner();
+            runners[i] = new DES_Encryptor();
         }
         
         
@@ -57,21 +57,23 @@ public class Main {
             cipheredText += runners[i].getCipheredTextFinalOutput();
         }
 
-//        DES_Runner runner = new DES_Runner();
+//        DES_Encryptor runner = new DES_Encryptor();
 //        runner.encrypt();
 //        runner.runDecryption();
 
 
         //DECIPHERING or DECRYPTING
         List<String> ciphered64bitsSeparated = divideBy64bits(cipheredText);
-        DES_Runner decryptor = new DES_Runner();
-        
+        DES_Decryptor [] decryptors = new DES_Decryptor[howMany];
+        for(int i=0; i<decryptors.length; i++){
+            decryptors[i] = new DES_Decryptor(inputKey);
+        }
         String plainTextBack = "";
         
         for(int i=0; i<ciphered64bitsSeparated.size(); i++){
             String input = ciphered64bitsSeparated.get(i);
-            runners[i].runDecryption(input);
-            plainTextBack += runners[i].plainTextDecrypted;
+            decryptors[i].runDecryption(input);
+            plainTextBack += decryptors[i].plainTextDecrypted;
         }
         
         System.out.println("\n\n\n");
