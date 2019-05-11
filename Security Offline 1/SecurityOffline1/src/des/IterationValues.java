@@ -32,8 +32,8 @@ public class IterationValues {
 
         //R_i = L_(i-1) XOR f(R_(i-1), K_i)
         //First we get  each 28 bits of key
-        left28bitsKeys = getNumBits(shortenedKeys, 0, 28);
-        right28bitsKeys = getNumBits(shortenedKeys, 1, 28);
+        left28bitsKeys = Helper.getNumBits(shortenedKeys, 0, 28);
+        right28bitsKeys = Helper.getNumBits(shortenedKeys, 1, 28);
 
         //Now we rotate left according to SHIFT array
         int numRotation = SHIFT[iterationNumber];
@@ -138,20 +138,6 @@ public class IterationValues {
 
     }
 
-    private boolean[] getNumBits(boolean[] array, int leftZeroRightOne, int numBits) {
-        boolean[] bArr = new boolean[numBits];
-
-        if (leftZeroRightOne == 0) {
-            //left 32 bits
-            System.arraycopy(array, 0, bArr, 0, numBits);
-        } else {
-            //right 32 bits
-            for (int i = numBits; i < array.length; i++) {
-                bArr[i - numBits] = array[i];
-            }
-        }
-
-        return bArr;
-    }
+ 
 
 }

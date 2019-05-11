@@ -184,4 +184,18 @@ public class Helper {
         }
         return arr;
     }
+
+    public static boolean[] getNumBits(boolean[] array, int leftZeroRightOne, int numBits) {
+        boolean[] bArr = new boolean[numBits];
+        if (leftZeroRightOne == 0) {
+            //left 32 bits
+            System.arraycopy(array, 0, bArr, 0, numBits);
+        } else {
+            //right 32 bits
+            for (int i = numBits; i < array.length; i++) {
+                bArr[i - numBits] = array[i];
+            }
+        }
+        return bArr;
+    }
 }

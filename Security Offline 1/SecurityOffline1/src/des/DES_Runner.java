@@ -21,6 +21,9 @@ public class DES_Runner {
     //Iteration Values
     private IterationValues[] iterationValues = new IterationValues[16];
     
+    public boolean[] ultimateFinalData = new boolean[64];
+    public String cipheredText;
+    
     public void run() {
         //1. Pad the input String to make 64bits multiple [8 bytes multiple]
         padInputStringPlainText();
@@ -36,6 +39,34 @@ public class DES_Runner {
         for(int iterNum = 1; iterNum < 16; iterNum++){
             runIterations(iterNum);
         }
+        
+        boolean[] finalDataAfter16Iterations = iterationValues[15].fullDataPlainText;
+        //4. Make Left<- Right and Right<- Left
+        boolean[] left = Helper.getNumBits(finalDataAfter16Iterations, 0, 32);
+        boolean[] right = Helper.getNumBits(finalDataAfter16Iterations, 1, 32);
+        
+        boolean[] newLeft =  new boolean[right.length];
+        System.arraycopy(right, 0, newLeft, 0, right.length);
+
+        boolean[] newRight =  new boolean[left.length];
+        System.arraycopy(left, 0, newRight, 0, left.length);    
+        
+        this.ultimateFinalData = Helper.mergeBooleanArray(newLeft, newRight);
+        
+        System.out.println("================================================================================");
+        System.out.println("Left<-Right and Right<-Left, Final Data is: ");
+        Helper.printBooleanArray(this.ultimateFinalData);
+        System.out.println("After transposing finally with PI_1 to get: ");
+        boolean[] finalData = new boolean[64];
+        for(int i=0; i<PI_1.length; i++){
+            int pos = PI_1[i] - 1;
+            finalData[i] = this.ultimateFinalData[pos];
+        }
+        System.arraycopy(finalData, 0, this.ultimateFinalData, 0, finalData.length);  
+        Helper.printBooleanArray(this.ultimateFinalData);
+        
+        this.cipheredText = getCipheredText(this.ultimateFinalData);
+        
         
     }
 
@@ -149,6 +180,11 @@ public class DES_Runner {
         }
         
         return modified_data;
+    }
+
+    private String getCipheredText(boolean[] booleanArray) {
+        //64 bits 
+        return null;
     }
 
 }
