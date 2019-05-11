@@ -198,4 +198,10 @@ public class Helper {
         }
         return bArr;
     }
+
+    static void printStringArray(String[] s_arr) {
+        for(String s: s_arr){
+            System.out.println(s);
+        }
+    }
 }

@@ -184,7 +184,45 @@ public class DES_Runner {
 
     private String getCipheredText(boolean[] booleanArray) {
         //64 bits 
+        String s = getStringFromBoolArray(booleanArray);
+        String []s_arr = getStringArray(s);
+        
+        
+        System.out.println("\n\n\n\nBLA BLA BLA string array is : ");
+        Helper.printStringArray(s_arr);
+        
+        int[] asciiValues = new int[8];
+        for(int i=0; i<asciiValues.length; i++){
+            asciiValues[i] = Integer.parseInt(s_arr[i]);
+        }
+        
         return null;
+    }
+
+    private String getStringFromBoolArray(boolean[] booleanArray) {
+        String s = "";
+        for(int i=0; i<booleanArray.length; i++){
+            boolean b = booleanArray[i];
+            if(b == false){
+                s += '0';
+            }
+            else{
+                s += '1';
+            }
+        }
+        return s;
+    }
+
+    private String[] getStringArray(String s) {
+        String[]arr = new String[s.length() / 8];
+        for(int i=0; i<arr.length; i++){
+            String str = "";
+            for(int j=0; j<8; j++){
+                str += s.charAt(i*8 + j);
+            }
+            arr[i] = str;
+        }
+        return arr;
     }
 
 }
