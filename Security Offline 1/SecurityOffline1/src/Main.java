@@ -27,7 +27,8 @@ public class Main {
 
     public static void runDES() {
         DES_Runner runner = new DES_Runner();
-        runner.run();
+        runner.encrypt();
+        runner.runDecryption();
     }
 
 
