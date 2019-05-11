@@ -204,4 +204,11 @@ public class Helper {
             System.out.println(s);
         }
     }
+
+    static void printIntegerArray(int[] asciiValues) {
+        for(int x: asciiValues){
+            System.out.print(x + " ");
+        }
+        System.out.println("");
+    }
 }

@@ -67,6 +67,8 @@ public class DES_Runner {
         
         this.cipheredText = getCipheredText(this.ultimateFinalData);
         
+        System.out.println("\nCiphered Text is: ");
+        System.out.println(this.cipheredText);
         
     }
 
@@ -188,15 +190,29 @@ public class DES_Runner {
         String []s_arr = getStringArray(s);
         
         
-        System.out.println("\n\n\n\nBLA BLA BLA string array is : ");
-        Helper.printStringArray(s_arr);
+//        System.out.println("\n\n\n\nBLA BLA BLA string array is : ");
+//        Helper.printStringArray(s_arr);
         
         int[] asciiValues = new int[8];
         for(int i=0; i<asciiValues.length; i++){
-            asciiValues[i] = Integer.parseInt(s_arr[i]);
+            asciiValues[i] = Integer.parseInt(s_arr[i], 2);
         }
         
-        return null;
+        
+//        System.out.println("Now printing int array: ");
+//        Helper.printIntegerArray(asciiValues);
+        
+        char[] asciiChar = new char[8];
+        for(int i=0; i<8; i++){
+            asciiChar[i] = (char)asciiValues[i];
+        }
+        
+        String str = "";
+        for(int i=0; i<8; i++){
+            str += asciiChar[i];
+        }
+//        System.out.println("DECODED TEXT IS :\n" + str);
+        return str;
     }
 
     private String getStringFromBoolArray(boolean[] booleanArray) {
