@@ -64,31 +64,6 @@ public class Helper {
     public static int[] SHIFT = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
     //------------------------------------- Functions --------------------------------------
-    public static boolean[] toBooleanArray(byte[] bytes) {
-        BitSet bits = BitSet.valueOf(bytes);
-        boolean[] bools = new boolean[bytes.length * 8];
-        for (int i = bits.nextSetBit(0); i != -1; i = bits.nextSetBit(i + 1)) {
-            bools[i] = true;
-        }
-        return bools;
-    }
-
-    public static byte[] toByteArray(boolean[] bools) {
-        BitSet bits = new BitSet(bools.length);
-        for (int i = 0; i < bools.length; i++) {
-            if (bools[i]) {
-                bits.set(i);
-            }
-        }
-
-        byte[] bytes = bits.toByteArray();
-        if (bytes.length * 8 >= bools.length) {
-            return bytes;
-        } else {
-            return Arrays.copyOf(bytes, bools.length / 8 + (bools.length % 8 == 0 ? 0 : 1));
-        }
-    }
-
     public static void printBooleanArray(boolean[] arr, boolean flag) {
         for (boolean b : arr) {
             if (b) {
@@ -179,7 +154,7 @@ public class Helper {
 
     static boolean[] getBoolean(boolean booleanValue, int len) {
         boolean[] arr = new boolean[len];
-        for(int i=0; i<arr.length; i++){
+        for (int i = 0; i < arr.length; i++) {
             arr[i] = booleanValue;
         }
         return arr;
@@ -200,15 +175,51 @@ public class Helper {
     }
 
     static void printStringArray(String[] s_arr) {
-        for(String s: s_arr){
+        for (String s : s_arr) {
             System.out.println(s);
         }
     }
 
     static void printIntegerArray(int[] asciiValues) {
-        for(int x: asciiValues){
+        for (int x : asciiValues) {
             System.out.print(x + " ");
         }
         System.out.println("");
+    }
+
+    static boolean[] getBooleanArray(String cipheredText) {
+        System.out.println("-->>>Inside getBooleanArray function call () ");
+        return null;
+    }
+
+    private static String padZeroBefore(String s, int howManyBits) {
+        if (s.length() >= howManyBits) {
+            return s;
+        }
+        int rem = howManyBits - s.length();
+        String str = "";
+        for (int i = 0; i < rem; i++) {
+            str += '0';
+        }
+        str += s;
+        return str;
+    }
+
+    public static boolean[] getBits(String str) {
+        boolean[] b_arr = new boolean[str.length()];
+        String resultantBinString = "";
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            int ascii = (int) c;
+            String binString = Integer.toBinaryString(ascii);
+            //Each character 1 byte i.e. 8 bits so pad pervious with 0's
+            binString = Helper.padZeroBefore(binString, 8);
+
+            //Append to String
+            resultantBinString += binString;
+        }
+        b_arr = Helper.convertByOneFromString(resultantBinString);
+
+        return b_arr;
     }
 }

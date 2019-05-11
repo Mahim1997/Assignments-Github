@@ -12,7 +12,7 @@ public class IterationValues {
     int shortenedKeyLength = 28;
 
     //PUBLIC VARIABLES FOR NEXT ITERATIONS ... 
-    public boolean[] fullDataPlainText = new boolean[64];
+    public boolean[] fullDataPlainText_BooleanArray = new boolean[64];
     public boolean[] keys_48bits_ThisIteration = new boolean[48];
     public int iterationNumber;
 
@@ -75,7 +75,7 @@ public class IterationValues {
         }
 
         //Obtain full data of this iteration
-        this.fullDataPlainText = Helper.mergeBooleanArray(this.left32BitsPlainText, this.right32BitsPlainText);
+        this.fullDataPlainText_BooleanArray = Helper.mergeBooleanArray(this.left32BitsPlainText, this.right32BitsPlainText);
 
         // ------------------------------------------------------------------------------------------------------------------
         //------------------------------------------ PRINTING THINGS ------------------------------------------------------
@@ -116,7 +116,7 @@ public class IterationValues {
         Helper.printBooleanArray(this.right32BitsPlainText);
 
         System.out.println("Full data after Iteration " + this.iterationNumber + " : ");
-        Helper.printBooleanArray(this.fullDataPlainText);
+        Helper.printBooleanArray(this.fullDataPlainText_BooleanArray);
 
         System.out.println("------------------------------------------------------------------------------------------------------------------");
 
