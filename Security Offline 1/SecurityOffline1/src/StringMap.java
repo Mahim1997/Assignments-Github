@@ -1,4 +1,4 @@
-package substitution;
+
 
 public class StringMap {
     private String str1;

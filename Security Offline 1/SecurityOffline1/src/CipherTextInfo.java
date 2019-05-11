@@ -1,5 +1,5 @@
  
-package substitution;
+
  
 public class CipherTextInfo {
 

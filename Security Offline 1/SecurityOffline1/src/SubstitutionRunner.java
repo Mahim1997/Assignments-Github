@@ -1,4 +1,4 @@
-package substitution;
+
 
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -31,7 +31,8 @@ public class SubstitutionRunner {
     private String plainTextDecoded;
 
     public SubstitutionRunner(String file) {
-        this.fileName = "src/substitution/" + file;
+//        this.fileName = "src/substitution/" + file;
+        this.fileName = file;
     }
 
     public void run() {

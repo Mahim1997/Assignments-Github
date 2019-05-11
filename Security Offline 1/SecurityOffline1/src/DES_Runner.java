@@ -1,6 +1,5 @@
-package des;
 
-import static des.Helper.*;
+ 
 import java.util.Arrays;
 
 public class DES_Runner {
@@ -13,8 +12,8 @@ public class DES_Runner {
 
     public boolean[] paddedInputBits;
     public boolean[] transposePaddedBits;
-    public boolean[] keysBits = new boolean[FULL_KEY_LEN];
-    public boolean[] shortenedKeys = new boolean[SHORTENED_KEY_LEN];
+    public boolean[] keysBits = new boolean[Helper.FULL_KEY_LEN];
+    public boolean[] shortenedKeys = new boolean[Helper.SHORTENED_KEY_LEN];
 
     //For DEBUG
     private final boolean DEBUG_PRINT = true;
@@ -73,8 +72,8 @@ public class DES_Runner {
         Helper.printBooleanArray(this.ultimateFinalData);
         System.out.println("After transposing finally with PI_1 to get: ");
         boolean[] finalData = new boolean[64];
-        for (int i = 0; i < PI_1.length; i++) {
-            int pos = PI_1[i] - 1;
+        for (int i = 0; i < Helper.PI_1.length; i++) {
+            int pos = Helper.PI_1[i] - 1;
             finalData[i] = this.ultimateFinalData[pos];
         }
         System.arraycopy(finalData, 0, this.ultimateFinalData, 0, finalData.length);
@@ -85,8 +84,8 @@ public class DES_Runner {
         System.out.println("\nCiphered Text is: ");
         System.out.println(this.cipheredText);
 
-        System.out.println("\nAfter Decryption, Plain Text is: ");
-        System.out.println(this.plainTextDecrypted);
+//        System.out.println("\nAfter Decryption, Plain Text is: ");
+//        System.out.println(this.plainTextDecrypted);
     }
 
     private void runIterations(int iterNum) {
@@ -116,12 +115,12 @@ public class DES_Runner {
         transposePaddedBits = new boolean[paddedInputPlainText.length() * 8];
 
         //Inputs
-        paddedInputBits = getBits_InBooleanArray(paddedInputPlainText);
+        paddedInputBits = Helper.getBits_InBooleanArray(paddedInputPlainText);
 
         transposePaddedBits = transpose(paddedInputBits);
 
         //Keys
-        keysBits = getBits_InBooleanArray(inputKey);
+        keysBits = Helper.getBits_InBooleanArray(inputKey);
         shortenedKeys = shortenTheKeys(keysBits);
 
         if (DEBUG_PRINT) {
@@ -149,8 +148,8 @@ public class DES_Runner {
         boolean[] transposed_data = new boolean[data.length];
 
         //Take Help From PI matrix
-        for (int i = 0; i < PI.length; i++) {
-            int whichPos = PI[i] - 1;   //eg. PI[0] - 1 = 58 - 1 = 57
+        for (int i = 0; i < Helper.PI.length; i++) {
+            int whichPos = Helper.PI[i] - 1;   //eg. PI[0] - 1 = 58 - 1 = 57
             //transpose_data[0] = data[57];
             transposed_data[i] = data[whichPos];
         }
@@ -160,10 +159,10 @@ public class DES_Runner {
 
     private boolean[] shortenTheKeys(boolean[] key) {
         //modified_key[0] = key[56] = CP_1[0] - 1 ... Use the help of CP_1 matrix
-        boolean[] modified_data = new boolean[SHORTENED_KEY_LEN];
+        boolean[] modified_data = new boolean[Helper.SHORTENED_KEY_LEN];
 
-        for (int i = 0; i < CP_1.length; i++) {
-            int pos = CP_1[i] - 1;
+        for (int i = 0; i < Helper.CP_1.length; i++) {
+            int pos = Helper.CP_1[i] - 1;
             modified_data[i] = key[pos];
         }
 
@@ -180,13 +179,13 @@ public class DES_Runner {
 
     public void runDecryption() {
         //1. Pad the input String to make 64bits multiple [8 bytes multiple]
-        String paddedInput = padString(this.cipheredText);
+        String paddedInput = Helper.padString(this.cipheredText);
         //2. Initialise array of booleans
         boolean[] paddedInputBits_Dec = new boolean[paddedInput.length() * 8];
         boolean[] transposePaddedBits_Dec = new boolean[paddedInput.length() * 8];
 
         //Inputs
-        paddedInputBits_Dec = getBits_InBooleanArray(paddedInput);
+        paddedInputBits_Dec = Helper.getBits_InBooleanArray(paddedInput);
 
         transposePaddedBits_Dec = transpose(paddedInputBits_Dec);
 
@@ -221,8 +220,8 @@ public class DES_Runner {
         Helper.printBooleanArray(ultimateData);
         System.out.println("After transposing finally with PI_1 to get: ");
         boolean[] finalData = new boolean[64];
-        for (int i = 0; i < PI_1.length; i++) {
-            int pos = PI_1[i] - 1;
+        for (int i = 0; i < Helper.PI_1.length; i++) {
+            int pos = Helper.PI_1[i] - 1;
             finalData[i] = ultimateData[pos];
         }
         System.arraycopy(finalData, 0, ultimateData, 0, finalData.length);
@@ -230,8 +229,8 @@ public class DES_Runner {
 
         this.plainTextDecrypted = Helper.getString_AsAWhole(ultimateData);
 
-        System.out.println("\nCiphered Text is: ");
-        System.out.println(this.cipheredText);
+//        System.out.println("\nCiphered Text is: ");
+//        System.out.println(this.cipheredText);
 
         System.out.println("\nAfter Decryption, Plain Text is: ");
         System.out.println(this.plainTextDecrypted);

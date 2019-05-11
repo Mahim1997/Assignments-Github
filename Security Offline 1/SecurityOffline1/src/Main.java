@@ -1,19 +1,19 @@
-
-import des.DES_Runner;
-import des.Helper;
+ 
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import substitution.SubstitutionRunner;
+ 
 
 public class Main {
 
+    public static String input_DES = "src/input_des.txt";
+    public static String input_Substitution = "src/substitution-22.txt";
+    
     static int SUBSTITUTION = 0;
     static int DES = 1;
 
-    static int mode = DES;
+    static int mode = SUBSTITUTION;
 
     public static void main(String[] args) {
 
@@ -26,13 +26,14 @@ public class Main {
     }
 
     public static void runSubstitution() {
-        SubstitutionRunner runner = new SubstitutionRunner("substitution-22.txt");
+        SubstitutionRunner runner = new SubstitutionRunner(Main.input_Substitution);
         runner.run();
     }
 
     public static void runDES() {
 
-        String[] ins = Main.readInputs("src/des/input_des.txt");
+//        String[] ins = Main.readInputs("src/des/input_des.txt");
+        String[] ins = Main.readInputs(Main.input_DES);
         String inputWholePlainText = ins[0];
         String inputKey = ins[1];
 
@@ -72,11 +73,14 @@ public class Main {
             plainTextBack += runners[i].plainTextDecrypted;
         }
         
-        System.out.println("\n\n\nIn Main, After Encryption, Ciphered Text is: ");
+        System.out.println("\n\n\n");
+        System.out.println("-----------------------------------------------------------------\n");
+        System.out.println("<In Main, After Encryption, Ciphered Text is:>");
         System.out.println(cipheredText);
-        System.out.println("\nIn Main, After Decryption, Plain Text is: ");
+        System.out.println("\n<In Main, After Decryption, Plain Text is:>");
         plainTextBack = Helper.removePadding(plainTextBack);
         System.out.println(plainTextBack);
+        System.out.println("\n\n");
     }
 
     private static String[] readInputs(String fileName) {

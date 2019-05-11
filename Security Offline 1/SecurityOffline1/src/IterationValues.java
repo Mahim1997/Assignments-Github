@@ -1,6 +1,4 @@
-package des;
-
-import static des.Helper.*;
+ 
 
 public class IterationValues {
 
@@ -29,8 +27,8 @@ public class IterationValues {
     }
 
     public void completeThisIteration(boolean[] transposePaddedBits, boolean[] shortenedKeys) {
-        boolean[] left32BitsPreviousPaddedBits = getNumBits(transposePaddedBits, 0, 32);
-        boolean[] right32BitsPreviousPaddedBits = getNumBits(transposePaddedBits, 1, 32);
+        boolean[] left32BitsPreviousPaddedBits = Helper.getNumBits(transposePaddedBits, 0, 32);
+        boolean[] right32BitsPreviousPaddedBits = Helper.getNumBits(transposePaddedBits, 1, 32);
 
         this.left32BitsPlainText = right32BitsPreviousPaddedBits; //L_i = R_(i-1)
 
@@ -43,8 +41,8 @@ public class IterationValues {
         /*(a) You need to expand your leftmost 32 bits to 48 bits. Use E array.
         expanded_bits [0] = leftmost_bit[31], expanded_bits[1] = leftmost_bit[0]*/
         boolean[] e_48_bit_number = new boolean[48];    //First, a 48-bit number, e, is constructed by expanding the 32-bit R(i − 1) = L(i) according to E array
-        for (int i = 0; i < E.length; i++) {
-            int pos = E[i] - 1;
+        for (int i = 0; i < Helper.E.length; i++) {
+            int pos = Helper.E[i] - 1;
             e_48_bit_number[i] = this.left32BitsPlainText[pos]; //same as R(i-1)
         }
 
@@ -57,7 +55,7 @@ public class IterationValues {
         //(c) Sample 32 bits from the result according to PI_2 arrays. i.e. shorten_result [0] = result_xor [34], ......
         boolean[] shorten_result_FromPart_C = new boolean[32];
         for (int i = 0; i < shorten_result_FromPart_C.length; i++) {
-            int pos = PI_2[i] - 1;
+            int pos = Helper.PI_2[i] - 1;
             shorten_result_FromPart_C[i] = result_xor[pos];
         }
 
@@ -65,7 +63,7 @@ public class IterationValues {
         boolean[] PBox_Input = shorten_result_FromPart_C;
         boolean[] PBox_Output = new boolean[32];
         for (int i = 0; i < 32; i++) {
-            int pos = P[i] - 1;
+            int pos = Helper.P[i] - 1;
             PBox_Output[pos] = PBox_Input[i];
         }
 
@@ -129,7 +127,7 @@ public class IterationValues {
         right28bitsKeys = Helper.getNumBits(shortenedKeys, 1, 28);
 
         //Now we rotate left according to SHIFT array
-        int numRotation = SHIFT[iterationNumber];
+        int numRotation = Helper.SHIFT[iterationNumber];
         left28bitsKeys = Helper.leftRotate(left28bitsKeys, numRotation);
         right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
 
@@ -141,7 +139,7 @@ public class IterationValues {
         A different 48-bit subset of the 56 bits is extracted and permuted on each round
          */
         for (int i = 0; i < 48; i++) {
-            int pos = CP_2[i] - 1;
+            int pos = Helper.CP_2[i] - 1;
             this.keys_48bits_ThisIteration[i] = mergedKeys[pos];
         }
     }
