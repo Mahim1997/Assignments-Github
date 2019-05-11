@@ -1,5 +1,8 @@
 package des;
 
+import static des.Helper.CP_2;
+import static des.Helper.SHIFT;
+
 public class IterationValues {
 
     public int iterationNumber;
@@ -7,6 +10,7 @@ public class IterationValues {
     public boolean[] right32BitsPlainText = new boolean[32];
     public boolean[] left28bitsKeys = new boolean[28];
     public boolean[] right28bitsKeys = new boolean[28];
+    int shortenedKeyLength = 28;
 
     public IterationValues(int iterationNumber) {
         this.iterationNumber = iterationNumber;
@@ -23,9 +27,21 @@ public class IterationValues {
         
         //R_i = L_(i-1) XOR f(R_(i-1), K_i)
         
-        //First we get K_i
+        //First we get  each 28 bits of key
         left28bitsKeys = getNumBits(shortenedKeys, 0, 28);
         right28bitsKeys = getNumBits(shortenedKeys, 1, 28);        
+        
+        //Now we rotate left according to SHIFT array
+        int numRotation = SHIFT[iterationNumber];
+        left28bitsKeys = Helper.leftRotate(left28bitsKeys, numRotation);
+        right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
+        
+        boolean [] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);
+        //Key_in_round_i[0] = modified_key[13], ....
+        for(int i=0; i<shortenedKeyLength; i++){
+            int pos = CP_2[i] - 1;
+            shortenedKeys[i] = mergedKeys[pos];
+        }
         
         
         System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
@@ -36,6 +52,8 @@ public class IterationValues {
         Helper.printBooleanArray(left28bitsKeys);
         Helper.printBooleanArray(right28bitsKeys);
         
+        System.out.println("--->>>SHORTENED KEYS [48 bits] : ");
+        Helper.printBooleanArray(shortenedKeys);
         
         System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
     }

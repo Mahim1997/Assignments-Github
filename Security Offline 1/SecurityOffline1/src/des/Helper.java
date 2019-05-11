@@ -136,4 +136,12 @@ public class Helper {
 
         return arr;
     }
+
+    public static boolean[] mergeBooleanArray(boolean[] left28bitsKeys, boolean[] right28bitsKeys) {
+        int len = left28bitsKeys.length + right28bitsKeys.length;
+        boolean []arr = new boolean[len];
+        System.arraycopy(left28bitsKeys, 0, arr, 0, left28bitsKeys.length);
+        System.arraycopy(right28bitsKeys, 0, arr, left28bitsKeys.length, right28bitsKeys.length);
+        return arr;
+    }
 }
