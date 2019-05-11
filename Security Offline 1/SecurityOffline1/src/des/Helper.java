@@ -187,11 +187,6 @@ public class Helper {
         System.out.println("");
     }
 
-    static boolean[] getBooleanArray(String cipheredText) {
-        System.out.println("-->>>Inside getBooleanArray function call () ");
-        return null;
-    }
-
     private static String padZeroBefore(String s, int howManyBits) {
         if (s.length() >= howManyBits) {
             return s;
@@ -205,7 +200,7 @@ public class Helper {
         return str;
     }
 
-    public static boolean[] getBits(String str) {
+    public static boolean[] getBits_InBooleanArray(String str) {
         boolean[] b_arr = new boolean[str.length()];
         String resultantBinString = "";
         for (int i = 0; i < str.length(); i++) {
@@ -221,5 +216,57 @@ public class Helper {
         b_arr = Helper.convertByOneFromString(resultantBinString);
 
         return b_arr;
+    }
+
+    public static String getString_AsAWhole(boolean[] booleanArray) {
+        //64 bits 
+        String s = getStringFromBoolArray(booleanArray);
+        String[] s_arr = getStringArray(s);
+
+//        System.out.println("\n\n\n\nBLA BLA BLA string array is : ");
+//        Helper.printStringArray(s_arr);
+        int[] asciiValues = new int[8];
+        for (int i = 0; i < asciiValues.length; i++) {
+            asciiValues[i] = Integer.parseInt(s_arr[i], 2);
+        }
+
+//        System.out.println("Now printing int array: ");
+//        Helper.printIntegerArray(asciiValues);
+        char[] asciiChar = new char[8];
+        for (int i = 0; i < 8; i++) {
+            asciiChar[i] = (char) asciiValues[i];
+        }
+
+        String str = "";
+        for (int i = 0; i < 8; i++) {
+            str += asciiChar[i];
+        }
+//        System.out.println("DECODED TEXT IS :\n" + str);
+        return str;
+    }
+
+    private static String getStringFromBoolArray(boolean[] booleanArray) {
+        String s = "";
+        for (int i = 0; i < booleanArray.length; i++) {
+            boolean b = booleanArray[i];
+            if (b == false) {
+                s += '0';
+            } else {
+                s += '1';
+            }
+        }
+        return s;
+    }
+
+    private static String[] getStringArray(String s) {
+        String[] arr = new String[s.length() / 8];
+        for (int i = 0; i < arr.length; i++) {
+            String str = "";
+            for (int j = 0; j < 8; j++) {
+                str += s.charAt(i * 8 + j);
+            }
+            arr[i] = str;
+        }
+        return arr;
     }
 }

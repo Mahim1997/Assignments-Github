@@ -78,7 +78,7 @@ public class DES_Runner {
         System.arraycopy(finalData, 0, this.ultimateFinalData, 0, finalData.length);
         Helper.printBooleanArray(this.ultimateFinalData);
 
-        this.cipheredText = getCipheredText(this.ultimateFinalData);
+        this.cipheredText = Helper.getString_AsAWhole(this.ultimateFinalData);
 
         System.out.println("\nCiphered Text is: ");
         System.out.println(this.cipheredText);
@@ -114,12 +114,12 @@ public class DES_Runner {
         transposePaddedBits = new boolean[paddedInputPlainText.length() * 8];
 
         //Inputs
-        paddedInputBits = getBits(paddedInputPlainText);
+        paddedInputBits = getBits_InBooleanArray(paddedInputPlainText);
 
         transposePaddedBits = transpose(paddedInputBits);
 
         //Keys
-        keysBits = getBits(inputKey);
+        keysBits = getBits_InBooleanArray(inputKey);
         shortenedKeys = shortenTheKeys(keysBits);
 
         if (DEBUG_PRINT) {
@@ -171,57 +171,7 @@ public class DES_Runner {
         return modified_data;
     }
 
-    private String getCipheredText(boolean[] booleanArray) {
-        //64 bits 
-        String s = getStringFromBoolArray(booleanArray);
-        String[] s_arr = getStringArray(s);
 
-//        System.out.println("\n\n\n\nBLA BLA BLA string array is : ");
-//        Helper.printStringArray(s_arr);
-        int[] asciiValues = new int[8];
-        for (int i = 0; i < asciiValues.length; i++) {
-            asciiValues[i] = Integer.parseInt(s_arr[i], 2);
-        }
-
-//        System.out.println("Now printing int array: ");
-//        Helper.printIntegerArray(asciiValues);
-        char[] asciiChar = new char[8];
-        for (int i = 0; i < 8; i++) {
-            asciiChar[i] = (char) asciiValues[i];
-        }
-
-        String str = "";
-        for (int i = 0; i < 8; i++) {
-            str += asciiChar[i];
-        }
-//        System.out.println("DECODED TEXT IS :\n" + str);
-        return str;
-    }
-
-    private String getStringFromBoolArray(boolean[] booleanArray) {
-        String s = "";
-        for (int i = 0; i < booleanArray.length; i++) {
-            boolean b = booleanArray[i];
-            if (b == false) {
-                s += '0';
-            } else {
-                s += '1';
-            }
-        }
-        return s;
-    }
-
-    private String[] getStringArray(String s) {
-        String[] arr = new String[s.length() / 8];
-        for (int i = 0; i < arr.length; i++) {
-            String str = "";
-            for (int j = 0; j < 8; j++) {
-                str += s.charAt(i * 8 + j);
-            }
-            arr[i] = str;
-        }
-        return arr;
-    }
 
     private void decrypt() {
         IterationValues[] decryptThings = new IterationValues[16];
@@ -234,13 +184,14 @@ public class DES_Runner {
             decryptThings[i].setKeyForThisIteration(this.iterationValues[16 - 1 - i].keys_48bits_ThisIteration);
             decryptThings[i].encryptMode = false;   //Decrypt mode
             if (i == 0) {
-                decryptThings[i].completeThisIteration(Helper.getBooleanArray(this.cipheredText), shortenedKeys);
+                decryptThings[i].completeThisIteration(Helper.getBits_InBooleanArray(this.cipheredText), shortenedKeys);
             }else{
                 decryptThings[i].completeThisIteration(decryptThings[i-1].fullDataPlainText_BooleanArray, shortenedKeys);
             }
 
         }
-
+        boolean[] finalData = decryptThings[15].fullDataPlainText_BooleanArray;
+        this.plainTextDecrypted = Helper.getString_AsAWhole(finalData);
     }
 
 }
