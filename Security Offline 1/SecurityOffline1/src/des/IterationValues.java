@@ -24,7 +24,7 @@ public class IterationValues {
     public IterationValues() {
     }
 
-    public void makeZeroIteration(boolean[] transposePaddedBits, boolean[] shortenedKeys) {
+    public void completeThisIteration(boolean[] transposePaddedBits, boolean[] shortenedKeys) {
         boolean[] left32BitsPreviousPaddedBits = getNumBits(transposePaddedBits, 0, 32);
         boolean[] right32BitsPreviousPaddedBits = getNumBits(transposePaddedBits, 1, 32);
 
@@ -94,18 +94,18 @@ public class IterationValues {
         
         // ------------------------------------------------------------------------------------------------------------------
         //------------------------------------------ PRINTING THINGS ------------------------------------------------------
-        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-        System.out.println("--->>>>>>Inside makeZeroIteration .... printing things ... ");
-        System.out.println("Printing prev left32Bits, then prev right32Bits, then left28Keys, then right28Keys");
-        Helper.printBooleanArray(left32BitsPreviousPaddedBits);
-        Helper.printBooleanArray(right32BitsPreviousPaddedBits);
-        Helper.printBooleanArray(left28bitsKeys);
-        Helper.printBooleanArray(right28bitsKeys);
-
-        System.out.println("--->>>SHORTENED KEYS [48 bits] i.e. K_i = keys_48bits_ThisIteration : ");
-        Helper.printBooleanArray(keys_48bits_ThisIteration);
-
-        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+//        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+//        System.out.println("--->>>>>>Inside makeZeroIteration .... printing things ... ");
+//        System.out.println("Printing prev left32Bits, then prev right32Bits, then left28Keys, then right28Keys");
+//        Helper.printBooleanArray(left32BitsPreviousPaddedBits);
+//        Helper.printBooleanArray(right32BitsPreviousPaddedBits);
+//        Helper.printBooleanArray(left28bitsKeys);
+//        Helper.printBooleanArray(right28bitsKeys);
+//
+//        System.out.println("--->>>SHORTENED KEYS [48 bits] i.e. K_i = keys_48bits_ThisIteration : ");
+//        Helper.printBooleanArray(keys_48bits_ThisIteration);
+//
+//        System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
 
         System.out.println("-------------------------------------------Iteration " + this.iterationNumber + " -----------------------------------------------------------------------");
 

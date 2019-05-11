@@ -29,7 +29,7 @@ public class DES_Runner {
         
         //2.5: Initialise the 0th iter and boolean arrays
         iterationValues[0] = new IterationValues(0);
-        iterationValues[0].makeZeroIteration(transposePaddedBits, shortenedKeys);
+        iterationValues[0].completeThisIteration(transposePaddedBits, shortenedKeys);
         
         
         //3. Apply 15 iterations [first done beforehand]       
@@ -40,7 +40,12 @@ public class DES_Runner {
     }
 
     private void runIterations(int iterNum) {
+        iterationValues[iterNum] = new IterationValues(iterNum);
+        boolean[] text = iterationValues[iterNum-1].fullDataPlainText;
+        boolean[] keys = shortenedKeys;
         
+        
+        iterationValues[iterNum].completeThisIteration(text, shortenedKeys);
     }
     
     
