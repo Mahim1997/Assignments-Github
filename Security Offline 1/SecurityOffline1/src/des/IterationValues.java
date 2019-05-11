@@ -4,13 +4,18 @@ import static des.Helper.*;
 
 public class IterationValues {
 
-    public int iterationNumber;
-    public boolean[] left32BitsPlainText = new boolean[32];
-    public boolean[] right32BitsPlainText = new boolean[32];
-    public boolean[] left28bitsKeys = new boolean[28];
-    public boolean[] right28bitsKeys = new boolean[28];
-    public boolean[] keys_48bits_ThisIteration = new boolean[48];
+
+    private boolean[] left32BitsPlainText = new boolean[32];
+    private boolean[] right32BitsPlainText = new boolean[32];
+    private boolean[] left28bitsKeys = new boolean[28];
+    private boolean[] right28bitsKeys = new boolean[28];
+
     int shortenedKeyLength = 28;
+    
+    //PUBLIC VARIABLES FOR NEXT ITERATIONS ... 
+    public boolean[] fullDataPlainText = new boolean[64];
+    public boolean[] keys_48bits_ThisIteration = new boolean[48];    
+    public int iterationNumber;    
 
     public IterationValues(int iterationNumber) {
         this.iterationNumber = iterationNumber;
@@ -36,10 +41,7 @@ public class IterationValues {
         right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
 
         boolean[] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);   //MERGING OKAY
-        
-       
-        
-        
+
         //Key_in_round_i[0] = modified_key[13], ....
         /*
         Ki is derived from this rotated key by applying yet another 56-bit transposition to it according to CP_2 array.
@@ -49,9 +51,8 @@ public class IterationValues {
             int pos = CP_2[i] - 1;
             this.keys_48bits_ThisIteration[i] = mergedKeys[pos];
         }
-        
+
         //------------------------------------------- FUNCTIONS begin --------------------------------------------------------
-   
         //Expand the R_(i-1) using E matrix
         /*(a) You need to expand your leftmost 32 bits to 48 bits. Use E array.
         expanded_bits [0] = leftmost_bit[31], expanded_bits[1] = leftmost_bit[0]*/
@@ -87,6 +88,10 @@ public class IterationValues {
             this.right32BitsPlainText[i] = Helper.XOR(PBox_Output[i], left32BitsPreviousPaddedBits[i]);
         }
 
+        //Obtain full data of this iteration
+        this.fullDataPlainText = Helper.mergeBooleanArray(this.left32BitsPlainText, this.right32BitsPlainText);
+                
+        
         // ------------------------------------------------------------------------------------------------------------------
         //------------------------------------------ PRINTING THINGS ------------------------------------------------------
         System.out.println("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
@@ -110,19 +115,25 @@ public class IterationValues {
 
         System.out.println("KEY_i is [48 bits] : ");
         Helper.printBooleanArray(this.keys_48bits_ThisIteration);
-        
+
         System.out.println("Expanded 48 bit number of R(i-1) (Using E matrix) is :");
         Helper.printBooleanArray(e_48_bit_number);  //Correct
 
         System.out.println("After XORING expandedNumber and KEY [48 bits] we get :");
         Helper.printBooleanArray(result_xor);
 
+        System.out.println("PBOX Input (32 bits): ");
+        Helper.printBooleanArray(PBox_Input);
+
         System.out.println("PBox Output is [32 bits] : ");
         Helper.printBooleanArray(PBox_Output);
-//
-//        System.out.println("Right 32 bits is : ");
-//        Helper.printBooleanArray(this.right32BitsPlainText);
 
+        System.out.println("Right 32 bits [PBOX_Output XOR L(i-1)] : ");
+        Helper.printBooleanArray(this.right32BitsPlainText);
+
+        System.out.println("Full data after Iteration " + this.iterationNumber + " : ");
+        Helper.printBooleanArray(this.fullDataPlainText);
+        
         System.out.println("------------------------------------------------------------------------------------------------------------------");
 
     }
