@@ -13,8 +13,9 @@ public class Main {
     static int SUBSTITUTION = 0;
     static int DES = 1;
 
-    static int mode = SUBSTITUTION;
-
+    static int mode = DES;
+//    static int mode = SUBSTITUTION;
+    
     public static void main(String[] args) {
 
         if (mode == SUBSTITUTION) {
@@ -69,7 +70,7 @@ public class Main {
         
         for(int i=0; i<ciphered64bitsSeparated.size(); i++){
             String input = ciphered64bitsSeparated.get(i);
-            runners[i].runDecryption();
+            runners[i].runDecryption(input);
             plainTextBack += runners[i].plainTextDecrypted;
         }
         

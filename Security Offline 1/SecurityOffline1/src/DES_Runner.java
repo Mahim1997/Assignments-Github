@@ -24,6 +24,7 @@ public class DES_Runner {
     public boolean[] ultimateFinalData = new boolean[64];
     public String cipheredText;
 
+
     public String plainTextDecrypted;
 
     public void setParameters(String inputPlainText, String keyInput) {
@@ -177,9 +178,9 @@ public class DES_Runner {
         decryptors[iterNum].completeThisIteration(decryptors[iterNum - 1].fullDataPlainText_BooleanArray, shortenedKeys);
     }
 
-    public void runDecryption() {
+    public void runDecryption(String inputString_CipherText) {
         //1. Pad the input String to make 64bits multiple [8 bytes multiple]
-        String paddedInput = Helper.padString(this.cipheredText);
+        String paddedInput = Helper.padString(inputString_CipherText);
         //2. Initialise array of booleans
         boolean[] paddedInputBits_Dec = new boolean[paddedInput.length() * 8];
         boolean[] transposePaddedBits_Dec = new boolean[paddedInput.length() * 8];
