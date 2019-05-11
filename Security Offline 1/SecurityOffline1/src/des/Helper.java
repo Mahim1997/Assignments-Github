@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 public class Helper {
+
     public static int SHORTENED_KEY_LEN = 56;
     public static int FULL_KEY_LEN = 64;
-    
+
     public static int[] PI = {58, 50, 42, 34, 26, 18, 10, 2,
         60, 52, 44, 36, 28, 20, 12, 4,
         62, 54, 46, 38, 30, 22, 14, 6,
@@ -89,27 +90,50 @@ public class Helper {
     }
 
     public static void printBooleanArray(boolean[] arr) {
-        for(boolean b: arr){
-            if(b){
+        for (boolean b : arr) {
+            if (b) {
                 System.out.print('1');
-            }else{
+            } else {
                 System.out.print('0');
             }
         }
         System.out.println("");
     }
-    static boolean[] convertByOneFromString(String s){
-        boolean [] bArr = new boolean [s.length()];
-        
-        for(int i=0; i<s.length(); i++){
+
+    static boolean[] convertByOneFromString(String s) {
+        boolean[] bArr = new boolean[s.length()];
+
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if(c == '0'){
+            if (c == '0') {
                 bArr[i] = false;
-            }else{
+            } else {
                 bArr[i] = true;
             }
         }
-        
+
         return bArr;
+    }
+
+    public static boolean[] leftRotate(boolean arr[], int d) {
+        /*Function to left rotate arr[] of size n by d*/
+        int n = arr.length;
+        for (int i = 0; i < d; i++) {
+            arr = leftRotatebyOne(arr, n);
+        }
+
+        return arr;
+    }
+
+    private static boolean[] leftRotatebyOne(boolean arr[], int n) {
+        int i;
+        boolean temp;
+        temp = arr[0];
+        for (i = 0; i < n - 1; i++) {
+            arr[i] = arr[i + 1];
+        }
+        arr[i] = temp;
+
+        return arr;
     }
 }

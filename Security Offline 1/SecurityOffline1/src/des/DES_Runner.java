@@ -18,16 +18,32 @@ public class DES_Runner {
     //For DEBUG
     private static final boolean DEBUG_PRINT = true;
 
+    //Iteration Values
+    private IterationValues[] iterationValues = new IterationValues[16];
+    
     public void run() {
         //1. Pad the input String to make 64bits multiple [8 bytes multiple]
         padInputStringPlainText();
         //2. Initialise array of booleans
         initialiseAndFillBooleanArrays();
-
-        //3. Apply 16 iterations
+        
+        //2.5: Initialise the 0th iter and boolean arrays
+        iterationValues[0] = new IterationValues(0);
+        iterationValues[0].makeZeroIteration(transposePaddedBits, shortenedKeys);
+        
+        
+        //3. Apply 15 iterations [first done beforehand]       
+        for(int iterNum = 1; iterNum < 16; iterNum++){
+            runIterations(iterNum);
+        }
         
     }
 
+    private void runIterations(int iterNum) {
+        
+    }
+    
+    
     private void padInputStringPlainText() {
         paddedInputPlainText = inputStringPlainText;
         int len = inputStringPlainText.length();
@@ -129,4 +145,5 @@ public class DES_Runner {
         
         return modified_data;
     }
+
 }
