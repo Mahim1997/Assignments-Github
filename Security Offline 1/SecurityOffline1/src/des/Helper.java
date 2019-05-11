@@ -96,4 +96,18 @@ public class Helper {
         }
         System.out.println("");
     }
+    static boolean[] convertByOneFromString(String s){
+        boolean [] bArr = new boolean [s.length()];
+        
+        for(int i=0; i<s.length(); i++){
+            char c = s.charAt(i);
+            if(c == '0'){
+                bArr[i] = false;
+            }else{
+                bArr[i] = true;
+            }
+        }
+        
+        return bArr;
+    }
 }
