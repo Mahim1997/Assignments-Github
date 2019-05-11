@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 public class Helper {
-
+    public static int SHORTENED_KEY_LEN = 56;
+    public static int FULL_KEY_LEN = 64;
+    
     public static int[] PI = {58, 50, 42, 34, 26, 18, 10, 2,
         60, 52, 44, 36, 28, 20, 12, 4,
         62, 54, 46, 38, 30, 22, 14, 6,
