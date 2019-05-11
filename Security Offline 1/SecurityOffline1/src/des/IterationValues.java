@@ -35,7 +35,11 @@ public class IterationValues {
         left28bitsKeys = Helper.leftRotate(left28bitsKeys, numRotation);
         right28bitsKeys = Helper.leftRotate(right28bitsKeys, numRotation);
 
-        boolean[] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);
+        boolean[] mergedKeys = Helper.mergeBooleanArray(left28bitsKeys, right28bitsKeys);   //MERGING OKAY
+        
+       
+        
+        
         //Key_in_round_i[0] = modified_key[13], ....
         /*
         Ki is derived from this rotated key by applying yet another 56-bit transposition to it according to CP_2 array.
@@ -104,6 +108,9 @@ public class IterationValues {
         Helper.printBooleanArray(this.left32BitsPlainText, false);
         Helper.printBooleanArray(Helper.getBoolean(false, 32), true);
 
+        System.out.println("KEY_i is [48 bits] : ");
+        Helper.printBooleanArray(this.keys_48bits_ThisIteration);
+        
         System.out.println("Expanded 48 bit number of R(i-1) (Using E matrix) is :");
         Helper.printBooleanArray(e_48_bit_number);  //Correct
 
