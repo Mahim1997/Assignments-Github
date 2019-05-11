@@ -1,13 +1,14 @@
 package des;
 
-import java.util.Arrays;
-import java.util.BitSet;
+import java.util.List;
 
 public class Helper {
 
     public static int SHORTENED_KEY_LEN = 56;
     public static int FULL_KEY_LEN = 64;
-
+    public static char SPECIAL_CHARACTER = '@';
+    
+    
     public static int[] PI = {58, 50, 42, 34, 26, 18, 10, 2,
         60, 52, 44, 36, 28, 20, 12, 4,
         62, 54, 46, 38, 30, 22, 14, 6,
@@ -218,6 +219,19 @@ public class Helper {
         return b_arr;
     }
 
+    public static String padString(String s) {
+        String str = s;
+        int len = s.length();
+        if (len % 8 != 0) {
+            int remaining = 8 - (len % 8);
+            for (int i = 0; i < remaining; i++) {
+                str += SPECIAL_CHARACTER;
+            }
+        }
+        return str;
+
+    }
+
     public static String getString_AsAWhole(boolean[] booleanArray) {
         //64 bits 
         String s = getStringFromBoolArray(booleanArray);
@@ -268,5 +282,22 @@ public class Helper {
             arr[i] = str;
         }
         return arr;
+    }
+
+    public static void printListString(List<String> list) {
+        list.forEach((x) -> {
+            System.out.println(x);
+        });
+    }
+
+    public static String removePadding(String plainTextBack) {
+        String str = "";
+        for(int i=0; i<plainTextBack.length(); i++){
+            if(plainTextBack.charAt(i) == SPECIAL_CHARACTER){
+                break;
+            }
+            str += plainTextBack.charAt(i);
+        }
+        return str;
     }
 }

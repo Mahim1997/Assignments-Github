@@ -27,8 +27,9 @@ public class DES_Runner {
 
     public String plainTextDecrypted;
 
-    public void initialiseParameters(String inputPlainText, String keyInput) {
-
+    public void setParameters(String inputPlainText, String keyInput) {
+        this.inputStringPlainText = inputPlainText;
+        this.inputKey = keyInput;
     }
 
     public String getCipheredTextFinalOutput() {
@@ -108,18 +109,7 @@ public class DES_Runner {
 
     }
 
-    private String padString(String s) {
-        String str = s;
-        int len = s.length();
-        if (len % 8 != 0) {
-            int remaining = 8 - (len % 8);
-            for (int i = 0; i < remaining; i++) {
-                str += SPECIAL_CHARACTER;
-            }
-        }
-        return str;
 
-    }
 
     private void initialiseAndFillBooleanArrays() {
         paddedInputBits = new boolean[paddedInputPlainText.length() * 8];
