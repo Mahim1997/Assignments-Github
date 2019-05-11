@@ -89,6 +89,21 @@ public class Helper {
         }
     }
 
+    public static void printBooleanArray(boolean[] arr, boolean flag) {
+        for (boolean b : arr) {
+            if (b) {
+                System.out.print('1');
+            } else {
+                System.out.print('0');
+            }
+        }
+
+        if (flag == true) {
+            System.out.println("");
+        }
+
+    }
+
     public static void printBooleanArray(boolean[] arr) {
         for (boolean b : arr) {
             if (b) {
@@ -97,6 +112,7 @@ public class Helper {
                 System.out.print('0');
             }
         }
+
         System.out.println("");
     }
 
@@ -139,9 +155,33 @@ public class Helper {
 
     public static boolean[] mergeBooleanArray(boolean[] left28bitsKeys, boolean[] right28bitsKeys) {
         int len = left28bitsKeys.length + right28bitsKeys.length;
-        boolean []arr = new boolean[len];
+        boolean[] arr = new boolean[len];
         System.arraycopy(left28bitsKeys, 0, arr, 0, left28bitsKeys.length);
         System.arraycopy(right28bitsKeys, 0, arr, left28bitsKeys.length, right28bitsKeys.length);
+        return arr;
+    }
+
+    public static boolean XOR(boolean a, boolean b) {
+        boolean ans;
+
+        if (a == false && b == false) {
+            ans = false;
+        } else if (a == false && b == true) {
+            ans = true;
+        } else if (a == true && b == false) {
+            ans = true;
+        } else {
+            ans = false;
+        }
+
+        return ans;
+    }
+
+    static boolean[] getBoolean(boolean booleanValue, int len) {
+        boolean[] arr = new boolean[len];
+        for(int i=0; i<arr.length; i++){
+            arr[i] = booleanValue;
+        }
         return arr;
     }
 }
