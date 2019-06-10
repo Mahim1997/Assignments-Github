@@ -8,7 +8,7 @@
 #define DEBUG 0
 #define DRAW_GRID 1
 
-#define RADIUS_COMMON 5
+#define RADIUS_COMMON 8
 #define DEGREE_ANGLE_INIT 0.3
 
 #define pi (2*acos(0.0))
@@ -115,6 +115,7 @@ void initialiseParamters()
 
     radiusCylinder = RADIUS_COMMON;
     heightCylinder = 40;
+    translation_unit_cylinder = translation_unit_sphere;
 }
 
 
@@ -654,22 +655,41 @@ void display()
     drawAxes();
 
     drawGrid();
-    //glColor3f(1,0,0);
-    //drawSquare(10);
 
-    //drawSS();
-
-    //drawCircle(30,24);
-
-    //drawCone(20,50,24);
-
-    //drawSphere(30,24,20);
 ///CODE FOR DRAWING OBJECT BEGIN
-    drawSpherePartForObject();
+//    drawSpherePartForObject();
 //    drawCylinderPartOfObject();
 ///CODE FOR DRAWING OBJECT END
 
-//    int numSegmentsCylinder = 50;
+//    drawSphere_UpperPart(radiusSphere, 50, 30);
+
+    glPushMatrix();
+    {
+        ///Translation
+        glTranslatef(0, 0, translation_unit_sphere - radiusSphere + 1);
+        drawSphere_UpperPart(radiusSphere, 50, 30);
+    }
+    glPopMatrix();
+
+    int numSegmentsCylinder = 50;
+//    glPushMatrix();
+//    {
+//        ///Translation
+//        glTranslatef(0, 0, -translation_unit_cylinder);
+////        drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
+//    }
+//    glPopMatrix();
+    for(int angle = 0; angle < 360; angle+=90)
+    {
+        glPushMatrix();
+        {
+//            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+            glRotatef(angle, 0, 1, 0);
+            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
+        }
+        glPopMatrix();
+    }
 //    drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
     ///Code for drawing the object ends
 
@@ -715,6 +735,23 @@ void init()
     //far distance
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+///------------------------------------------------------------------------------
+
+
+
+
 int main(int argc, char **argv)
 {
 
@@ -728,7 +765,7 @@ int main(int argc, char **argv)
     glutInitWindowPosition(0, 0);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 
-    glutCreateWindow("Assignment 1 (1505022)");
+    glutCreateWindow("Assignment 1 Part 1 (1505022)");
 
     init();
 
@@ -745,3 +782,12 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+
+
+    //glColor3f(1,0,0);
+    //drawSquare(10);
+    //drawSS();
+    //drawCircle(30,24);
+    //drawCone(20,50,24);
+    //drawSphere(30,24,20);
