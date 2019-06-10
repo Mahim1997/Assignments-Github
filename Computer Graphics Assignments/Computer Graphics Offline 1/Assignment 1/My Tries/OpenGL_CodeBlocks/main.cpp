@@ -353,22 +353,46 @@ void keyboardListener(unsigned char key, int x,int y)
         ///Rotate 'r' vector with respect to 'u' vector ... 'l' is to be adjusted
         r = vectorAddition(vectorScale(r, cos(angle_rightLeftRad)),
                            vectorScale(l, sin(angle_rightLeftRad)));
-        /// Fix l vector
+
+        /// Fix l vector [mutual perpendicular]
         l = vectorCrossProduct(u, r);
         break;
     case '2':   ///Rotate RIGHT [Exactly as LEFT but with -ve of the angle]
         r = vectorAddition(vectorScale(r, cos(-angle_rightLeftRad)),
-                           vectorScale(l, sin(-2angle_rightLeftRad)));
-        /// Fix l vector
-        l = vectorCrossProduct(u, r);
+                           vectorScale(l, sin(-angle_rightLeftRad)));
+        /// Fix l vector[mutual perpendicular]
+        l = vectorCrossProduct(u, r);   /// l = u X r
         break;
     case '3':   ///LOOK UP
+        ///Rotate 'l' vector acw with respect to 'r' vector i.e. Mutual perpendicular is 'u' in this case
+        l = vectorAddition(vectorScale(l, cos(angle_upDownRad)),
+                           vectorScale(u, sin(angle_upDownRad)));
+
+        /// Fix 'u' [mutual perpendicular]
+        u = vectorCrossProduct(r, l);   /// u = r X l
+
         break;
-    case '4':   ///LOOK DOWN
+    case '4':   ///LOOK DOWN ... exactly same as Look Up but with -ve of the angle
+        l = vectorAddition(vectorScale(l, cos(-angle_upDownRad)),
+                           vectorScale(u, sin(-angle_upDownRad)));
+
+        /// Fix 'u' [mutual perpendicular]
+        u = vectorCrossProduct(r, l);   /// u = r X l
+
         break;
     case '5':   ///Tilt clockwise
+        ///Rotate 'u' with respect to 'l' BUT at -ve angle [cw rotation]
+        u = vectorAddition(vectorScale(u, cos(-angle_upDownRad)),
+                           vectorScale(r, sin(-angle_upDownRad)));
+        ///Fix 'r' [mutual perpendicular]
+        r = vectorCrossProduct(l, u);
         break;
     case '6':   ///Tilt anti-clockwise
+        ///Rotate 'u' with respect to 'l' BUT at +ve angle [acw rotation]
+        u = vectorAddition(vectorScale(u, cos(angle_upDownRad)),
+                           vectorScale(r, sin(angle_upDownRad)));
+        ///Fix 'r' [mutual perpendicular]
+        r = vectorCrossProduct(l, u);
         break;
     default:
         break;
