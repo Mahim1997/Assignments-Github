@@ -496,11 +496,12 @@ void drawSphere_UpperPart(double radius,int slices,int stacks)
         }
     }
 }
-void drawCylinder(double radius, double height, int segments)
+void drawCylinder_oneFourth(double radius, double height, int segments)
 {
     struct point points1[100], points2[100];
     glColor3f(0, 1.0, 0); ///Green color (cylinder)
     int i;
+    double shade; ///To make the other parts become background color
     ///generate points top circle
     for(i=0; i<=segments; i++)
     {
@@ -515,7 +516,7 @@ void drawCylinder(double radius, double height, int segments)
     }
 
     ///draw segments using generated points
-    for(i=0; i<segments; i++)
+    for(i=0; i<segments/4; i++)
     {
         glBegin(GL_LINES);
         {
@@ -533,7 +534,7 @@ void drawCylinder(double radius, double height, int segments)
 
     ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
 
-    for(i=0; i<segments; i++)
+    for(i=0; i<segments/4; i++)
     {
         glBegin(GL_POLYGON);    ///To draw a rectangle
         {
@@ -570,8 +571,8 @@ void placeCylinderPositions()
         glPushMatrix();
         {
             glRotatef(angles_degrees[i], 0, 0, 1);
-            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawCylinder(radiusCylinder, heightCylinder, 30);
+            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+            drawCylinder_oneFourth(radiusCylinder, 0, 30);
         }
         glPopMatrix();
     }
@@ -591,8 +592,22 @@ void drawSpherePartForObject()
 
 void drawCylinderPartOfObject()
 {
-    placeCylinderPositions();   ///One-fourth of a cylinder
+    placeCylinderPositions();   ///First [z-axis e ase]
 
+    ///Apply Transformations [rotate wrt y-axis]
+    glPushMatrix();
+    {
+        glRotatef(90, 0, 1, 0);
+        placeCylinderPositions();   ///Transformations applied
+    }
+    glPopMatrix();
+    ///Apply Transformations [rotate wrt x-axis]
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        placeCylinderPositions();   ///Transformations applied
+    }
+    glPopMatrix();
 }
 
 ///----------------------------- My Functions End ---------------------------------------
@@ -649,10 +664,13 @@ void display()
     //drawCone(20,50,24);
 
     //drawSphere(30,24,20);
+///CODE FOR DRAWING OBJECT BEGIN
+//    drawSpherePartForObject();
+    drawCylinderPartOfObject();
+///CODE FOR DRAWING OBJECT END
 
-    //drawSpherePartForObject();
-    int numSegmentsCylinder = 50;
-    drawCylinder(radiusCylinder, 0, numSegmentsCylinder);
+//    int numSegmentsCylinder = 50;
+//    drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
     ///Code for drawing the object ends
 
 
