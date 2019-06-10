@@ -8,7 +8,7 @@
 #define DEBUG 0
 #define DRAW_GRID 1
 
-#define RADIUS_COMMON 20
+#define RADIUS_COMMON 5
 #define DEGREE_ANGLE_INIT 0.3
 
 #define pi (2*acos(0.0))
@@ -665,8 +665,8 @@ void display()
 
     //drawSphere(30,24,20);
 ///CODE FOR DRAWING OBJECT BEGIN
-//    drawSpherePartForObject();
-    drawCylinderPartOfObject();
+    drawSpherePartForObject();
+//    drawCylinderPartOfObject();
 ///CODE FOR DRAWING OBJECT END
 
 //    int numSegmentsCylinder = 50;
