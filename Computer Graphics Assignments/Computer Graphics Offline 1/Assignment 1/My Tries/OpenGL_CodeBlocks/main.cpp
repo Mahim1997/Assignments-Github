@@ -348,12 +348,10 @@ void keyboardListener(unsigned char key, int x,int y)
 {
     switch(key)
     {
-
     case '1':   ///Rotate LEFT
         ///Rotate 'r' vector with respect to 'u' vector ... 'l' is to be adjusted
         r = vectorAddition(vectorScale(r, cos(angle_rightLeftRad)),
                            vectorScale(l, sin(angle_rightLeftRad)));
-
         /// Fix l vector [mutual perpendicular]
         l = vectorCrossProduct(u, r);
         break;
@@ -367,7 +365,6 @@ void keyboardListener(unsigned char key, int x,int y)
         ///Rotate 'l' vector acw with respect to 'r' vector i.e. Mutual perpendicular is 'u' in this case
         l = vectorAddition(vectorScale(l, cos(angle_upDownRad)),
                            vectorScale(u, sin(angle_upDownRad)));
-
         /// Fix 'u' [mutual perpendicular]
         u = vectorCrossProduct(r, l);   /// u = r X l
 
@@ -375,10 +372,8 @@ void keyboardListener(unsigned char key, int x,int y)
     case '4':   ///LOOK DOWN ... exactly same as Look Up but with -ve of the angle
         l = vectorAddition(vectorScale(l, cos(-angle_upDownRad)),
                            vectorScale(u, sin(-angle_upDownRad)));
-
         /// Fix 'u' [mutual perpendicular]
         u = vectorCrossProduct(r, l);   /// u = r X l
-
         break;
     case '5':   ///Tilt clockwise
         ///Rotate 'u' with respect to 'l' BUT at -ve angle [cw rotation]
@@ -618,19 +613,14 @@ void test_draw_cylinder()
     }
 #endif // DEBUG
 
-    for(i=0; i<segments - 1; i++)
+    for(i=0; i<segments; i++)
     {
-        glBegin(GL_TRIANGLES);    ///To draw a rectangle
+        glBegin(GL_POLYGON);    ///To draw a rectangle
         {
-            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
-            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i+1].z);
-            glVertex3f(points2[i+1].x, points2[i+1].y, points2[i+1].z);
-
-
-            glVertex3f(points2[i+1].x, points2[i+1].y, points2[i+1].z);
-            glVertex3f(points2[i].x, points2[i].y, points2[i].z);
-            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
-
+            glVertex3f(points1[i%segments].x, points1[i%segments].y, points1[i%segments].z);
+            glVertex3f(points1[(i+1)%segments].x, points1[(i+1)%segments].y, points1[(i+1)%segments].z);
+            glVertex3f(points2[(i+1)%segments].x, points2[(i+1)%segments].y, points2[(i+1)%segments].z);
+            glVertex3f(points2[i%segments].x, points2[i%segments].y, points2[i%segments].z);
         }
         glEnd();
     }
