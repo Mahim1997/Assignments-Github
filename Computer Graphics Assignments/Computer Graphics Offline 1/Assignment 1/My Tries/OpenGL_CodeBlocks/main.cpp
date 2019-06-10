@@ -9,10 +9,10 @@
 #define DRAW_GRID 1
 
 #define RADIUS_COMMON 20
-#define DEGREE_ANGLE_INIT 1
+#define DEGREE_ANGLE_INIT 0.3
 
 #define pi (2*acos(0.0))
-#define DEGREE_TO_RAD(x) (x * pi / 180)
+#define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
 double cameraHeight;
@@ -26,14 +26,18 @@ double angle;
 double radiusSphere, translation_unit_sphere;  ///Sphere
 double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
 
-double upDownScaler = 3;
-double forwardBackwardScalar = 3;
-double rightLeftScalar = 5;
+double scalar_upDown = 3;
+double scalar_forwardBackward = 3;
+double scalar_rightLeft = 5;
 
-double upDownAngleDegrees = DEGREE_ANGLE_INIT;
-double leftRightAngleDegrees = DEGREE_ANGLE_INIT;
-double tiltAngleDegrees = DEGREE_ANGLE_INIT;
+double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 
+struct point    ///For already existing functions ....
+{
+    double x,y,z;
+};
 //Struct vector for u, l, and r
 struct vect
 {
@@ -86,28 +90,9 @@ struct vect
     }
 };
 
-struct point
-{
-    double x,y,z;
-    void makePoint(double a, double b, double c)
-    {
-        x = a;
-        y = b;
-        z = c;
-    }
-    void makePointWithVector(struct vect ve)
-    {
-        x = ve.x; y = ve.y; z = ve.z;
-    }
-    void printPoint()
-    {
-        printf("Point: <x = %lf, y = %lf, z = %lf>\n", x, y, z);
-    }
-};
-
 ///Global Variables to maintain
 struct vect u, l, r;
-struct point pos ;
+struct vect pos ;
 
 
 void initialiseParamters()
@@ -115,13 +100,13 @@ void initialiseParamters()
     u.makeVectorWithName(0, 0, 1, "u");
     r.makeVectorWithName(-1/sqrt(2), 1/sqrt(2), 0, "r");
     l.makeVectorWithName(-1/sqrt(2), -1/sqrt(2), 0, "l");
-    pos.makePoint(100, 100, 50);
+    pos.makeVectorWithName(100, 100, 50, "pos");
 
     printf("-------------------------- Initializing parameters begin------------------------\n");
     u.printVectorWithName();
     l.printVectorWithName();
     r.printVectorWithName();
-    pos.printPoint();
+    pos.printVectorWithName();
     printf("-------------------------- Initializing parameters end------------------------\n");
 
     ///Initializing other parameters
@@ -132,28 +117,41 @@ void initialiseParamters()
     heightCylinder = 40;
 }
 
-struct vect crossProduct(struct vect a, struct vect b)
+
+struct vect vectorCrossProduct(struct vect a, struct vect b)
 {
     struct vect ans;
     ans.x = (a.y * b.z) - (b.y * a.z);
-    ans.y = -((a.x * b.z) - (b.x * a.x));
+    ans.y = -((a.x * b.z) - (b.x * a.z));
     ans.z = (a.x * b.y) - (b.x * a.y);
     return ans;
 };
-struct vect multiplyVector(struct vect a, double f)
-{
-    struct vect ans;
-    ans.x = a.x * f;
-    ans.y = a.y * f;
-    ans.z = a.z * f;
-    return ans;
-};
-struct vect addVectors(struct vect a, struct vect b)
+struct vect vectorAddition(struct vect a, struct vect b)
 {
     struct vect ans;
     ans.x = a.x + b.x;
     ans.y = a.y + b.y;
     ans.z = a.z + b.z;
+    return ans;
+};
+struct vect vectorSubtraction(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = a.x - b.x;
+    ans.y = a.y - b.y;
+    ans.z = a.z - b.z;
+    return ans;
+};
+double vectorDotProduct(struct vect a, struct vect b)
+{
+    return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z));
+};
+struct vect vectorScale(struct vect a, double f)
+{
+    struct vect ans;
+    ans.x = a.x * f;
+    ans.y = a.y * f;
+    ans.z = a.z * f;
     return ans;
 };
 ///------------------------------------- My Variables End ---------------------------------------
@@ -352,10 +350,17 @@ void keyboardListener(unsigned char key, int x,int y)
     {
 
     case '1':   ///Rotate LEFT
-        //Then we scale l by cosA and scale u by sinA and take their sum
-
+        ///Rotate 'r' vector with respect to 'u' vector ... 'l' is to be adjusted
+        r = vectorAddition(vectorScale(r, cos(angle_rightLeftRad)),
+                           vectorScale(l, sin(angle_rightLeftRad)));
+        /// Fix l vector
+        l = vectorCrossProduct(u, r);
         break;
-    case '2':   ///Rotate RIGHT
+    case '2':   ///Rotate RIGHT [Exactly as LEFT but with -ve of the angle]
+        r = vectorAddition(vectorScale(r, cos(-angle_rightLeftRad)),
+                           vectorScale(l, sin(-2angle_rightLeftRad)));
+        /// Fix l vector
+        l = vectorCrossProduct(u, r);
         break;
     case '3':   ///LOOK UP
         break;
@@ -376,36 +381,36 @@ void specialKeyListener(int key, int x,int y)
     switch(key)
     {
     case GLUT_KEY_UP:		///Move with respect to LOOK
-        pos.x = pos.x + forwardBackwardScalar*l.x;
-        pos.y = pos.y + forwardBackwardScalar*l.y;
-        pos.z = pos.z + forwardBackwardScalar*l.z;
+        pos.x = pos.x + scalar_forwardBackward*l.x;
+        pos.y = pos.y + scalar_forwardBackward*l.y;
+        pos.z = pos.z + scalar_forwardBackward*l.z;
         break;
     case GLUT_KEY_DOWN:		// up arrow key
-        pos.x = pos.x - forwardBackwardScalar*l.x;
-        pos.y = pos.y - forwardBackwardScalar*l.y;
-        pos.z = pos.z - forwardBackwardScalar*l.z;
+        pos.x = pos.x - scalar_forwardBackward*l.x;
+        pos.y = pos.y - scalar_forwardBackward*l.y;
+        pos.z = pos.z - scalar_forwardBackward*l.z;
         break;
 
     case GLUT_KEY_RIGHT:    ///Move with respect to RIGHT
-        pos.x = pos.x + rightLeftScalar*r.x;
-        pos.y = pos.y + rightLeftScalar*r.y;
-        pos.z = pos.z + rightLeftScalar*r.z;
+        pos.x = pos.x + scalar_rightLeft*r.x;
+        pos.y = pos.y + scalar_rightLeft*r.y;
+        pos.z = pos.z + scalar_rightLeft*r.z;
         break;
     case GLUT_KEY_LEFT:
-        pos.x = pos.x - rightLeftScalar*r.x;
-        pos.y = pos.y - rightLeftScalar*r.y;
-        pos.z = pos.z - rightLeftScalar*r.z;
+        pos.x = pos.x - scalar_rightLeft*r.x;
+        pos.y = pos.y - scalar_rightLeft*r.y;
+        pos.z = pos.z - scalar_rightLeft*r.z;
         break;
 
     case GLUT_KEY_PAGE_UP:  ///Move with respect to UP
-        pos.x = pos.x + upDownScaler*u.x;
-        pos.y = pos.y + upDownScaler*u.y;
-        pos.z = pos.z + upDownScaler*u.z;
+        pos.x = pos.x + scalar_upDown*u.x;
+        pos.y = pos.y + scalar_upDown*u.y;
+        pos.z = pos.z + scalar_upDown*u.z;
         break;
     case GLUT_KEY_PAGE_DOWN:
-        pos.x = pos.x - upDownScaler*u.x;
-        pos.y = pos.y - upDownScaler*u.y;
-        pos.z = pos.z - upDownScaler*u.z;
+        pos.x = pos.x - scalar_upDown*u.x;
+        pos.y = pos.y - scalar_upDown*u.y;
+        pos.z = pos.z - scalar_upDown*u.z;
         break;
 
     case GLUT_KEY_INSERT:
