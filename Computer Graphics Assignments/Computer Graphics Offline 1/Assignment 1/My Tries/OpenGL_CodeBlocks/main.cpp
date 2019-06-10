@@ -405,36 +405,22 @@ void specialKeyListener(int key, int x,int y)
     switch(key)
     {
     case GLUT_KEY_UP:		///Move with respect to LOOK
-        pos.x = pos.x + scalar_forwardBackward*l.x;
-        pos.y = pos.y + scalar_forwardBackward*l.y;
-        pos.z = pos.z + scalar_forwardBackward*l.z;
+        pos = vectorAddition(pos, vectorScale(l, scalar_forwardBackward));
         break;
     case GLUT_KEY_DOWN:		// up arrow key
-        pos.x = pos.x - scalar_forwardBackward*l.x;
-        pos.y = pos.y - scalar_forwardBackward*l.y;
-        pos.z = pos.z - scalar_forwardBackward*l.z;
+        pos = vectorSubtraction(pos, vectorScale(l, scalar_forwardBackward));
         break;
-
     case GLUT_KEY_RIGHT:    ///Move with respect to RIGHT
-        pos.x = pos.x + scalar_rightLeft*r.x;
-        pos.y = pos.y + scalar_rightLeft*r.y;
-        pos.z = pos.z + scalar_rightLeft*r.z;
+        pos = vectorAddition(pos, vectorScale(r, scalar_rightLeft));
         break;
     case GLUT_KEY_LEFT:
-        pos.x = pos.x - scalar_rightLeft*r.x;
-        pos.y = pos.y - scalar_rightLeft*r.y;
-        pos.z = pos.z - scalar_rightLeft*r.z;
+        pos = vectorSubtraction(pos, vectorScale(r, scalar_rightLeft));
         break;
-
     case GLUT_KEY_PAGE_UP:  ///Move with respect to UP
-        pos.x = pos.x + scalar_upDown*u.x;
-        pos.y = pos.y + scalar_upDown*u.y;
-        pos.z = pos.z + scalar_upDown*u.z;
+        pos = vectorAddition(pos, vectorScale(u, scalar_upDown));
         break;
     case GLUT_KEY_PAGE_DOWN:
-        pos.x = pos.x - scalar_upDown*u.x;
-        pos.y = pos.y - scalar_upDown*u.y;
-        pos.z = pos.z - scalar_upDown*u.z;
+        pos = vectorSubtraction(pos, vectorScale(u, scalar_upDown));
         break;
 
     case GLUT_KEY_INSERT:
