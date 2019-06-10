@@ -17,24 +17,14 @@ int drawgrid;
 int drawaxes;
 double angle;
 
-struct point
-{
-    double x,y,z;
-    void makePoint(double a, double b, double c)
-    {
-        x = a;
-        y = b;
-        z = c;
-    }
-    void printPoint()
-    {
-        printf("Point: <x = %lf, y = %lf, z = %lf>\n", x, y, z);
-    }
-};
 ///----------------------------- My Variables Begin ---------------------------------------
 
 double radiusSphere, translation_unit_sphere;  ///Sphere
 double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
+
+double upDownScaler = 3;
+double forwardBackwardScalar = 3;
+double rightLeftScalar = 5;
 
 //Struct vector for u, l, and r
 struct vect
@@ -81,7 +71,32 @@ struct vect
             name[i] = n[i];
         }
     }
+    struct vect multiplier(double m)
+    {
+        vect v(m*x, m*y, m*z);
+        return v;
+    }
 };
+
+struct point
+{
+    double x,y,z;
+    void makePoint(double a, double b, double c)
+    {
+        x = a;
+        y = b;
+        z = c;
+    }
+    void makePointWithVector(struct vect ve)
+    {
+        x = ve.x; y = ve.y; z = ve.z;
+    }
+    void printPoint()
+    {
+        printf("Point: <x = %lf, y = %lf, z = %lf>\n", x, y, z);
+    }
+};
+
 ///Global Variables to maintain
 struct vect u, l, r;
 struct point pos ;
@@ -318,23 +333,37 @@ void specialKeyListener(int key, int x,int y)
 {
     switch(key)
     {
-    case GLUT_KEY_DOWN:		//down arrow key
-        cameraHeight -= 3.0;
+    case GLUT_KEY_UP:		///Move with respect to LOOK
+        pos.x = pos.x + forwardBackwardScalar*l.x;
+        pos.y = pos.y + forwardBackwardScalar*l.y;
+        pos.z = pos.z + forwardBackwardScalar*l.z;
         break;
-    case GLUT_KEY_UP:		// up arrow key
-        cameraHeight += 3.0;
+    case GLUT_KEY_DOWN:		// up arrow key
+        pos.x = pos.x - forwardBackwardScalar*l.x;
+        pos.y = pos.y - forwardBackwardScalar*l.y;
+        pos.z = pos.z - forwardBackwardScalar*l.z;
         break;
 
-    case GLUT_KEY_RIGHT:
-        cameraAngle += 0.03;
+    case GLUT_KEY_RIGHT:    ///Move with respect to RIGHT
+        pos.x = pos.x + rightLeftScalar*r.x;
+        pos.y = pos.y + rightLeftScalar*r.y;
+        pos.z = pos.z + rightLeftScalar*r.z;
         break;
     case GLUT_KEY_LEFT:
-        cameraAngle -= 0.03;
+        pos.x = pos.x - rightLeftScalar*r.x;
+        pos.y = pos.y - rightLeftScalar*r.y;
+        pos.z = pos.z - rightLeftScalar*r.z;
         break;
 
-    case GLUT_KEY_PAGE_UP:
+    case GLUT_KEY_PAGE_UP:  ///Move with respect to UP
+        pos.x = pos.x + upDownScaler*u.x;
+        pos.y = pos.y + upDownScaler*u.y;
+        pos.z = pos.z + upDownScaler*u.z;
         break;
     case GLUT_KEY_PAGE_DOWN:
+        pos.x = pos.x - upDownScaler*u.x;
+        pos.y = pos.y - upDownScaler*u.y;
+        pos.z = pos.z - upDownScaler*u.z;
         break;
 
     case GLUT_KEY_INSERT:
@@ -521,16 +550,19 @@ void test_draw_cylinder()
 #if DEBUG == 1
     printf("PRINTING points 1st one ... \n");
 
-    for(i=0; i<segments; i++){
+    for(i=0; i<segments; i++)
+    {
         points1[i].printPoint();
     }
     printf("\n\nNow 2nd one \n");
-    for(i=0; i<segments; i++){
+    for(i=0; i<segments; i++)
+    {
         points2[i].printPoint();
     }
 #endif // DEBUG
 
-    for(i=0; i<segments - 1; i++){
+    for(i=0; i<segments - 1; i++)
+    {
         glBegin(GL_TRIANGLES);    ///To draw a rectangle
         {
             glVertex3f(points1[i].x, points1[i].y, points1[i].z);
