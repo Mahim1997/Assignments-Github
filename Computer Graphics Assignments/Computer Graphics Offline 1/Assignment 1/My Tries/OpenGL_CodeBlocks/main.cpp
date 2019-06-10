@@ -5,11 +5,15 @@
 #include <windows.h>
 #include <glut.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define DRAW_GRID 1
+
 #define RADIUS_COMMON 20
+#define DEGREE_ANGLE_INIT 1
 
 #define pi (2*acos(0.0))
+#define DEGREE_TO_RAD(x) (x * pi / 180)
+#define RAD_TO_DEGREE(x) (x * 180 / pi)
 
 double cameraHeight;
 double cameraAngle;
@@ -25,6 +29,10 @@ double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
 double upDownScaler = 3;
 double forwardBackwardScalar = 3;
 double rightLeftScalar = 5;
+
+double upDownAngleDegrees = DEGREE_ANGLE_INIT;
+double leftRightAngleDegrees = DEGREE_ANGLE_INIT;
+double tiltAngleDegrees = DEGREE_ANGLE_INIT;
 
 //Struct vector for u, l, and r
 struct vect
@@ -124,6 +132,30 @@ void initialiseParamters()
     heightCylinder = 40;
 }
 
+struct vect crossProduct(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = (a.y * b.z) - (b.y * a.z);
+    ans.y = -((a.x * b.z) - (b.x * a.x));
+    ans.z = (a.x * b.y) - (b.x * a.y);
+    return ans;
+};
+struct vect multiplyVector(struct vect a, double f)
+{
+    struct vect ans;
+    ans.x = a.x * f;
+    ans.y = a.y * f;
+    ans.z = a.z * f;
+    return ans;
+};
+struct vect addVectors(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = a.x + b.x;
+    ans.y = a.y + b.y;
+    ans.z = a.z + b.z;
+    return ans;
+};
 ///------------------------------------- My Variables End ---------------------------------------
 
 void drawAxes()
@@ -319,10 +351,20 @@ void keyboardListener(unsigned char key, int x,int y)
     switch(key)
     {
 
-    case '1':
-        drawgrid=1-drawgrid;
-        break;
+    case '1':   ///Rotate LEFT
+        //Then we scale l by cosA and scale u by sinA and take their sum
 
+        break;
+    case '2':   ///Rotate RIGHT
+        break;
+    case '3':   ///LOOK UP
+        break;
+    case '4':   ///LOOK DOWN
+        break;
+    case '5':   ///Tilt clockwise
+        break;
+    case '6':   ///Tilt anti-clockwise
+        break;
     default:
         break;
     }
