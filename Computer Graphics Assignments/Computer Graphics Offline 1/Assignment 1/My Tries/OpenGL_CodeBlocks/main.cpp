@@ -5,7 +5,9 @@
 #include <windows.h>
 #include <glut.h>
 
+#define DEBUG 1
 #define DRAW_GRID 1
+#define RADIUS_COMMON 20
 
 #define pi (2*acos(0.0))
 
@@ -31,7 +33,8 @@ struct point
 };
 ///----------------------------- My Variables Begin ---------------------------------------
 
-double radiusSphere, translation_unit;
+double radiusSphere, translation_unit_sphere;  ///Sphere
+double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
 
 //Struct vector for u, l, and r
 struct vect
@@ -98,8 +101,12 @@ void initialiseParamters()
     pos.printPoint();
     printf("-------------------------- Initializing parameters end------------------------\n");
 
-    radiusSphere = 20;
-    translation_unit = 20;
+    ///Initializing other parameters
+    radiusSphere = RADIUS_COMMON;
+    translation_unit_sphere = 20;
+
+    radiusCylinder = RADIUS_COMMON;
+    heightCylinder = 40;
 }
 
 ///------------------------------------- My Variables End ---------------------------------------
@@ -372,27 +379,7 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
 
 ///----------------------------- My Functions Begin ---------------------------------------
 
-///Function to place sphere positions
-void place_spheres()
-{
-    double tln = 20;
-    double radius = 20;
-    int angleOfRotation=0;
-    for(int i = 0; i < 4; i++)
-    {
-        glPushMatrix();
-        {
-            glRotatef(angleOfRotation,0,0,1);
-            glTranslatef(tln,tln,tln);
-            drawSphere(radius,50,30);
-        }
-        glPopMatrix();
-        angleOfRotation += 90;
-    }
-}
-
-///Custom function to draw sphere ...
-void drawSphere_Upper(double radius,int slices,int stacks)
+void drawSphere_UpperPart(double radius,int slices,int stacks)
 {
     struct point points[100][100];
     int i,j;
@@ -418,69 +405,147 @@ void drawSphere_Upper(double radius,int slices,int stacks)
         {
             glBegin(GL_QUADS);
             {
-                //upper hemisphere
+                //upper hemisphere ONLY
                 glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
                 glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
                 glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
                 glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-
             }
             glEnd();
         }
     }
 }
-void drawSphere_Lower(double radius,int slices,int stacks)
+
+void drawCylinder(double rad, double height, int segments)
 {
-    struct point points[100][100];
-    int i,j;
-    double h,r;
-    //generate points
-    for(i=0; i<=stacks; i++)
-    {
-        h=radius*sin(((double)i/(double)stacks)*(pi/2));
-        r=radius*cos(((double)i/(double)stacks)*(pi/2));
-        for(j=0; j<=slices; j++)
-        {
-            points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-            points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-            points[i][j].z=h;
-        }
-    }
-    //draw quads using generated points
-    for(i=0; i<stacks; i++)
-    {
-        glColor3f(1, 0, 0); ///To change color to RED = 1, GREEEN = 0, BLUE = 0
-        //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-        for(j=0; j<slices; j++)
-        {
-            glBegin(GL_QUADS);
-            {
-                //lower hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-                glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-                glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
 
-            }
-            glEnd();
-        }
-    }
 }
 
-void setSpheresPositions()
+void placeSpheresPositions()  ///Function to place sphere positions
+{
+    int angles_degrees[] = {0, 90, 180, 270};
+    for(int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        {
+            glRotatef(angles_degrees[i], 0, 0, 1);
+            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
+            drawSphere_UpperPart(radiusSphere, 50, 30);
+        }
+        glPopMatrix();
+    }
+}
+void placeCylinderPositions()
+{
+    int angles_degrees[] = {0, 90, 180, 270};
+    for(int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        {
+            glRotatef(angles_degrees[i], 0, 0, 1);
+            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
+            drawCylinder(radiusCylinder, heightCylinder, 30);
+        }
+        glPopMatrix();
+    }
+}
+///---------------------------- Full Object Drawing Functions ------------------------------
+
+void drawSpherePartForObject()
 {
     glPushMatrix();
     {
-        glRotatef(0, 0, 0, 1);
-        glTranslatef(translation_unit, translation_unit, translation_unit);
-        drawSphere_Upper(radiusSphere, 50, 30);
+        placeSpheresPositions();    /// Four (1/8th of a sphere) s
+        glRotatef(180, 0, 1, 0);       /// Rotate at 180 degrees
+        placeSpheresPositions();    /// Four (1/8th of a sphere) s
     }
     glPopMatrix();
 }
 
+void drawCylinderPartOfObject()
+{
+    placeCylinderPositions();   ///One-fourth of a cylinder
+
+}
+
 ///----------------------------- My Functions End ---------------------------------------
 
+void test_draw_cylinder()
+{
+    int i, segments = 30, radius = radiusCylinder;
+    int height = 0;
 
+    struct point points1[100], points2[100];
+    glColor3f(0,1.0,0); ///Green color (cylinder)
+
+    ///generate points top circle
+    for(i=0; i<=segments; i++)
+    {
+        points1[i].x = radius*cos(((double)i/(double)segments)*2*pi);
+        points1[i].y = radius*sin(((double)i/(double)segments)*2*pi);
+        points1[i].z = height;
+    }
+
+    ///draw segments using generated points
+    for(i=0; i<segments; i++)
+    {
+        glBegin(GL_LINES);
+        {
+            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
+            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i].z);
+        }
+        glEnd();
+    }
+
+    ///generate points bottom circle
+    for(i=0; i<=segments; i++)
+    {
+        points2[i].x=radius*cos(((double)i/(double)segments)*2*pi);
+        points2[i].y=radius*sin(((double)i/(double)segments)*2*pi);
+        points2[i].z = height + heightCylinder;
+    }
+
+    ///draw segments using generated points
+    for(i=0; i<segments; i++)
+    {
+        glBegin(GL_LINES);
+        {
+            glVertex3f(points2[i].x,points2[i].y, points2[i].z);
+            glVertex3f(points2[i+1].x,points2[i+1].y, points2[i].z);
+        }
+        glEnd();
+    }
+
+    ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
+
+#if DEBUG == 1
+    printf("PRINTING points 1st one ... \n");
+
+    for(i=0; i<segments; i++){
+        points1[i].printPoint();
+    }
+    printf("\n\nNow 2nd one \n");
+    for(i=0; i<segments; i++){
+        points2[i].printPoint();
+    }
+#endif // DEBUG
+
+    for(i=0; i<segments - 1; i++){
+        glBegin(GL_TRIANGLES);    ///To draw a rectangle
+        {
+            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
+            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i+1].z);
+            glVertex3f(points2[i+1].x, points2[i+1].y, points2[i+1].z);
+
+
+            glVertex3f(points2[i+1].x, points2[i+1].y, points2[i+1].z);
+            glVertex3f(points2[i].x, points2[i].y, points2[i].z);
+            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
+
+        }
+        glEnd();
+    }
+}
 
 void display()
 {
@@ -522,10 +587,7 @@ void display()
 
     drawAxes();
 
-#if DRAW_GRID == 1
     drawGrid();
-#endif // DRAW_GRID
-
     //glColor3f(1,0,0);
     //drawSquare(10);
 
@@ -537,15 +599,8 @@ void display()
 
     //drawSphere(30,24,20);
 
-    ///Code for drawing the object begins
-    glPushMatrix();
-    {
-        setSpheresPositions();
-        glRotatef(180,0,1,0);
-        setSpheresPositions();
-    }
-    glPopMatrix();
-
+    //drawSpherePartForObject();
+    test_draw_cylinder();
 
     ///Code for drawing the object ends
 
