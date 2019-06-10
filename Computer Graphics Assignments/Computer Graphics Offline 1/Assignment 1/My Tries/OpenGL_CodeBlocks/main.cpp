@@ -496,11 +496,57 @@ void drawSphere_UpperPart(double radius,int slices,int stacks)
         }
     }
 }
-
-void drawCylinder(double rad, double height, int segments)
+void drawCylinder(double radius, double height, int segments)
 {
+    struct point points1[100], points2[100];
+    glColor3f(0, 1.0, 0); ///Green color (cylinder)
+    int i;
+    ///generate points top circle
+    for(i=0; i<=segments; i++)
+    {
+        ///For top circle
+        points1[i].x = radius*cos(((double)i/(double)segments)*2*pi);
+        points1[i].y = radius*sin(((double)i/(double)segments)*2*pi);
+        points1[i].z = height;
+        ///For bottom circle
+        points2[i].x = points1[i].x;
+        points2[i].y = points1[i].y;
+        points2[i].z = points1[i].z + heightCylinder;
+    }
 
+    ///draw segments using generated points
+    for(i=0; i<segments; i++)
+    {
+        glBegin(GL_LINES);
+        {
+            ///Upper circle
+            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
+            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i].z);
+
+            ///Lower circle
+            glVertex3f(points2[i].x,points2[i].y, points2[i].z);
+            glVertex3f(points2[i+1].x,points2[i+1].y, points2[i].z);
+
+        }
+        glEnd();
+    }
+
+    ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
+
+    for(i=0; i<segments; i++)
+    {
+        glBegin(GL_POLYGON);    ///To draw a rectangle
+        {
+            glVertex3f(points1[i%segments].x, points1[i%segments].y, points1[i%segments].z);
+            glVertex3f(points1[(i+1)%segments].x, points1[(i+1)%segments].y, points1[(i+1)%segments].z);
+            glVertex3f(points2[(i+1)%segments].x, points2[(i+1)%segments].y, points2[(i+1)%segments].z);
+            glVertex3f(points2[i%segments].x, points2[i%segments].y, points2[i%segments].z);
+        }
+        glEnd();
+    }
 }
+
+
 
 void placeSpheresPositions()  ///Function to place sphere positions
 {
@@ -551,80 +597,6 @@ void drawCylinderPartOfObject()
 
 ///----------------------------- My Functions End ---------------------------------------
 
-void test_draw_cylinder()
-{
-    int i, segments = 30, radius = radiusCylinder;
-    int height = 0;
-
-    struct point points1[100], points2[100];
-    glColor3f(0,1.0,0); ///Green color (cylinder)
-
-    ///generate points top circle
-    for(i=0; i<=segments; i++)
-    {
-        points1[i].x = radius*cos(((double)i/(double)segments)*2*pi);
-        points1[i].y = radius*sin(((double)i/(double)segments)*2*pi);
-        points1[i].z = height;
-    }
-
-    ///draw segments using generated points
-    for(i=0; i<segments; i++)
-    {
-        glBegin(GL_LINES);
-        {
-            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
-            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i].z);
-        }
-        glEnd();
-    }
-
-    ///generate points bottom circle
-    for(i=0; i<=segments; i++)
-    {
-        points2[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points2[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-        points2[i].z = height + heightCylinder;
-    }
-
-    ///draw segments using generated points
-    for(i=0; i<segments; i++)
-    {
-        glBegin(GL_LINES);
-        {
-            glVertex3f(points2[i].x,points2[i].y, points2[i].z);
-            glVertex3f(points2[i+1].x,points2[i+1].y, points2[i].z);
-        }
-        glEnd();
-    }
-
-    ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
-
-#if DEBUG == 1
-    printf("PRINTING points 1st one ... \n");
-
-    for(i=0; i<segments; i++)
-    {
-        points1[i].printPoint();
-    }
-    printf("\n\nNow 2nd one \n");
-    for(i=0; i<segments; i++)
-    {
-        points2[i].printPoint();
-    }
-#endif // DEBUG
-
-    for(i=0; i<segments; i++)
-    {
-        glBegin(GL_POLYGON);    ///To draw a rectangle
-        {
-            glVertex3f(points1[i%segments].x, points1[i%segments].y, points1[i%segments].z);
-            glVertex3f(points1[(i+1)%segments].x, points1[(i+1)%segments].y, points1[(i+1)%segments].z);
-            glVertex3f(points2[(i+1)%segments].x, points2[(i+1)%segments].y, points2[(i+1)%segments].z);
-            glVertex3f(points2[i%segments].x, points2[i%segments].y, points2[i%segments].z);
-        }
-        glEnd();
-    }
-}
 
 void display()
 {
@@ -679,8 +651,8 @@ void display()
     //drawSphere(30,24,20);
 
     //drawSpherePartForObject();
-    test_draw_cylinder();
-
+    int numSegmentsCylinder = 50;
+    drawCylinder(radiusCylinder, 0, numSegmentsCylinder);
     ///Code for drawing the object ends
 
 
