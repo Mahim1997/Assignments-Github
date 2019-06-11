@@ -111,13 +111,13 @@ void initialiseParamters()
     printf("-------------------------- Initializing parameters end------------------------\n");
 
     ///Initializing other parameters
-    radiusObject = RADIUS_SHAPE;
+    radiusObject = 20;
     translation_unit = 20;
     heightCylinder = 40;
 
 //    side_cube = heightCylinder - radiusObject - radiusObject; ///exact initialization
     side_cube = 30;
-    threshold_movement = 40;
+    threshold_movement = 40;    ///full cube = full sphere diameter = 40
     reduction = 0.5;
 }
 
@@ -442,17 +442,26 @@ void specialKeyListener(int key, int x,int y)
         if(translation_unit < 0){
             translation_unit = 0;
         }
+//        radiusObject += reduction;
+
         radiusObject = threshold_movement - translation_unit;
         heightCylinder = translation_unit * 2;
-        side_cube = translation_unit;
+
+//        side_cube = translation_unit;
+//        heightCylinder = translation_unit * 2;
+        side_cube -= reduction;
         break;
     case GLUT_KEY_END:  ///Sphere to Cube
         translation_unit += reduction;
         if(translation_unit > threshold_movement){
             translation_unit = threshold_movement;
         }
+//        radiusObject += reduction;
+
         radiusObject = threshold_movement - translation_unit;
         heightCylinder = translation_unit * 2;
+
+        side_cube += reduction;
         side_cube = translation_unit;
         break;
 
@@ -659,17 +668,17 @@ void drawCylinderPartOfObject()
 void drawSquarePartOfObject(double a) ///a = side length
 {
     glColor3d(1, 1, 1); ///White color
-
+    double translation_cube = 39 ;
     glPushMatrix(); /// Bottom most
     {
-        glTranslatef(0, 0, -a);
+        glTranslatef(0, 0, -translation_cube);
         drawSquare(side_cube);
     }
     glPopMatrix();
 
     glPushMatrix(); ///Top most
     {
-        glTranslatef(0, 0, a);
+        glTranslatef(0, 0, translation_cube);
         drawSquare(side_cube);
     }
     glPopMatrix();
@@ -680,7 +689,7 @@ void drawSquarePartOfObject(double a) ///a = side length
         glRotatef(90, 0, 1, 0);
         glPushMatrix(); ///Left facing
         {
-            glTranslatef(0, 0, a);
+            glTranslatef(0, 0, translation_cube);
             drawSquare(side_cube);
         }
         glPopMatrix();
@@ -692,7 +701,7 @@ void drawSquarePartOfObject(double a) ///a = side length
         glRotatef(90, 0, 1, 0);
         glPushMatrix(); ///Right facing
         {
-            glTranslatef(0, 0, -a);
+            glTranslatef(0, 0, -translation_cube);
             drawSquare(side_cube);
         }
         glPopMatrix();
@@ -704,7 +713,7 @@ void drawSquarePartOfObject(double a) ///a = side length
         glRotatef(90, 1, 0, 0);
         glPushMatrix(); ///Left facing 2
         {
-            glTranslatef(0, 0, a);
+            glTranslatef(0, 0, translation_cube);
             drawSquare(side_cube);
         }
         glPopMatrix();
@@ -716,7 +725,7 @@ void drawSquarePartOfObject(double a) ///a = side length
         glRotatef(90, 1, 0, 0);
         glPushMatrix(); ///Right facing 2
         {
-            glTranslatef(0, 0, -a);
+            glTranslatef(0, 0, -translation_cube);
             drawSquare(side_cube);
         }
         glPopMatrix();
