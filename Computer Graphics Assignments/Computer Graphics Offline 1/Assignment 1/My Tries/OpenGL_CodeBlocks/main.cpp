@@ -461,7 +461,7 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
 
 ///----------------------------- My Functions Begin ---------------------------------------
 
-void drawSphere_UpperPart(double radius,int slices,int stacks)
+void drawOneEigthSphere(double radius,int slices,int stacks)
 {
     struct point points[100][100];
     int i,j;
@@ -548,94 +548,79 @@ void drawCylinder_oneFourth(double radius, double height, int segments)
     }
 }
 
-
-
-void placeSpheresPositions()  ///Function to place sphere positions
-{
-    int angles_degrees[] = {0, 90, 180, 270};
-    for(int i = 0; i < 4; i++)
-    {
-        glPushMatrix();
-        {
-            glRotatef(angles_degrees[i], 0, 0, 1);
-            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawSphere_UpperPart(radiusSphere, 50, 30);
-        }
-        glPopMatrix();
-    }
-}
-void placeCylinderPositions()
-{
-    int angles_degrees[] = {0, 90, 180, 270};
-    for(int i = 0; i < 4; i++)
-    {
-        glPushMatrix();
-        {
-            glRotatef(angles_degrees[i], 0, 0, 1);
-            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-            drawCylinder_oneFourth(radiusCylinder, 0, 30);
-        }
-        glPopMatrix();
-    }
-}
 ///---------------------------- Full Object Drawing Functions ------------------------------
 
-void drawSpherePartForObject()
-{
-    glPushMatrix();
-    {
-        placeSpheresPositions();    /// Four (1/8th of a sphere) s
-        glRotatef(180, 0, 1, 0);       /// Rotate at 180 degrees
-        placeSpheresPositions();    /// Four (1/8th of a sphere) s
-    }
-    glPopMatrix();
-}
+
 void drawSpherePartOfObject()
 {
-    ///Upper 4 hemispheres
+
     double angles[] = {90, 180, 270};
-    for(int i=0; i<4; i++){
+    for(int i=0; i<4; i++){         ///Top 4 (1/8th spheres)
         glPushMatrix();
         {
             if(i != 0){
                 glRotatef(angles[i - 1], 0, 0, 1);
             }
             glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawSphere_UpperPart(radiusSphere, 50, 30);
+            drawOneEigthSphere(radiusSphere, 50, 30);
         }
         glPopMatrix();
     }
+
+
     glPushMatrix();
     glRotatef(180, 0, 1, 0);
-    for(int i=0; i<4; i++){
+
+    for(int i=0; i<4; i++){         ///Bottom 4 (1/8th spheres)
         glPushMatrix();
         {
             if(i != 0){
                 glRotatef(angles[i - 1], 0, 0, 1);
             }
             glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawSphere_UpperPart(radiusSphere, 50, 30);
+            drawOneEigthSphere(radiusSphere, 50, 30);
         }
         glPopMatrix();
     }
     glPopMatrix();
 
 }
-void drawCylinderPartOfObject()
+
+void position4Cylinders()
 {
     int numSegmentsCylinder = 50;
 
-    for(int angle = 0; angle < 360; angle+=90)
+    for(int angle = 0; angle < 360; angle += 90)
     {
         glPushMatrix();
         {
 //            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-            glRotatef(angle, 0, 1, 0);
+            glRotatef(angle, 0, 0, 1);
             glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-//            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
+            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
         }
         glPopMatrix();
     }
+}
+
+void drawCylinderPartOfObject()
+{
+    position4Cylinders();   ///Vertical 4 [parallel to z-axis 4 cylinders]
+
+    glPushMatrix();
+    {
+        glRotatef(90, 0, 1, 0);
+        position4Cylinders();   ///With respect to y-axis 4 cylinders
+    }
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        position4Cylinders();   ///Wrt x-axis 4 cylinders
+    }
+    glPopMatrix();
+
 }
 
 ///----------------------------- My Functions End ---------------------------------------
