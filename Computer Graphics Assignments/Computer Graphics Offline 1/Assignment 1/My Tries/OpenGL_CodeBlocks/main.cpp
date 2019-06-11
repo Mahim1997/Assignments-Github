@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <glut.h>
 
+#define DEBUG_SPHERE 0
 #define DEBUG 0
 #define DRAW_GRID 1
 
@@ -111,7 +112,7 @@ void initialiseParamters()
     printf("-------------------------- Initializing parameters end------------------------\n");
 
     ///Initializing other parameters
-    radiusObject = 20;
+    radiusObject = RADIUS_SHAPE;
     translation_unit = 20;
     heightCylinder = 40;
 
@@ -160,12 +161,6 @@ struct vect vectorScale(struct vect a, double f)
 };
 void fixTranslations()
 {
-    if(translation_unit < 0){
-        translation_unit = 0;
-    }
-    if(translation_unit < 0){
-        translation_unit = 0;
-    }
     if(translation_unit < 0){
         translation_unit = 0;
     }
@@ -537,52 +532,76 @@ void drawOneEigthSphere(double radius,int slices,int stacks)
         }
     }
 }
+void drawCylinder2(double radius, double height, int segments)
+{
+    int stacks = 50, slices = 30;
+    struct point points[100][100];
+    int i,j;
+    double h,r;
+    //generate points
+    glColor3f(0, 1, 0);
+    h = 0;
+    for(i=0; i<=stacks; i++)
+    {
+        r = radius;
+        h = i*(heightCylinder/stacks);
+        //r=radius*cos(((double)i/(double)stacks)*(pi/2));
+        for(j=0; j<=slices; j++)
+        {
+            points[i][j].x=r*cos(((double)j/(double)slices)* (pi/2));   ///CIRCLES are drawn with 90 degrees
+            points[i][j].y=r*sin(((double)j/(double)slices)* (pi/2));   ///i.e. 1/4th of a hemisphere = 1/8th of a sphere
+            points[i][j].z=h;
+        }
+    }
+    //draw quads using generated points
+    for(i=0; i<stacks; i++)
+    {
+        glColor3f(0, 1, 0);
+        //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
+        for(j=0; j<slices; j++)
+        {
+            glBegin(GL_QUADS);
+            {
+                //upper hemisphere ONLY
+                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+            }
+            glEnd();
+        }
+    }
+}
 void drawCylinder_oneFourth(double radius, double height, int segments)
 {
-    struct point points1[100], points2[100];
+    drawCylinder2(radius, height, segments);
+    return ;
+
+    struct point upperCircle[100], lowerCircle[100];
     glColor3f(0, 1.0, 0); ///Green color (cylinder)
     int i;
-    double shade; ///To make the other parts become background color
     ///generate points top circle
     for(i=0; i<=segments; i++)
     {
         ///For top circle
-        points1[i].x = radius*cos(((double)i/(double)segments)*2*pi);
-        points1[i].y = radius*sin(((double)i/(double)segments)*2*pi);
-        points1[i].z = height;
+        upperCircle[i].x = radius*cos(((double)i/(double)segments) * (pi/2));
+        upperCircle[i].y = radius*sin(((double)i/(double)segments)* (pi/2));
+        upperCircle[i].z = height + heightCylinder;;
         ///For bottom circle
-        points2[i].x = points1[i].x;
-        points2[i].y = points1[i].y;
-        points2[i].z = points1[i].z + heightCylinder;
+        lowerCircle[i].x = upperCircle[i].x;
+        lowerCircle[i].y = upperCircle[i].y;
+        lowerCircle[i].z = height;
     }
-
-    ///draw segments using generated points
-    for(i=0; i<segments/4; i++)
-    {
-        glBegin(GL_LINES);
-        {
-            ///Upper circle
-            glVertex3f(points1[i].x, points1[i].y, points1[i].z);
-            glVertex3f(points1[i+1].x, points1[i+1].y, points1[i].z);
-
-            ///Lower circle
-            glVertex3f(points2[i].x,points2[i].y, points2[i].z);
-            glVertex3f(points2[i+1].x,points2[i+1].y, points2[i].z);
-
-        }
-        glEnd();
-    }
-
     ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
 
-    for(i=0; i<segments/4; i++)
+    for(i=0; i<segments; i++)
     {
-        glBegin(GL_POLYGON);    ///To draw a rectangle
+        glBegin(GL_QUADS);    ///To draw a rectangle
         {
-            glVertex3f(points1[i%segments].x, points1[i%segments].y, points1[i%segments].z);
-            glVertex3f(points1[(i+1)%segments].x, points1[(i+1)%segments].y, points1[(i+1)%segments].z);
-            glVertex3f(points2[(i+1)%segments].x, points2[(i+1)%segments].y, points2[(i+1)%segments].z);
-            glVertex3f(points2[i%segments].x, points2[i%segments].y, points2[i%segments].z);
+            glVertex3f(upperCircle[i%segments].x, upperCircle[i%segments].y, upperCircle[i%segments].z);
+            glVertex3f(upperCircle[(i+1)%segments].x, upperCircle[(i+1)%segments].y, upperCircle[(i+1)%segments].z);
+            glVertex3f(lowerCircle[(i+1)%segments].x, lowerCircle[(i+1)%segments].y, lowerCircle[(i+1)%segments].z);
+            glVertex3f(lowerCircle[i%segments].x, lowerCircle[i%segments].y, lowerCircle[i%segments].z);
         }
         glEnd();
     }
@@ -593,7 +612,7 @@ void drawCylinder_oneFourth(double radius, double height, int segments)
 
 void drawSpherePartOfObject()
 {
-
+//    side_cube = 0;
     double angles[] = {90, 180, 270};
     for(int i=0; i<4; i++){         ///Top 4 (1/8th spheres)
         glPushMatrix();
@@ -667,8 +686,10 @@ void drawCylinderPartOfObject()
 
 void drawSquarePartOfObject(double a) ///a = side length
 {
+//    side_cube = 0;
     glColor3d(1, 1, 1); ///White color
     double translation_cube = 40;
+
     glPushMatrix(); /// Bottom most
     {
         glTranslatef(0, 0, -translation_cube);
@@ -781,8 +802,12 @@ void display()
 ///CODE FOR DRAWING OBJECT BEGIN
 
 //    drawSphere_UpperPart(radiusObject, 50, 30);
+#if DEBUG_SPHERE == 1
+    side_cube = 0;
+#endif // DEBUG_SPHERE
 
     drawSquarePartOfObject(side_cube);
+
     drawSpherePartOfObject();
 
     drawCylinderPartOfObject();
