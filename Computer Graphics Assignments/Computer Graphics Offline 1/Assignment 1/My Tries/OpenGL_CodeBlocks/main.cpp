@@ -473,8 +473,8 @@ void drawSphere_UpperPart(double radius,int slices,int stacks)
         r=radius*cos(((double)i/(double)stacks)*(pi/2));
         for(j=0; j<=slices; j++)
         {
-            points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-            points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+            points[i][j].x=r*cos(((double)j/(double)slices)* (pi/2));   ///CIRCLES are drawn with 90 degrees
+            points[i][j].y=r*sin(((double)j/(double)slices)* (pi/2));   ///i.e. 1/4th of a hemisphere = 1/8th of a sphere
             points[i][j].z=h;
         }
     }
@@ -590,25 +590,52 @@ void drawSpherePartForObject()
     }
     glPopMatrix();
 }
+void drawSpherePartOfObject()
+{
+    ///Upper 4 hemispheres
+    double angles[] = {90, 180, 270};
+    for(int i=0; i<4; i++){
+        glPushMatrix();
+        {
+            if(i != 0){
+                glRotatef(angles[i - 1], 0, 0, 1);
+            }
+            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
+            drawSphere_UpperPart(radiusSphere, 50, 30);
+        }
+        glPopMatrix();
+    }
+    glPushMatrix();
+    glRotatef(180, 0, 1, 0);
+    for(int i=0; i<4; i++){
+        glPushMatrix();
+        {
+            if(i != 0){
+                glRotatef(angles[i - 1], 0, 0, 1);
+            }
+            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
+            drawSphere_UpperPart(radiusSphere, 50, 30);
+        }
+        glPopMatrix();
+    }
+    glPopMatrix();
 
+}
 void drawCylinderPartOfObject()
 {
-    placeCylinderPositions();   ///First [z-axis e ase]
+    int numSegmentsCylinder = 50;
 
-    ///Apply Transformations [rotate wrt y-axis]
-    glPushMatrix();
+    for(int angle = 0; angle < 360; angle+=90)
     {
-        glRotatef(90, 0, 1, 0);
-        placeCylinderPositions();   ///Transformations applied
+        glPushMatrix();
+        {
+//            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+            glRotatef(angle, 0, 1, 0);
+            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+//            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
+        }
+        glPopMatrix();
     }
-    glPopMatrix();
-    ///Apply Transformations [rotate wrt x-axis]
-    glPushMatrix();
-    {
-        glRotatef(90, 1, 0, 0);
-        placeCylinderPositions();   ///Transformations applied
-    }
-    glPopMatrix();
 }
 
 ///----------------------------- My Functions End ---------------------------------------
@@ -663,33 +690,11 @@ void display()
 
 //    drawSphere_UpperPart(radiusSphere, 50, 30);
 
-    glPushMatrix();
-    {
-        ///Translation
-        glTranslatef(0, 0, translation_unit_sphere - radiusSphere + 1);
-        drawSphere_UpperPart(radiusSphere, 50, 30);
-    }
-    glPopMatrix();
+    drawSpherePartOfObject();
 
-    int numSegmentsCylinder = 50;
-//    glPushMatrix();
-//    {
-//        ///Translation
-//        glTranslatef(0, 0, -translation_unit_cylinder);
-////        drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
-//    }
-//    glPopMatrix();
-    for(int angle = 0; angle < 360; angle+=90)
-    {
-        glPushMatrix();
-        {
-//            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-            glRotatef(angle, 0, 1, 0);
-            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
-        }
-        glPopMatrix();
-    }
+    drawCylinderPartOfObject();
+
+
 //    drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
     ///Code for drawing the object ends
 
