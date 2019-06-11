@@ -25,7 +25,7 @@ double angle;
 
 double radiusSphere, translation_unit_sphere;  ///Sphere
 double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
-double side_cube;   ///Cube
+double side_cube, translation_unit_cube;   ///Cube
 
 double scalar_upDown = 3;
 double scalar_forwardBackward = 3;
@@ -121,6 +121,7 @@ void initialiseParamters()
     translation_unit_cylinder = translation_unit_sphere;
 
     side_cube = heightCylinder - radiusCylinder - radiusSphere; ///exact initialization
+    translation_unit_cube = translation_unit_sphere + radiusSphere;
 }
 
 
@@ -437,7 +438,6 @@ void specialKeyListener(int key, int x,int y)
     }
 }
 
-
 void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of the screen (2D)
 {
     switch(button)
@@ -455,6 +455,9 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
 
     case GLUT_MIDDLE_BUTTON:
         //........
+        if(state == GLUT_DOWN){
+            drawgrid = 1 - drawgrid ;
+        }
         break;
 
     default:
@@ -634,15 +637,14 @@ void drawSquarePartOfObject(double a) ///a = side length
 {
     glColor3d(1, 1, 1); ///White color
 
-    //glColor3f(1.0,0.0,0.0);
-    glBegin(GL_QUADS);
+    glPushMatrix();
     {
-        glVertex3f( a, a,2);
-        glVertex3f( a,-a,2);
-        glVertex3f(-a,-a,2);
-        glVertex3f(-a, a,2);
+        glTranslatef(0, 0, -translation_unit_cube);
+        drawSquare(side_cube);
     }
-    glEnd();
+    glPopMatrix();
+
+
 }
 
 ///----------------------------- My Functions End ---------------------------------------
