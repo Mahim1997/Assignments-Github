@@ -25,6 +25,7 @@ double angle;
 
 double radiusSphere, translation_unit_sphere;  ///Sphere
 double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
+double side_cube;   ///Cube
 
 double scalar_upDown = 3;
 double scalar_forwardBackward = 3;
@@ -33,6 +34,8 @@ double scalar_rightLeft = 5;
 double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+
+
 
 struct point    ///For already existing functions ....
 {
@@ -116,6 +119,8 @@ void initialiseParamters()
     radiusCylinder = RADIUS_COMMON;
     heightCylinder = 40;
     translation_unit_cylinder = translation_unit_sphere;
+
+    side_cube = heightCylinder - radiusCylinder - radiusSphere; ///exact initialization
 }
 
 
@@ -623,6 +628,23 @@ void drawCylinderPartOfObject()
 
 }
 
+
+
+void drawSquarePartOfObject(double a) ///a = side length
+{
+    glColor3d(1, 1, 1); ///White color
+
+    //glColor3f(1.0,0.0,0.0);
+    glBegin(GL_QUADS);
+    {
+        glVertex3f( a, a,2);
+        glVertex3f( a,-a,2);
+        glVertex3f(-a,-a,2);
+        glVertex3f(-a, a,2);
+    }
+    glEnd();
+}
+
 ///----------------------------- My Functions End ---------------------------------------
 
 
@@ -669,9 +691,6 @@ void display()
     drawGrid();
 
 ///CODE FOR DRAWING OBJECT BEGIN
-//    drawSpherePartForObject();
-//    drawCylinderPartOfObject();
-///CODE FOR DRAWING OBJECT END
 
 //    drawSphere_UpperPart(radiusSphere, 50, 30);
 
@@ -679,10 +698,8 @@ void display()
 
     drawCylinderPartOfObject();
 
-
-//    drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
-    ///Code for drawing the object ends
-
+    drawSquarePartOfObject(side_cube);
+///CODE FOR DRAWING OBJECT END
 
     //ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
     glutSwapBuffers();
