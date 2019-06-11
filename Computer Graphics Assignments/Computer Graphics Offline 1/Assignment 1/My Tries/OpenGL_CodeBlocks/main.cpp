@@ -532,14 +532,14 @@ void drawOneEigthSphere(double radius,int slices,int stacks)
         }
     }
 }
-void drawCylinder2(double radius, double height, int segments)
+void drawCylinder_oneFourth(double radius, double height, int segments)
 {
     int stacks = 50, slices = 30;
     struct point points[100][100];
     int i,j;
     double h,r;
-    //generate points
-    glColor3f(0, 1, 0);
+
+    glColor3f(0, 1, 0); //generate points
     h = 0;
     for(i=0; i<=stacks; i++)
     {
@@ -549,14 +549,13 @@ void drawCylinder2(double radius, double height, int segments)
         for(j=0; j<=slices; j++)
         {
             points[i][j].x=r*cos(((double)j/(double)slices)* (pi/2));   ///CIRCLES are drawn with 90 degrees
-            points[i][j].y=r*sin(((double)j/(double)slices)* (pi/2));   ///i.e. 1/4th of a hemisphere = 1/8th of a sphere
+            points[i][j].y=r*sin(((double)j/(double)slices)* (pi/2));
             points[i][j].z=h;
         }
     }
     //draw quads using generated points
     for(i=0; i<stacks; i++)
     {
-        glColor3f(0, 1, 0);
         //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
         for(j=0; j<slices; j++)
         {
@@ -570,40 +569,6 @@ void drawCylinder2(double radius, double height, int segments)
             }
             glEnd();
         }
-    }
-}
-void drawCylinder_oneFourth(double radius, double height, int segments)
-{
-    drawCylinder2(radius, height, segments);
-    return ;
-
-    struct point upperCircle[100], lowerCircle[100];
-    glColor3f(0, 1.0, 0); ///Green color (cylinder)
-    int i;
-    ///generate points top circle
-    for(i=0; i<=segments; i++)
-    {
-        ///For top circle
-        upperCircle[i].x = radius*cos(((double)i/(double)segments) * (pi/2));
-        upperCircle[i].y = radius*sin(((double)i/(double)segments)* (pi/2));
-        upperCircle[i].z = height + heightCylinder;;
-        ///For bottom circle
-        lowerCircle[i].x = upperCircle[i].x;
-        lowerCircle[i].y = upperCircle[i].y;
-        lowerCircle[i].z = height;
-    }
-    ///Join the points ... Take two points from top circle, two points from bottom, draw rectangle ...
-
-    for(i=0; i<segments; i++)
-    {
-        glBegin(GL_QUADS);    ///To draw a rectangle
-        {
-            glVertex3f(upperCircle[i%segments].x, upperCircle[i%segments].y, upperCircle[i%segments].z);
-            glVertex3f(upperCircle[(i+1)%segments].x, upperCircle[(i+1)%segments].y, upperCircle[(i+1)%segments].z);
-            glVertex3f(lowerCircle[(i+1)%segments].x, lowerCircle[(i+1)%segments].y, lowerCircle[(i+1)%segments].z);
-            glVertex3f(lowerCircle[i%segments].x, lowerCircle[i%segments].y, lowerCircle[i%segments].z);
-        }
-        glEnd();
     }
 }
 
@@ -681,7 +646,6 @@ void drawCylinderPartOfObject()
     glPopMatrix();
 
 }
-
 
 
 void drawSquarePartOfObject(double a) ///a = side length
