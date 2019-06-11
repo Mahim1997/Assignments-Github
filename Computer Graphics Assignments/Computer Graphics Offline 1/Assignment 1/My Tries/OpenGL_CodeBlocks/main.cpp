@@ -637,14 +637,68 @@ void drawSquarePartOfObject(double a) ///a = side length
 {
     glColor3d(1, 1, 1); ///White color
 
-    glPushMatrix();
+    glPushMatrix(); /// Bottom most
     {
-        glTranslatef(0, 0, -translation_unit_cube);
+        glTranslatef(0, 0, -a);
+        drawSquare(side_cube);
+    }
+    glPopMatrix();
+
+    glPushMatrix(); ///Top most
+    {
+        glTranslatef(0, 0, a);
         drawSquare(side_cube);
     }
     glPopMatrix();
 
 
+    glPushMatrix();
+    {
+        glRotatef(90, 0, 1, 0);
+        glPushMatrix(); ///Left facing
+        {
+            glTranslatef(0, 0, a);
+            drawSquare(side_cube);
+        }
+        glPopMatrix();
+    }
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        glRotatef(90, 0, 1, 0);
+        glPushMatrix(); ///Right facing
+        {
+            glTranslatef(0, 0, -a);
+            drawSquare(side_cube);
+        }
+        glPopMatrix();
+    }
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        glPushMatrix(); ///Left facing 2
+        {
+            glTranslatef(0, 0, a);
+            drawSquare(side_cube);
+        }
+        glPopMatrix();
+    }
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        glPushMatrix(); ///Right facing 2
+        {
+            glTranslatef(0, 0, -a);
+            drawSquare(side_cube);
+        }
+        glPopMatrix();
+    }
+    glPopMatrix();
 }
 
 ///----------------------------- My Functions End ---------------------------------------
