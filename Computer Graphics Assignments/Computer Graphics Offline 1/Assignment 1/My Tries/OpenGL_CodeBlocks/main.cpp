@@ -8,7 +8,7 @@
 #define DEBUG 0
 #define DRAW_GRID 1
 
-#define RADIUS_COMMON 8
+#define RADIUS_COMMON 20
 #define DEGREE_ANGLE_INIT 0.3
 
 #define pi (2*acos(0.0))
@@ -35,7 +35,7 @@ double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 
-
+double threshold_movement, reduction;  ///For sphere to cube movement threshold
 
 struct point    ///For already existing functions ....
 {
@@ -120,8 +120,12 @@ void initialiseParamters()
     heightCylinder = 40;
     translation_unit_cylinder = translation_unit_sphere;
 
-    side_cube = heightCylinder - radiusCylinder - radiusSphere; ///exact initialization
+//    side_cube = heightCylinder - radiusCylinder - radiusSphere; ///exact initialization
+    side_cube = 30;
     translation_unit_cube = translation_unit_sphere + radiusSphere;
+
+    threshold_movement = 40;
+    reduction = 1;
 }
 
 
@@ -161,6 +165,18 @@ struct vect vectorScale(struct vect a, double f)
     ans.z = a.z * f;
     return ans;
 };
+void fixTranslations()
+{
+    if(translation_unit_cube < 0){
+        translation_unit_cube = 0;
+    }
+    if(translation_unit_cylinder < 0){
+        translation_unit_cylinder = 0;
+    }
+    if(translation_unit_sphere < 0){
+        translation_unit_sphere = 0;
+    }
+}
 ///------------------------------------- My Variables End ---------------------------------------
 
 void drawAxes()
@@ -428,9 +444,20 @@ void specialKeyListener(int key, int x,int y)
     case GLUT_KEY_INSERT:
         break;
 
-    case GLUT_KEY_HOME:
+    case GLUT_KEY_HOME: ///Cube to Sphere
+        translation_unit_cube -= reduction;
+        translation_unit_cylinder -= reduction;
+        translation_unit_sphere -= reduction;
+        fixTranslations();
+        radiusSphere = threshold_movement - translation_unit_sphere;
+        radiusCylinder = radiusSphere;
+        heightCylinder = 2 * translation_unit_cylinder;
+        side_cube = translation_unit_cube;
         break;
-    case GLUT_KEY_END:
+    case GLUT_KEY_END:  ///Sphere to Cube
+        side_cube += 1;
+        radiusCylinder -= 1;
+        radiusSphere -= 1;
         break;
 
     default:
