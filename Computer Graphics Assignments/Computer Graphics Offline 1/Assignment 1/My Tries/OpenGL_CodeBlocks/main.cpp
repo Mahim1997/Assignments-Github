@@ -8,7 +8,7 @@
 #define DEBUG 0
 #define DRAW_GRID 1
 
-#define RADIUS_COMMON 20
+#define RADIUS_SHAPE 20
 #define DEGREE_ANGLE_INIT 0.3
 
 #define pi (2*acos(0.0))
@@ -22,10 +22,8 @@ int drawaxes;
 double angle;
 
 ///----------------------------- My Variables Begin ---------------------------------------
-
-double radiusSphere, translation_unit_sphere;  ///Sphere
-double radiusCylinder, heightCylinder, translation_unit_cylinder; ///Cylinder
-double side_cube, translation_unit_cube;   ///Cube
+double radiusObject, translation_unit, heightCylinder, side_cube;   ///Parameters for shape
+double threshold_movement, reduction;  ///For sphere to cube movement threshold
 
 double scalar_upDown = 3;
 double scalar_forwardBackward = 3;
@@ -35,7 +33,7 @@ double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 
-double threshold_movement, reduction;  ///For sphere to cube movement threshold
+
 
 struct point    ///For already existing functions ....
 {
@@ -113,19 +111,14 @@ void initialiseParamters()
     printf("-------------------------- Initializing parameters end------------------------\n");
 
     ///Initializing other parameters
-    radiusSphere = RADIUS_COMMON;
-    translation_unit_sphere = 20;
-
-    radiusCylinder = RADIUS_COMMON;
+    radiusObject = RADIUS_SHAPE;
+    translation_unit = 20;
     heightCylinder = 40;
-    translation_unit_cylinder = translation_unit_sphere;
 
-//    side_cube = heightCylinder - radiusCylinder - radiusSphere; ///exact initialization
+//    side_cube = heightCylinder - radiusObject - radiusObject; ///exact initialization
     side_cube = 30;
-    translation_unit_cube = translation_unit_sphere + radiusSphere;
-
     threshold_movement = 40;
-    reduction = 1;
+    reduction = 0.5;
 }
 
 
@@ -167,14 +160,14 @@ struct vect vectorScale(struct vect a, double f)
 };
 void fixTranslations()
 {
-    if(translation_unit_cube < 0){
-        translation_unit_cube = 0;
+    if(translation_unit < 0){
+        translation_unit = 0;
     }
-    if(translation_unit_cylinder < 0){
-        translation_unit_cylinder = 0;
+    if(translation_unit < 0){
+        translation_unit = 0;
     }
-    if(translation_unit_sphere < 0){
-        translation_unit_sphere = 0;
+    if(translation_unit < 0){
+        translation_unit = 0;
     }
 }
 ///------------------------------------- My Variables End ---------------------------------------
@@ -445,19 +438,22 @@ void specialKeyListener(int key, int x,int y)
         break;
 
     case GLUT_KEY_HOME: ///Cube to Sphere
-        translation_unit_cube -= reduction;
-        translation_unit_cylinder -= reduction;
-        translation_unit_sphere -= reduction;
-        fixTranslations();
-        radiusSphere = threshold_movement - translation_unit_sphere;
-        radiusCylinder = radiusSphere;
-        heightCylinder = 2 * translation_unit_cylinder;
-        side_cube = translation_unit_cube;
+        translation_unit -= reduction;
+        if(translation_unit < 0){
+            translation_unit = 0;
+        }
+        radiusObject = threshold_movement - translation_unit;
+        heightCylinder = translation_unit * 2;
+        side_cube = translation_unit;
         break;
     case GLUT_KEY_END:  ///Sphere to Cube
-        side_cube += 1;
-        radiusCylinder -= 1;
-        radiusSphere -= 1;
+        translation_unit += reduction;
+        if(translation_unit > threshold_movement){
+            translation_unit = threshold_movement;
+        }
+        radiusObject = threshold_movement - translation_unit;
+        heightCylinder = translation_unit * 2;
+        side_cube = translation_unit;
         break;
 
     default:
@@ -596,8 +592,8 @@ void drawSpherePartOfObject()
             if(i != 0){
                 glRotatef(angles[i - 1], 0, 0, 1);
             }
-            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawOneEigthSphere(radiusSphere, 50, 30);
+            glTranslatef(translation_unit, translation_unit, translation_unit);
+            drawOneEigthSphere(radiusObject, 50, 30);
         }
         glPopMatrix();
     }
@@ -612,8 +608,8 @@ void drawSpherePartOfObject()
             if(i != 0){
                 glRotatef(angles[i - 1], 0, 0, 1);
             }
-            glTranslatef(translation_unit_sphere, translation_unit_sphere, translation_unit_sphere);
-            drawOneEigthSphere(radiusSphere, 50, 30);
+            glTranslatef(translation_unit, translation_unit, translation_unit);
+            drawOneEigthSphere(radiusObject, 50, 30);
         }
         glPopMatrix();
     }
@@ -629,10 +625,10 @@ void position4Cylinders()
     {
         glPushMatrix();
         {
-//            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
+//            glTranslatef(translation_unit, translation_unit, -translation_unit);
             glRotatef(angle, 0, 0, 1);
-            glTranslatef(translation_unit_cylinder, translation_unit_cylinder, -translation_unit_cylinder);
-            drawCylinder_oneFourth(radiusCylinder, 0, numSegmentsCylinder);
+            glTranslatef(translation_unit, translation_unit, -translation_unit);
+            drawCylinder_oneFourth(radiusObject, 0, numSegmentsCylinder);
         }
         glPopMatrix();
     }
@@ -775,7 +771,7 @@ void display()
 
 ///CODE FOR DRAWING OBJECT BEGIN
 
-//    drawSphere_UpperPart(radiusSphere, 50, 30);
+//    drawSphere_UpperPart(radiusObject, 50, 30);
 
     drawSpherePartOfObject();
 
