@@ -116,7 +116,7 @@ void initialiseParamters()
     heightCylinder = 40;
 
 //    side_cube = heightCylinder - radiusObject - radiusObject; ///exact initialization
-    side_cube = 30;
+    side_cube = translation_unit;
     threshold_movement = 40;    ///full cube = full sphere diameter = 40
     reduction = 0.5;
 }
@@ -449,7 +449,7 @@ void specialKeyListener(int key, int x,int y)
 
 //        side_cube = translation_unit;
 //        heightCylinder = translation_unit * 2;
-        side_cube -= reduction;
+        side_cube = translation_unit;
         break;
     case GLUT_KEY_END:  ///Sphere to Cube
         translation_unit += reduction;
@@ -461,7 +461,7 @@ void specialKeyListener(int key, int x,int y)
         radiusObject = threshold_movement - translation_unit;
         heightCylinder = translation_unit * 2;
 
-        side_cube += reduction;
+//        side_cube += reduction;
         side_cube = translation_unit;
         break;
 
