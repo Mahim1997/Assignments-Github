@@ -116,7 +116,7 @@ void initialiseParamters()
     heightCylinder = 40;
 
 //    side_cube = heightCylinder - radiusObject - radiusObject; ///exact initialization
-    side_cube = translation_unit;
+    side_cube = translation_unit;   ///initialization of cube
     threshold_movement = 40;    ///full cube = full sphere diameter = 40
     reduction = 0.5;
 }
@@ -225,10 +225,10 @@ void drawSquare(double a)
     //glColor3f(1.0,0.0,0.0);
     glBegin(GL_QUADS);
     {
-        glVertex3f( a, a,2);
-        glVertex3f( a,-a,2);
-        glVertex3f(-a,-a,2);
-        glVertex3f(-a, a,2);
+        glVertex3f( a, a,0);
+        glVertex3f( a,-a,0);
+        glVertex3f(-a,-a,0);
+        glVertex3f(-a, a,0);
     }
     glEnd();
 }
@@ -668,7 +668,7 @@ void drawCylinderPartOfObject()
 void drawSquarePartOfObject(double a) ///a = side length
 {
     glColor3d(1, 1, 1); ///White color
-    double translation_cube = 39 ;
+    double translation_cube = 40;
     glPushMatrix(); /// Bottom most
     {
         glTranslatef(0, 0, -translation_cube);
@@ -782,11 +782,12 @@ void display()
 
 //    drawSphere_UpperPart(radiusObject, 50, 30);
 
+    drawSquarePartOfObject(side_cube);
     drawSpherePartOfObject();
 
     drawCylinderPartOfObject();
 
-    drawSquarePartOfObject(side_cube);
+
 ///CODE FOR DRAWING OBJECT END
 
     //ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
@@ -804,7 +805,7 @@ void animate()
 void init()
 {
     //codes for initialization
-    drawgrid=1;
+    drawgrid=0;
     drawaxes=1;
     cameraHeight=150.0;
     cameraAngle=1.0;
