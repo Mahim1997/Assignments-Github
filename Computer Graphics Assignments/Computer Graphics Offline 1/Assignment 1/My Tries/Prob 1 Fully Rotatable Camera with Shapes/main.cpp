@@ -102,7 +102,7 @@ void initialiseParamters()
     u.makeVectorWithName(0, 0, 1, "u");
     r.makeVectorWithName(-1/sqrt(2), 1/sqrt(2), 0, "r");
     l.makeVectorWithName(-1/sqrt(2), -1/sqrt(2), 0, "l");
-    pos.makeVectorWithName(100, 100, 50, "pos");
+    pos.makeVectorWithName(100, 100, 0, "pos");
 
     printf("-------------------------- Initializing parameters begin------------------------\n");
     u.printVectorWithName();
@@ -119,7 +119,7 @@ void initialiseParamters()
 //    side_cube = heightCylinder - radiusObject - radiusObject; ///exact initialization
     side_cube = translation_unit;   ///initialization of cube
     threshold_movement = 40;    ///full cube = full sphere diameter = 40
-    reduction = 0.5;
+    reduction = 0.75;
 }
 
 
