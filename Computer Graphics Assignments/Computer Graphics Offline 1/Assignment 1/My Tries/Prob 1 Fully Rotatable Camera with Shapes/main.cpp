@@ -16,12 +16,8 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-double cameraHeight;
-double cameraAngle;
-int drawgrid;
 int drawaxes;
-double angle;
-
+int angle;
 ///----------------------------- My Variables Begin ---------------------------------------
 double radiusObject, translation_unit, heightCylinder, side_cube;   ///Parameters for shape
 double threshold_movement, reduction;  ///For sphere to cube movement threshold
@@ -159,11 +155,20 @@ struct vect vectorScale(struct vect a, double f)
     ans.z = a.z * f;
     return ans;
 };
-void fixTranslations()
+void fixTranslationUnit()
 {
     if(translation_unit < 0){
         translation_unit = 0;
     }
+    else if(translation_unit > threshold_movement){
+        translation_unit = threshold_movement;
+    }
+}
+void computeParameters()
+{
+    radiusObject = threshold_movement - translation_unit;
+    heightCylinder = translation_unit * 2;
+    side_cube = translation_unit;
 }
 ///------------------------------------- My Variables End ---------------------------------------
 
@@ -187,34 +192,6 @@ void drawAxes()
     }
 }
 
-
-void drawGrid()
-{
-    int i;
-    if(drawgrid==1)
-    {
-        glColor3f(0.6, 0.6, 0.6);	//grey
-        glBegin(GL_LINES);
-        {
-            for(i=-8; i<=8; i++)
-            {
-
-                if(i==0)
-                    continue;	//SKIP the MAIN axes
-
-                //lines parallel to Y-axis
-                glVertex3f(i*10, -90, 0);
-                glVertex3f(i*10,  90, 0);
-
-                //lines parallel to X-axis
-                glVertex3f(-90, i*10, 0);
-                glVertex3f( 90, i*10, 0);
-            }
-        }
-        glEnd();
-    }
-}
-
 void drawSquare(double a)
 {
     //glColor3f(1.0,0.0,0.0);
@@ -228,132 +205,6 @@ void drawSquare(double a)
     glEnd();
 }
 
-
-void drawCircle(double radius,int segments)
-{
-    int i;
-    struct point points[100];
-    glColor3f(0.7,0.7,0.7);
-    //generate points
-    for(i=0; i<=segments; i++)
-    {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-    }
-    //draw segments using generated points
-    for(i=0; i<segments; i++)
-    {
-        glBegin(GL_LINES);
-        {
-            glVertex3f(points[i].x,points[i].y,0);
-            glVertex3f(points[i+1].x,points[i+1].y,0);
-        }
-        glEnd();
-    }
-}
-
-void drawCone(double radius,double height,int segments)
-{
-    int i;
-    double shade;
-    struct point points[100];
-    //generate points
-    for(i=0; i<=segments; i++)
-    {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-    }
-    //draw triangles using generated points
-    for(i=0; i<segments; i++)
-    {
-        //create shading effect
-        if(i<segments/2)
-            shade=2*(double)i/(double)segments;
-        else
-            shade=2*(1.0-(double)i/(double)segments);
-        glColor3f(shade,shade,shade);
-
-        glBegin(GL_TRIANGLES);
-        {
-            glVertex3f(0,0,height);
-            glVertex3f(points[i].x,points[i].y,0);
-            glVertex3f(points[i+1].x,points[i+1].y,0);
-        }
-        glEnd();
-    }
-}
-
-
-void drawSphere(double radius,int slices,int stacks)
-{
-    struct point points[100][100];
-    int i,j;
-    double h,r;
-    //generate points
-    for(i=0; i<=stacks; i++)
-    {
-        h=radius*sin(((double)i/(double)stacks)*(pi/2));
-        r=radius*cos(((double)i/(double)stacks)*(pi/2));
-        for(j=0; j<=slices; j++)
-        {
-            points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-            points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-            points[i][j].z=h;
-        }
-    }
-    //draw quads using generated points
-    for(i=0; i<stacks; i++)
-    {
-        glColor3f(1, 0, 0); ///To change color to RED = 1, GREEEN = 0, BLUE = 0
-        //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-        for(j=0; j<slices; j++)
-        {
-            glBegin(GL_QUADS);
-            {
-                //upper hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-                //lower hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-                glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-                glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
-            }
-            glEnd();
-        }
-    }
-}
-
-
-void drawSS()
-{
-    glColor3f(1,0,0);
-    drawSquare(20);
-
-    glRotatef(angle,0,0,1);
-    glTranslatef(110,0,0);
-    glRotatef(2*angle,0,0,1);
-    glColor3f(0,1,0);
-    drawSquare(15);
-
-    glPushMatrix();
-    {
-        glRotatef(angle,0,0,1);
-        glTranslatef(60,0,0);
-        glRotatef(2*angle,0,0,1);
-        glColor3f(0,0,1);
-        drawSquare(10);
-    }
-    glPopMatrix();
-
-    glRotatef(3*angle,0,0,1);
-    glTranslatef(40,0,0);
-    glRotatef(4*angle,0,0,1);
-    glColor3f(1,1,0);
-    drawSquare(5);
-}
 
 void keyboardListener(unsigned char key, int x,int y)
 {
@@ -434,30 +285,15 @@ void specialKeyListener(int key, int x,int y)
 
     case GLUT_KEY_HOME: ///Cube to Sphere
         translation_unit -= reduction;
-        if(translation_unit < 0){
-            translation_unit = 0;
-        }
-//        radiusObject += reduction;
-
-        radiusObject = threshold_movement - translation_unit;
-        heightCylinder = translation_unit * 2;
-
-//        side_cube = translation_unit;
-//        heightCylinder = translation_unit * 2;
-        side_cube = translation_unit;
+        fixTranslationUnit();
+        computeParameters();
         break;
     case GLUT_KEY_END:  ///Sphere to Cube
         translation_unit += reduction;
-        if(translation_unit > threshold_movement){
-            translation_unit = threshold_movement;
-        }
+        fixTranslationUnit();
 //        radiusObject += reduction;
+        computeParameters();
 
-        radiusObject = threshold_movement - translation_unit;
-        heightCylinder = translation_unit * 2;
-
-//        side_cube += reduction;
-        side_cube = translation_unit;
         break;
 
     default:
@@ -472,7 +308,7 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
     case GLUT_LEFT_BUTTON:
         if(state == GLUT_DOWN) 		// 2 times?? in ONE click? -- solution is checking DOWN or UP
         {
-            drawaxes=1-drawaxes;
+            drawaxes = 1 - drawaxes;
         }
         break;
 
@@ -481,10 +317,7 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
         break;
 
     case GLUT_MIDDLE_BUTTON:
-        //........
-        if(state == GLUT_DOWN){
-            drawgrid = 1 - drawgrid ;
-        }
+
         break;
 
     default:
@@ -527,6 +360,13 @@ void drawOneEigthSphere(double radius,int slices,int stacks)
                 glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
                 glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
                 glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                /*
+                //lower hemisphere
+                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
+                glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
+                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
+                glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
+                */
             }
             glEnd();
         }
@@ -761,7 +601,7 @@ void display()
 
     drawAxes();
 
-    drawGrid();
+//    drawGrid();
 
 ///CODE FOR DRAWING OBJECT BEGIN
 
@@ -794,12 +634,12 @@ void animate()
 void init()
 {
     //codes for initialization
-    drawgrid=0;
-    drawaxes=1;
-    cameraHeight=150.0;
-    cameraAngle=1.0;
+//    drawgrid=0;
+//    drawaxes=1;
+//    cameraHeight=150.0;
+//    cameraAngle=1.0;
     angle=0;
-
+    drawaxes = 1;
     //clear the screen
     glClearColor(0,0,0,0);
 
@@ -820,21 +660,7 @@ void init()
     //far distance
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 ///------------------------------------------------------------------------------
-
-
 
 
 int main(int argc, char **argv)
