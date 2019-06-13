@@ -12,9 +12,11 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-#define INIT_X 20
-#define INIT_Y 40
+#define INIT_X -80
+#define INIT_Y -40
 #define INIT_Z 50
+
+#define INCREMENT 5 ///How many degrees to move while MOVING
 
 double cameraHeight;
 double cameraAngle;
@@ -36,105 +38,15 @@ struct point makePoint(double a, double b, double c)
     p.x = a; p.y = b; p.z = c;
     return p;
 };
-/// --------------------------------------------------------------------------------
-
-struct vect
+double magnitude(struct point p)
 {
-    char name[10];
-    double x;
-    double y;
-    double z;
-    vect(double a, double b, double c)
-    {
-        x = a;
-        y = b;
-        z = c;
-    }
-    vect()
-    {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
-    void printVector()
-    {
-        printf("Vector: <x = %lf, y = %lf, z = %lf>\n", x, y, z);
-    }
-    void printVectorWithName()
-    {
-        printf("Vector %s: <x = %lf, y = %lf, z = %lf>\n", name, x, y, z);
-    }
-    void makeVector(double a, double b, double c)
-    {
-        x = a;
-        y = b;
-        z = c;
-    }
-    void makeVectorWithName(double a, double b, double c, char n[10])
-    {
-        x = a;
-        y = b;
-        z = c;
-        int i;
-        for(i=0; i<10; i++)
-        {
-            name[i] = n[i];
-        }
-    }
-};
-double vector_magnitude(struct vect a)
-{
-    double ans = (a.x * a.x) + (a.y * a.y) + (a.z * a.z);
-    return ( sqrt(ans) );
+    double ans = (p.x * p.x) + (p.y * p.y) + (p.z * p.z);
+    return sqrt(ans);
 }
-
-struct vect vectorCrossProduct(struct vect a, struct vect b)
-{
-    struct vect ans;
-    ans.x = (a.y * b.z) - (b.y * a.z);
-    ans.y = -((a.x * b.z) - (b.x * a.z));
-    ans.z = (a.x * b.y) - (b.x * a.y);
-    return ans;
-};
-struct vect vectorAddition(struct vect a, struct vect b)
-{
-    struct vect ans;
-    ans.x = a.x + b.x;
-    ans.y = a.y + b.y;
-    ans.z = a.z + b.z;
-    return ans;
-};
-struct vect vectorSubtraction(struct vect a, struct vect b)
-{
-    struct vect ans;
-    ans.x = a.x - b.x;
-    ans.y = a.y - b.y;
-    ans.z = a.z - b.z;
-    return ans;
-};
-double vectorDotProduct(struct vect a, struct vect b)
-{
-    return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z));
-};
-struct vect vectorScale(struct vect a, double f)
-{
-    struct vect ans;
-    ans.x = a.x * f;
-    ans.y = a.y * f;
-    ans.z = a.z * f;
-    return ans;
-};
-struct vect vectorNormalize(struct vect a)
-{
-    double scalar = vector_magnitude(a);
-    scalar = 1.0/scalar;
-    a = vectorScale(a, scalar);
-    return a ;
-};
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-double angle_newX_wrt_oldX; ///angle of new X' with respect to old X axis
-double angle_wheelX_wrt_newX;   /// angle of first quadrant of wheel (X') wrt new X' axis
+double angle_axis_wheel; ///angle of new X' with respect to old X axis
+double angle_turnOf_wheel;   /// angle of first quadrant of wheel (X') wrt new X' axis
 
 double center_wheel_x;
 double center_wheel_y;
@@ -142,10 +54,12 @@ double center_wheel_y;
 double radiusCylinder ;//= 25;
 double heightCylinder ;//= 15;
 
+struct point initialCenterPoint, centerPoint;
+
 void initialiseParameters()
 {
-    angle_newX_wrt_oldX = 0;
-    angle_wheelX_wrt_newX = 0;
+    angle_axis_wheel = 0;
+    angle_turnOf_wheel = 0;
 
     center_wheel_x = INIT_X;
     center_wheel_y = INIT_Y;
@@ -153,6 +67,16 @@ void initialiseParameters()
     radiusCylinder = 30;
     heightCylinder = 15;
 
+    initialCenterPoint.x = INIT_X;
+    initialCenterPoint.y = INIT_Y;
+
+    centerPoint.x = INIT_X;
+    centerPoint.y = INIT_Y;
+
+    printf("---------------------- After Initializing Printing parameters begin------------------------------\n\n");
+    printf("Center at %lf, %lf, radiusCylinder = %lf, heightCylinder = %lf, angle_axis = %lf, angle_turn = %lf\n",
+           center_wheel_x, center_wheel_y, radiusCylinder, heightCylinder, angle_axis_wheel, angle_turnOf_wheel);
+    printf("---------------------- After Initializing Printing parameters done------------------------------\n\n");
 }
 
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -250,83 +174,9 @@ void drawCircle_custom(double initX, double initY, double initZ, double radius)
         glEnd();
     }
 }
-
-void keyboardListener(unsigned char key, int x,int y){
-	switch(key){
-
-		case '1':
-			drawgrid=1-drawgrid;
-			break;
-
-		default:
-			break;
-	}
-}
-
-
-void specialKeyListener(int key, int x,int y){
-	switch(key){
-		case GLUT_KEY_DOWN:		//down arrow key
-			cameraHeight -= 3.0;
-			break;
-		case GLUT_KEY_UP:		// up arrow key
-			cameraHeight += 3.0;
-			break;
-
-		case GLUT_KEY_RIGHT:
-			cameraAngle += 0.03;
-			break;
-		case GLUT_KEY_LEFT:
-			cameraAngle -= 0.03;
-			break;
-
-		case GLUT_KEY_PAGE_UP:
-			break;
-		case GLUT_KEY_PAGE_DOWN:
-			break;
-
-		case GLUT_KEY_INSERT:
-			break;
-
-		case GLUT_KEY_HOME:
-			break;
-		case GLUT_KEY_END:
-			break;
-
-		default:
-			break;
-	}
-}
-
-
-void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of the screen (2D)
-	switch(button){
-		case GLUT_LEFT_BUTTON:
-			if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
-				drawaxes=1-drawaxes;
-			}
-			break;
-
-		case GLUT_RIGHT_BUTTON:
-			//........
-			break;
-
-		case GLUT_MIDDLE_BUTTON:
-		    if(state == GLUT_DOWN)
-            {
-                drawgrid = 1 - drawgrid;
-            }
-			//........
-			break;
-
-		default:
-			break;
-	}
-}
-
 ///------------------------------------------------------------------------------------------------------------------
 
-void drawWheel(double radius, double heightCylinder)
+void positionWheelOnScreen()
 {
     ///First we draw the cylinder --> Draw two circles and Join them using rectangles
     double shade = 0;   ///To create shading effect
@@ -336,7 +186,7 @@ void drawWheel(double radius, double heightCylinder)
     struct point upperCircle[100];  ///Lower circle
 
     for(int i=0; i<=slices; i++){
-        r = radius;
+        r = radiusCylinder;
         circle[i].x = r*cos(((double)i/(double)slices)* (2 * pi));  ///Draw wrt x-z axis
         upperCircle[i].x = circle[i].x;
 
@@ -408,16 +258,146 @@ void drawWheel(double radius, double heightCylinder)
 }
 
 
-void drawWheelFinally()
+void drawWheel()
 {
+    ///Apply transformations wrt angle and positions then call the function positionWheelOnScreen()
+    glPushMatrix();
+    {
+        //Translate wrt -ve x-axis , +ve y-axis and 0 z-axis
+        glTranslatef(-1.0 * center_wheel_x, center_wheel_y, 0);
+        glRotatef(angle_turnOf_wheel, 0, 0, -1);    ///Rotate with respect to down
 
+        glTranslatef(0, -heightCylinder * 0.5, radiusCylinder); ///Translate upto the center of circle/cylinder point
+        glRotatef(angle_axis_wheel, 0, -1, 0);  ///Rotate wrt -ve y axis
 
-    glColor3f(0, 1, 0); ///Green
-    drawWheel(radiusCylinder, heightCylinder);
-
+        positionWheelOnScreen();
+    }
+    glPopMatrix();
 }
 
-///------------------------------------------------------------------------------------------------------------------
+void moveWheel(double x_delta, double y_delta)
+{
+    center_wheel_x += x_delta;
+    center_wheel_y += y_delta;
+
+    double x_del = center_wheel_x - initialCenterPoint.x;
+    double y_del = center_wheel_y - initialCenterPoint.y;
+
+    struct point p = makePoint(x_del, y_del, 0);
+    printf("Moved <%lf, %lf> magnitude = %lf, angle_axis_wheel = %lf, angle_turn = %lf\n\n",
+           x_del, y_del, magnitude(p), angle_axis_wheel, angle_turnOf_wheel);
+}
+
+void moveForward()  ///w
+{
+    ///center should move forward i.e. with respect to -ve x-axis direction
+    angle_axis_wheel = angle_axis_wheel + INCREMENT;
+    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180) * INCREMENT);
+    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180) * INCREMENT);
+    moveWheel(x_delta, y_delta);
+//    center_wheel_x = center_wheel_x + ( cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180)) );
+//    center_wheel_y = center_wheel_y + ( sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180)) );
+}
+void moveBackward() ///s
+{
+
+}
+void rotateLeft()   ///a
+{
+
+}
+void rotateRight()  ///d
+{
+
+}
+///------------------------------------------------ Drawing functions end ------------------------------------
+
+void keyboardListener(unsigned char key, int x,int y){
+	switch(key){
+
+		case '1':
+			drawgrid=1-drawgrid;
+			break;
+    ///Codes for move forward, backward AND rotate left, right begin
+        case 'w':
+            moveForward();
+            break;
+        case 's':
+            moveBackward();
+            break;
+        case 'a':
+            rotateLeft();
+            break;
+        case 'd':
+            rotateRight();
+            break;
+    ///Codes for move forward, backward AND rotate left, right end
+		default:
+			break;
+	}
+}
+
+
+void specialKeyListener(int key, int x,int y){
+	switch(key){
+		case GLUT_KEY_DOWN:		//down arrow key
+			cameraHeight -= 3.0;
+			break;
+		case GLUT_KEY_UP:		// up arrow key
+			cameraHeight += 3.0;
+			break;
+
+		case GLUT_KEY_RIGHT:
+			cameraAngle += 0.03;
+			break;
+		case GLUT_KEY_LEFT:
+			cameraAngle -= 0.03;
+			break;
+
+		case GLUT_KEY_PAGE_UP:
+			break;
+		case GLUT_KEY_PAGE_DOWN:
+			break;
+
+		case GLUT_KEY_INSERT:
+			break;
+
+		case GLUT_KEY_HOME:
+			break;
+		case GLUT_KEY_END:
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of the screen (2D)
+	switch(button){
+		case GLUT_LEFT_BUTTON:
+			if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
+				drawaxes=1-drawaxes;
+			}
+			break;
+
+		case GLUT_RIGHT_BUTTON:
+			//........
+			break;
+
+		case GLUT_MIDDLE_BUTTON:
+		    if(state == GLUT_DOWN)
+            {
+                drawgrid = 1 - drawgrid;
+            }
+			//........
+			break;
+
+		default:
+			break;
+	}
+}
+
 
 
 void display(){
@@ -458,20 +438,7 @@ void display(){
 	drawAxes();
 	drawGrid();
 
-    //glColor3f(1,0,0);
-    //drawSquare(10);
-
-//    drawSS();
-    drawWheelFinally();    ///WHEEL drawing
-
-    //drawCircle(30,24);
-
-    //drawCone(20,50,24);
-
-	//drawSphere(30,24,20);
-
-
-
+    drawWheel();    ///WHEEL drawing
 
 	//ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
 	glutSwapBuffers();
