@@ -300,18 +300,27 @@ void moveForward()  ///w
 }
 void moveBackward() ///s
 {
-
+    angle_axis_wheel = angle_axis_wheel - DEL_ANGLE;
+    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
+    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0)) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
+    moveWheel(-x_delta, -y_delta);
 }
 void rotateLeft()   ///a
 {
-
+    angle_turnOf_wheel = angle_turnOf_wheel - DEL_ANGLE;
 }
 void rotateRight()  ///d
 {
-
+    angle_turnOf_wheel = angle_turnOf_wheel + DEL_ANGLE;
 }
 ///------------------------------------------------ Drawing functions end ------------------------------------
-
+//For debugging
+void setInitialPositionHere()
+{
+    initialCenterPoint.x = center_wheel_x;
+    initialCenterPoint.y = center_wheel_y;
+    printf("\nSetting initial pos here %lf, %lf\n\n", initialCenterPoint.x, initialCenterPoint.y);
+}
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
@@ -332,6 +341,10 @@ void keyboardListener(unsigned char key, int x,int y){
             rotateRight();
             break;
     ///Codes for move forward, backward AND rotate left, right end
+    //For debugging
+        case 'v':
+            setInitialPositionHere();
+            break;
 		default:
 			break;
 	}
