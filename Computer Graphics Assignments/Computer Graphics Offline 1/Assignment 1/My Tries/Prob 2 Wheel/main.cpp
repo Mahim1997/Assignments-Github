@@ -139,6 +139,9 @@ double angle_wheelX_wrt_newX;   /// angle of first quadrant of wheel (X') wrt ne
 double center_wheel_x;
 double center_wheel_y;
 
+double radiusCylinder ;//= 25;
+double heightCylinder ;//= 15;
+
 void initialiseParameters()
 {
     angle_newX_wrt_oldX = 0;
@@ -146,6 +149,10 @@ void initialiseParameters()
 
     center_wheel_x = INIT_X;
     center_wheel_y = INIT_Y;
+
+    radiusCylinder = 30;
+    heightCylinder = 15;
+
 }
 
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -177,15 +184,15 @@ void drawGrid()
 {
 	int i;
 	int numTimes = 15;
-	double lineMax = 160;
+	double lineMax = 150;
 	if(drawgrid==1)
 	{
 		glColor3f(0.6, 0.6, 0.6);	//grey
 		glBegin(GL_LINES);{
 			for(i=-numTimes;i<=numTimes;i++){
 
-				if(i==0)
-					continue;	//SKIP the MAIN axes
+//				if(i==0)
+//					continue;	//SKIP the MAIN axes
 
 				//lines parallel to Y-axis
 				glVertex3f(i*10, -lineMax, 0);
@@ -243,46 +250,6 @@ void drawCircle_custom(double initX, double initY, double initZ, double radius)
         glEnd();
     }
 }
-void drawCylinder(double radius, double heightCylinder)
-{
-    int stacks = 50, slices = 30;
-    struct point points[100][100];
-    int i,j;
-    double h,r;
-
-    glColor3f(0, 1, 0); //generate points
-    h = 0;
-    for(i=0; i<=stacks; i++)
-    {
-        r = radius;
-        h = i*(heightCylinder/stacks);
-        //r=radius*cos(((double)i/(double)stacks)*(pi/2));
-        for(j=0; j<=slices; j++)
-        {
-            points[i][j].x=r*cos(((double)j/(double)slices)* (2 * pi));   ///CIRCLES are drawn with 90 degrees
-            points[i][j].y=r*sin(((double)j/(double)slices)* (2 * pi));
-            points[i][j].z=h;
-        }
-    }
-    //draw quads using generated points
-    for(i=0; i<stacks; i++)
-    {
-        //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-        for(j=0; j<slices; j++)
-        {
-            glBegin(GL_QUADS);
-            {
-                //upper hemisphere ONLY
-                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-            }
-            glEnd();
-        }
-    }
-}
-
 
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
@@ -443,8 +410,7 @@ void drawWheel(double radius, double heightCylinder)
 
 void drawWheelFinally()
 {
-    double radiusCylinder = 25;
-    double heightCylinder = 15;
+
 
     glColor3f(0, 1, 0); ///Green
     drawWheel(radiusCylinder, heightCylinder);
@@ -521,7 +487,7 @@ void animate(){
 void init(){
 
 	//codes for initialization
-	drawgrid=0;
+	drawgrid=1;
 	drawaxes=1;
 	cameraHeight=150.0;
 	cameraAngle=1.0;
