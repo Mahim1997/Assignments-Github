@@ -31,10 +31,12 @@ double angle;
 struct point
 {
 	double x,y,z;
+	double colorShade;
 	void printPoint()
 	{
-	    printf("Point: <%lf, %lf, %lf>\n", x, y, z);
+	    printf("Point: <%lf, %lf, %lf, %lf>\n", x, y, z, colorShade);
 	}
+
 };
 struct point makePoint(double a, double b, double c)
 {
@@ -56,6 +58,8 @@ double radiusCylinder ;//= 25;
 double heightCylinder ;//= 15;
 
 struct point initialCenterPoint, center_wheel;
+
+struct point zeroThPoint, halfRevPoint; ///To maintain the cylinder's points for rectangle drawing
 
 void initialiseParameters()
 {
@@ -122,88 +126,134 @@ void drawGrid()
 }
 
 ///------------------------------------------------------------------------------------------------------------------
-
-void positionWheelOnScreen()
+void positionCylinderOnScreen()
 {
-    ///First we draw the cylinder --> Draw two circles and Join them using rectangles
-    double shade = 0;   ///To create shading effect
-    int slices = 50;  ///Number of slices for the circle
-    double r, h;
-    struct point circle[100];  ///Upper circle
-    struct point upperCircle[100];  ///Lower circle
+    int stacks = 50, slices = 100;
+    struct point points[100][200];
+    int i,j;
+    double h,r;
 
-    for(int i=0; i<=slices; i++){
+    glColor3f(0, 1, 0); //generate points
+    h = 0;
+    for(i=0; i<=stacks; i++)
+    {
         r = radiusCylinder;
-        circle[i].x = r*cos(((double)i/(double)slices)* (2 * pi));  ///Draw wrt x-z axis
-        upperCircle[i].x = circle[i].x;
+        h = i*(heightCylinder/stacks);
+        //r=radius*cos(((double)i/(double)stacks)*(pi/2));
+        for(j=0; j<=slices; j++)
+        {
+            points[i][j].x=r*cos(((double)j/(double)slices)* (2 * pi));   ///CIRCLES are drawn with respect to x-z axis
+            points[i][j].z=r*sin(((double)j/(double)slices)* (2 * pi));
+            points[i][j].y=h;
+        }
+    }
+    //draw quads using generated points
 
-        circle[i].z = r*sin(((double)i/(double)slices)* (2 * pi));
-        upperCircle[i].z = circle[i].z;
+    double shade = 0.5;
 
-        circle[i].y = 0;
-        upperCircle[i].y = heightCylinder;
+    for(int i=0; i<stacks; i++){
+        for(int j=0; j<slices/4; j++){
+            shade = (double)(j) / (double)(slices / 4);
+//            shade = min(shade, 0.7);    //limit white
+//            shade = max(shade, 0.3);    //limit black
+            points[i][j].colorShade = shade;
+        }
+        for(int j=(slices/4); j<slices/2; j++){
+                //Corner cases
+            if(j == (slices / 4)){
+//                printf("Changing point[%d][%d] shade to point[%d][%d]'s shade = %lf\n", i, j, i, j-1, points[i][j - 1].colorShade);
+                points[i][j].colorShade = points[i][j - 1].colorShade;
+            }
+            else{
+                int j_idx = slices/2 - j;
+                points[i][j].colorShade = points[i][j_idx].colorShade;
+            }
+        }
+        for(int j=slices/2; j<(slices * 0.75); j++){
+            points[i][j].colorShade = points[i][j - slices/2].colorShade;
+        }
+        for(int j=(slices * 0.75); j<slices; j++){
+            if(j == (slices * 0.75)){
+                points[i][j].colorShade = points[i][j - 1].colorShade;
+            }
+            else{
+                int j_idx = j - (slices/2);
+                points[i][j].colorShade = points[i][j_idx].colorShade;
+            }
+        }
+
+
     }
 
-///Now join the two circles using rectangles
-    for(int i=0; i<=slices; i++){
-        //create shading effect
+
+//    for(int i=0; i<stacks; i++){
+//        for(int j=0; j<slices; j++){
+//            printf("points[%d][%d] = ", i, j);
+//            points[i][j].printPoint();
+//        }
+//        printf("\n");
+//    }
+//    printf("\n\n\n-------------------------------------------------------\n\n");
+//        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
+    for(i=0; i<stacks; i++)
+    {
+//        initialShade = (double)(i)/(double)stacks;
+        for(j=0; j<slices; j++)
+        {
+//            printf("j = %d, color = %lf\n", j, shade);
+            shade = points[i][j].colorShade;
+            glColor3f(shade, shade, shade);
+
+            glBegin(GL_QUADS);
+            {
+                //upper hemisphere ONLY
+                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+            }
+            glEnd();
+        }
+    }
+    zeroThPoint = points[0][0];
+    halfRevPoint = points[stacks/2][slices/2];
+
+//    printf("\n\n===++++-->>> The two points returned are ... \n");
+//    zeroThPoint.printPoint();
+//    halfRevPoint.printPoint();
+//    printf("\n\n");
+
+}
+/*
         if(i<slices/2)shade=2*(double)i/(double)slices;
         else shade=2*(1.0-(double)i/(double)slices);
         glColor3f(shade,shade,shade);
+*/
 
-        glBegin(GL_QUADS);
-        {
-            glVertex3f(circle[i%slices].x, circle[i%slices].y, circle[i%slices].z);
-            glVertex3f(circle[(i + 1)%slices].x, circle[(i + 1)%slices].y, circle[(i + 1)%slices].z);
-            glVertex3f(upperCircle[(i + 1)%slices].x, upperCircle[(i + 1)%slices].y, upperCircle[(i + 1)%slices].z);
-            glVertex3f(upperCircle[i%slices].x, upperCircle[i%slices].y, upperCircle[i%slices].z);
-        }
-        glEnd();
-    }
-
-#if DEBUG_CYLINDER == 1
-    printf("\n\n\nPrinting points for rectangle 1: \n");
-    printf("%lf, %lf, %lf\n", circle[0].x, (heightCylinder * 0.2), circle[0].z);
-    printf("%lf, %lf, %lf\n", circle[0].x, (heightCylinder * 0.8), circle[0].z);
-    printf("%lf, %lf, %lf\n", circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
-    printf("%lf, %lf, %lf\n", circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
-
-    printf("------ ----- ");
-    printf("%lf, %lf, %lf\n", circle[(slices)].x,(heightCylinder * 0.2), circle[(slices)].z);
-    printf("%lf, %lf, %lf\n", circle[(slices)].x,(heightCylinder * 0.8), circle[(slices)].z);
-#endif // DEBUG_CYLINDER
-
-///Drawing the two rectangles
-
-    ///Different color for the rectangles
-    glColor3f(0.8, 0, 0);   //Red
-    //Rectangle 1
-    glBegin(GL_QUADS);  ///circle[0] (0 rev)  ----- circle[slices/2] (half rev) ---- circle[slices] (full rev)
+void positionRect()
+{
+    glBegin(GL_QUADS);  ///zeroThPoint (0 rev)  ----- halfRevPoint (half rev) ---- fullRevPoint (full rev)
     {
-        glVertex3f(circle[0].x,(heightCylinder * 0.2), circle[0].z);
-        glVertex3f(circle[0].x,(heightCylinder * 0.8), circle[0].z);
-        glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
-        glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
+        glVertex3f(zeroThPoint.x,(heightCylinder * 0.2), zeroThPoint.z);
+        glVertex3f(zeroThPoint.x,(heightCylinder * 0.8), zeroThPoint.z);
+        glVertex3f(halfRevPoint.x,(heightCylinder * 0.2), halfRevPoint.z);
+        glVertex3f(halfRevPoint.x,(heightCylinder * 0.8), halfRevPoint.z);
     }
     glEnd();
+}
+void positionTwoRectanglesOnScreen()
+{
+    glColor3f(0.8, 0.4, 0);   //Red
+    positionRect();
 
-    //Rect 2 [rotate 90 degrees acw wrt y-axis
+    //rotate 90 degrees wrt y-axis and redraw rectangle
     glPushMatrix();
     {
         glRotatef(90, 0, 1, 0);
-        glBegin(GL_QUADS);  //Rectangle 1 code
-        {
-            glVertex3f(circle[0].x,(heightCylinder * 0.2), circle[0].z);
-            glVertex3f(circle[0].x,(heightCylinder * 0.8), circle[0].z);
-            glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
-            glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
-        }
-        glEnd();
+        positionRect();
     }
     glPopMatrix();
-
 }
-
 
 void drawWheel()
 {
@@ -211,17 +261,22 @@ void drawWheel()
     glPushMatrix();
     {
         //Translate wrt -ve x-axis , +ve y-axis and 0 z-axis
-        glTranslatef(-1.0 * center_wheel.x, center_wheel.y, 0);
+        glTranslatef(-center_wheel.x, center_wheel.y, 0);   //To MOVE wrt to the center
+
+    //Rotation for angle of turning i.e. when calling rotate_left, rotate_right
         glRotatef(angle_turnOf_wheel, 0, 0, -1);    ///Rotate with respect to down
 
-
+//        glTranslatef(-center_wheel.x, center_wheel.y, 0);   //To MOVE wrt to the center //This order will cause the wheel to DRIFT
     //Without this , we CANNOT SIMPLY ROTATE WITHOUT causing the wheel to move its position
-        glTranslatef(0, -heightCylinder * 0.5, radiusCylinder); ///Translate upto the center of circle/cylinder point
+        glTranslatef(0, -heightCylinder*0.5 , radiusCylinder); ///Translate upto the center of circle/cylinder point
+    //Without the -height/2 and radius translations, wheel will MOVE positions while rotating
 
-
+    //Initial rotation of axis of wheel [MOVE]
         glRotatef(angle_axis_wheel, 0, -1, 0);  ///Rotate wrt -ve y axis [INITIAL ROTATION for MOVE]
 
-        positionWheelOnScreen();
+        positionCylinderOnScreen();
+
+        positionTwoRectanglesOnScreen();
     }
     glPopMatrix();
 }
