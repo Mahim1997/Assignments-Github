@@ -185,16 +185,6 @@ void positionCylinderOnScreen()
 
     }
 
-
-//    for(int i=0; i<stacks; i++){
-//        for(int j=0; j<slices; j++){
-//            printf("points[%d][%d] = ", i, j);
-//            points[i][j].printPoint();
-//        }
-//        printf("\n");
-//    }
-//    printf("\n\n\n-------------------------------------------------------\n\n");
-//        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
     for(i=0; i<stacks; i++)
     {
 //        initialShade = (double)(i)/(double)stacks;
@@ -224,12 +214,6 @@ void positionCylinderOnScreen()
 //    printf("\n\n");
 
 }
-/*
-        if(i<slices/2)shade=2*(double)i/(double)slices;
-        else shade=2*(1.0-(double)i/(double)slices);
-        glColor3f(shade,shade,shade);
-*/
-
 void positionRect()
 {
     glBegin(GL_QUADS);  ///zeroThPoint (0 rev)  ----- halfRevPoint (half rev) ---- fullRevPoint (full rev)
@@ -243,7 +227,7 @@ void positionRect()
 }
 void positionTwoRectanglesOnScreen()
 {
-    glColor3f(0.8, 0.4, 0);   //Red
+    glColor3f(0.8, 0.4, 0);   //Orangish color
     positionRect();
 
     //rotate 90 degrees wrt y-axis and redraw rectangle
@@ -298,7 +282,6 @@ void moveWheel(double x_delta, double y_delta)
 
 void fixAngles()
 {
-//    return ;
     //fix axle angle
     if(angle_axis_wheel < 0){
         angle_axis_wheel = 360 + angle_axis_wheel;
@@ -319,7 +302,8 @@ void moveForward()  ///w
 {
     ///center should move forward i.e. with respect to -ve x-axis direction
     angle_axis_wheel = angle_axis_wheel + DEL_ANGLE;
-    fixAngles();
+    fixAngles();    //keep within 360 degrees for easier debugging
+
     double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * /*For projection on x-axis, cosine is taken*/
                     ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
 
@@ -331,7 +315,7 @@ void moveForward()  ///w
 void moveBackward() ///s
 {
     angle_axis_wheel = angle_axis_wheel - DEL_ANGLE;
-    fixAngles();
+    fixAngles();    //keep within 360 degrees for easier debugging
 
     double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) *  /*For projection on x-axis, cosine is taken*/
                     ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
