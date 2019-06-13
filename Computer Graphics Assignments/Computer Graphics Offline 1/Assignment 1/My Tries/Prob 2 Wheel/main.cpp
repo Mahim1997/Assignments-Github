@@ -6,6 +6,7 @@
 #include <glut.h>
 
 #define DEBUG 0
+#define DEBUG_CYLINDER 1
 
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
@@ -135,14 +136,16 @@ struct vect vectorNormalize(struct vect a)
 double angle_newX_wrt_oldX; ///angle of new X' with respect to old X axis
 double angle_wheelX_wrt_newX;   /// angle of first quadrant of wheel (X') wrt new X' axis
 
-struct point center_wheel;  ///To maintain the center of wheel
+double center_wheel_x;
+double center_wheel_y;
 
 void initialiseParameters()
 {
     angle_newX_wrt_oldX = 0;
     angle_wheelX_wrt_newX = 0;
 
-    center_wheel = makePoint(INIT_X, INIT_Y, INIT_Z);
+    center_wheel_x = INIT_X;
+    center_wheel_y = INIT_Y;
 }
 
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -240,46 +243,45 @@ void drawCircle_custom(double initX, double initY, double initZ, double radius)
         glEnd();
     }
 }
-
-void drawSphere(double radius,int slices,int stacks)
+void drawCylinder(double radius, double heightCylinder)
 {
-	struct point points[100][100];
-	int i,j;
-	double h,r;
-	//generate points
-	for(i=0;i<=stacks;i++)
-	{
-		h=radius*sin(((double)i/(double)stacks)*(pi/2));
-		r=radius*cos(((double)i/(double)stacks)*(pi/2));
-		for(j=0;j<=slices;j++)
-		{
-			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-			points[i][j].z=h;
-		}
-	}
-	//draw quads using generated points
-	for(i=0;i<stacks;i++)
-	{
-        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-		for(j=0;j<slices;j++)
-		{
-			glBegin(GL_QUADS);{
-			    //upper hemisphere
-				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-                //lower hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
-			}glEnd();
-		}
-	}
-}
+    int stacks = 50, slices = 30;
+    struct point points[100][100];
+    int i,j;
+    double h,r;
 
+    glColor3f(0, 1, 0); //generate points
+    h = 0;
+    for(i=0; i<=stacks; i++)
+    {
+        r = radius;
+        h = i*(heightCylinder/stacks);
+        //r=radius*cos(((double)i/(double)stacks)*(pi/2));
+        for(j=0; j<=slices; j++)
+        {
+            points[i][j].x=r*cos(((double)j/(double)slices)* (2 * pi));   ///CIRCLES are drawn with 90 degrees
+            points[i][j].y=r*sin(((double)j/(double)slices)* (2 * pi));
+            points[i][j].z=h;
+        }
+    }
+    //draw quads using generated points
+    for(i=0; i<stacks; i++)
+    {
+        //glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
+        for(j=0; j<slices; j++)
+        {
+            glBegin(GL_QUADS);
+            {
+                //upper hemisphere ONLY
+                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+            }
+            glEnd();
+        }
+    }
+}
 
 
 void keyboardListener(unsigned char key, int x,int y){
@@ -357,19 +359,54 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
 
 ///------------------------------------------------------------------------------------------------------------------
 
-
-void drawCenterSmallCircle()
+void drawWheel(double radius, double heightCylinder)
 {
-    double smallRad = 2;
-    drawCircle_custom(center_wheel.x, center_wheel.y, center_wheel.z, smallRad);
+    ///First we draw the cylinder --> Draw two circles and Join them using rectangles
+    double shade = 0;   ///To create shading effect
+    int slices = 50;  ///Number of slices for the circle
+    double r, h;
+    struct point upperCircle[100];  ///Upper circle
+    struct point lowerCircle[100];  ///Lower circle
+
+    for(int i=0; i<=slices; i++){
+        r = radius;
+        upperCircle[i].x = r*cos(((double)i/(double)slices)* (2 * pi));
+        lowerCircle[i].x = upperCircle[i].x;
+
+        upperCircle[i].y = r*sin(((double)i/(double)slices)* (2 * pi));
+        lowerCircle[i].y = upperCircle[i].y;
+
+        upperCircle[i].z = heightCylinder;
+        lowerCircle[i].z = 0;
+    }
+
+///Now join the two circles using rectangles
+    for(int i=0; i<=slices; i++){
+        //create shading effect
+        if(i<slices/2)shade=2*(double)i/(double)slices;
+        else shade=2*(1.0-(double)i/(double)slices);
+        glColor3f(shade,shade,shade);
+
+        glBegin(GL_QUADS);
+        {
+            glVertex3f(upperCircle[i%slices].x, upperCircle[i%slices].y, upperCircle[i%slices].z);
+            glVertex3f(upperCircle[(i + 1)%slices].x, upperCircle[(i + 1)%slices].y, upperCircle[(i + 1)%slices].z);
+            glVertex3f(lowerCircle[(i + 1)%slices].x, lowerCircle[(i + 1)%slices].y, lowerCircle[(i + 1)%slices].z);
+            glVertex3f(lowerCircle[i%slices].x, lowerCircle[i%slices].y, lowerCircle[i%slices].z);
+        }
+        glEnd();
+    }
 }
 
 
-void drawWheel()
+void drawWheelFinally()
 {
-    ///Every drawing shapes code comes here
-    glColor3f(1, 0.3, 0.2);
-    drawCenterSmallCircle();
+    double radiusCylinder = 15;
+    double heightCylinder = 15;
+
+    glColor3f(0, 1, 0); ///Green
+    drawWheel(radiusCylinder, heightCylinder);
+
 }
 
 ///------------------------------------------------------------------------------------------------------------------
@@ -417,7 +454,7 @@ void display(){
     //drawSquare(10);
 
 //    drawSS();
-    drawWheel();    ///WHEEL drawing
+    drawWheelFinally();    ///WHEEL drawing
 
     //drawCircle(30,24);
 
