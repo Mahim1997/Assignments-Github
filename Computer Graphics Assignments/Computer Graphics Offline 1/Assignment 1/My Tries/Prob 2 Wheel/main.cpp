@@ -5,9 +5,15 @@
 #include <windows.h>
 #include <glut.h>
 
+#define DEBUG 0
+
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
+
+#define INIT_X 20
+#define INIT_Y 40
+#define INIT_Z 50
 
 double cameraHeight;
 double cameraAngle;
@@ -18,23 +24,147 @@ double angle;
 struct point
 {
 	double x,y,z;
+	void printPoint()
+	{
+	    printf("Point: <%lf, %lf, %lf>\n", x, y, z);
+	}
 };
+struct point makePoint(double a, double b, double c)
+{
+    struct point p;
+    p.x = a; p.y = b; p.z = c;
+    return p;
+};
+/// --------------------------------------------------------------------------------
+
+struct vect
+{
+    char name[10];
+    double x;
+    double y;
+    double z;
+    vect(double a, double b, double c)
+    {
+        x = a;
+        y = b;
+        z = c;
+    }
+    vect()
+    {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+    void printVector()
+    {
+        printf("Vector: <x = %lf, y = %lf, z = %lf>\n", x, y, z);
+    }
+    void printVectorWithName()
+    {
+        printf("Vector %s: <x = %lf, y = %lf, z = %lf>\n", name, x, y, z);
+    }
+    void makeVector(double a, double b, double c)
+    {
+        x = a;
+        y = b;
+        z = c;
+    }
+    void makeVectorWithName(double a, double b, double c, char n[10])
+    {
+        x = a;
+        y = b;
+        z = c;
+        int i;
+        for(i=0; i<10; i++)
+        {
+            name[i] = n[i];
+        }
+    }
+};
+double vector_magnitude(struct vect a)
+{
+    double ans = (a.x * a.x) + (a.y * a.y) + (a.z * a.z);
+    return ( sqrt(ans) );
+}
+
+struct vect vectorCrossProduct(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = (a.y * b.z) - (b.y * a.z);
+    ans.y = -((a.x * b.z) - (b.x * a.z));
+    ans.z = (a.x * b.y) - (b.x * a.y);
+    return ans;
+};
+struct vect vectorAddition(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = a.x + b.x;
+    ans.y = a.y + b.y;
+    ans.z = a.z + b.z;
+    return ans;
+};
+struct vect vectorSubtraction(struct vect a, struct vect b)
+{
+    struct vect ans;
+    ans.x = a.x - b.x;
+    ans.y = a.y - b.y;
+    ans.z = a.z - b.z;
+    return ans;
+};
+double vectorDotProduct(struct vect a, struct vect b)
+{
+    return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z));
+};
+struct vect vectorScale(struct vect a, double f)
+{
+    struct vect ans;
+    ans.x = a.x * f;
+    ans.y = a.y * f;
+    ans.z = a.z * f;
+    return ans;
+};
+struct vect vectorNormalize(struct vect a)
+{
+    double scalar = vector_magnitude(a);
+    scalar = 1.0/scalar;
+    a = vectorScale(a, scalar);
+    return a ;
+};
+/// -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+double angle_newX_wrt_oldX; ///angle of new X' with respect to old X axis
+double angle_wheelX_wrt_newX;   /// angle of first quadrant of wheel (X') wrt new X' axis
+
+struct point center_wheel;  ///To maintain the center of wheel
+
+void initialiseParameters()
+{
+    angle_newX_wrt_oldX = 0;
+    angle_wheelX_wrt_newX = 0;
+
+    center_wheel = makePoint(INIT_X, INIT_Y, INIT_Z);
+}
+
+/// -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 
 void drawAxes()
 {
+    double maxLine = 150;
 	if(drawaxes==1)
 	{
 		glColor3f(1.0, 1.0, 1.0);
 		glBegin(GL_LINES);{
-			glVertex3f( 100,0,0);
-			glVertex3f(-100,0,0);
+			glVertex3f( maxLine,0,0);
+			glVertex3f(-maxLine,0,0);
 
-			glVertex3f(0,-100,0);
-			glVertex3f(0, 100,0);
+			glVertex3f(0,-maxLine,0);
+			glVertex3f(0, maxLine,0);
 
-			glVertex3f(0,0, 100);
-			glVertex3f(0,0,-100);
+			glVertex3f(0,0, maxLine);
+			glVertex3f(0,0,-maxLine);
 		}glEnd();
 	}
 }
@@ -43,22 +173,24 @@ void drawAxes()
 void drawGrid()
 {
 	int i;
+	int numTimes = 15;
+	double lineMax = 160;
 	if(drawgrid==1)
 	{
 		glColor3f(0.6, 0.6, 0.6);	//grey
 		glBegin(GL_LINES);{
-			for(i=-8;i<=8;i++){
+			for(i=-numTimes;i<=numTimes;i++){
 
 				if(i==0)
 					continue;	//SKIP the MAIN axes
 
 				//lines parallel to Y-axis
-				glVertex3f(i*10, -90, 0);
-				glVertex3f(i*10,  90, 0);
+				glVertex3f(i*10, -lineMax, 0);
+				glVertex3f(i*10,  lineMax, 0);
 
 				//lines parallel to X-axis
-				glVertex3f(-90, i*10, 0);
-				glVertex3f( 90, i*10, 0);
+				glVertex3f(-lineMax, i*10, 0);
+				glVertex3f( lineMax, i*10, 0);
 			}
 		}glEnd();
 	}
@@ -67,67 +199,47 @@ void drawGrid()
 void drawSquare(double a)
 {
     //glColor3f(1.0,0.0,0.0);
+    double h = 0;
 	glBegin(GL_QUADS);{
-		glVertex3f( a, a,2);
-		glVertex3f( a,-a,2);
-		glVertex3f(-a,-a,2);
-		glVertex3f(-a, a,2);
+		glVertex3f( a, a,h);
+		glVertex3f( a,-a,h);
+		glVertex3f(-a,-a,h);
+		glVertex3f(-a, a,h);
 	}glEnd();
 }
 
-
-void drawCircle(double radius,int segments)
+void drawCircle_custom(double initX, double initY, double initZ, double radius)
 {
     int i;
     struct point points[100];
-    glColor3f(0.7,0.7,0.7);
+
+    int segments = 50;
     //generate points
     for(i=0;i<=segments;i++)
     {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
+        points[i].x = initX + radius*cos(((double)i/(double)segments)*2*pi);
+        points[i].y = initY + radius*sin(((double)i/(double)segments)*2*pi);
+        points[i].z = initZ ;
     }
+#if DEBUG == 1
+    printf("\n\nPrinting points:\n");
+    for(int i=0; i<=segments; i++){
+        points[i].printPoint();
+    }
+    printf("\n");
+#endif // DEBUG
+
     //draw segments using generated points
     for(i=0;i<segments;i++)
     {
         glBegin(GL_LINES);
         {
-			glVertex3f(points[i].x,points[i].y,0);
-			glVertex3f(points[i+1].x,points[i+1].y,0);
+			glVertex3f(points[i].x, points[i].y, points[i].z);
+			glVertex3f(points[i+1].x, points[i+1].y, points[i+1].z);
         }
         glEnd();
     }
 }
-
-void drawCone(double radius,double height,int segments)
-{
-    int i;
-    double shade;
-    struct point points[100];
-    //generate points
-    for(i=0;i<=segments;i++)
-    {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-    }
-    //draw triangles using generated points
-    for(i=0;i<segments;i++)
-    {
-        //create shading effect
-        if(i<segments/2)shade=2*(double)i/(double)segments;
-        else shade=2*(1.0-(double)i/(double)segments);
-        glColor3f(shade,shade,shade);
-
-        glBegin(GL_TRIANGLES);
-        {
-            glVertex3f(0,0,height);
-			glVertex3f(points[i].x,points[i].y,0);
-			glVertex3f(points[i+1].x,points[i+1].y,0);
-        }
-        glEnd();
-    }
-}
-
 
 void drawSphere(double radius,int slices,int stacks)
 {
@@ -169,33 +281,6 @@ void drawSphere(double radius,int slices,int stacks)
 }
 
 
-void drawSS()
-{
-    glColor3f(1,0,0);
-    drawSquare(20);
-
-    glRotatef(angle,0,0,1);
-    glTranslatef(110,0,0);
-    glRotatef(2*angle,0,0,1);
-    glColor3f(0,1,0);
-    drawSquare(15);
-
-    glPushMatrix();
-    {
-        glRotatef(angle,0,0,1);
-        glTranslatef(60,0,0);
-        glRotatef(2*angle,0,0,1);
-        glColor3f(0,0,1);
-        drawSquare(10);
-    }
-    glPopMatrix();
-
-    glRotatef(3*angle,0,0,1);
-    glTranslatef(40,0,0);
-    glRotatef(4*angle,0,0,1);
-    glColor3f(1,1,0);
-    drawSquare(5);
-}
 
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
@@ -269,10 +354,25 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
 			break;
 	}
 }
+
+///------------------------------------------------------------------------------------------------------------------
+
+
+void drawCenterSmallCircle()
+{
+    double smallRad = 2;
+    drawCircle_custom(center_wheel.x, center_wheel.y, center_wheel.z, smallRad);
+}
+
+
 void drawWheel()
 {
-
+    ///Every drawing shapes code comes here
+    glColor3f(1, 0.3, 0.2);
+    drawCenterSmallCircle();
 }
+
+///------------------------------------------------------------------------------------------------------------------
 
 
 void display(){
@@ -340,6 +440,7 @@ void animate(){
 }
 
 void init(){
+
 	//codes for initialization
 	drawgrid=0;
 	drawaxes=1;
@@ -376,6 +477,7 @@ int main(int argc, char **argv){
 	glutCreateWindow("Assignment 1 - Problem 2 (1505022)");
 
 	init();
+	initialiseParameters(); ///Initializing parameters
 
 	glEnable(GL_DEPTH_TEST);	//enable Depth Testing
 
