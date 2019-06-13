@@ -6,7 +6,7 @@
 #include <glut.h>
 
 #define DEBUG 0
-#define DEBUG_CYLINDER 1
+#define DEBUG_CYLINDER 0
 
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
@@ -365,19 +365,19 @@ void drawWheel(double radius, double heightCylinder)
     double shade = 0;   ///To create shading effect
     int slices = 50;  ///Number of slices for the circle
     double r, h;
-    struct point upperCircle[100];  ///Upper circle
-    struct point lowerCircle[100];  ///Lower circle
+    struct point circle[100];  ///Upper circle
+    struct point upperCircle[100];  ///Lower circle
 
     for(int i=0; i<=slices; i++){
         r = radius;
-        upperCircle[i].x = r*cos(((double)i/(double)slices)* (2 * pi));
-        lowerCircle[i].x = upperCircle[i].x;
+        circle[i].x = r*cos(((double)i/(double)slices)* (2 * pi));  ///Draw wrt x-z axis
+        upperCircle[i].x = circle[i].x;
 
-        upperCircle[i].y = r*sin(((double)i/(double)slices)* (2 * pi));
-        lowerCircle[i].y = upperCircle[i].y;
+        circle[i].z = r*sin(((double)i/(double)slices)* (2 * pi));
+        upperCircle[i].z = circle[i].z;
 
-        upperCircle[i].z = heightCylinder;
-        lowerCircle[i].z = 0;
+        circle[i].y = 0;
+        upperCircle[i].y = heightCylinder;
     }
 
 ///Now join the two circles using rectangles
@@ -389,19 +389,61 @@ void drawWheel(double radius, double heightCylinder)
 
         glBegin(GL_QUADS);
         {
-            glVertex3f(upperCircle[i%slices].x, upperCircle[i%slices].y, upperCircle[i%slices].z);
+            glVertex3f(circle[i%slices].x, circle[i%slices].y, circle[i%slices].z);
+            glVertex3f(circle[(i + 1)%slices].x, circle[(i + 1)%slices].y, circle[(i + 1)%slices].z);
             glVertex3f(upperCircle[(i + 1)%slices].x, upperCircle[(i + 1)%slices].y, upperCircle[(i + 1)%slices].z);
-            glVertex3f(lowerCircle[(i + 1)%slices].x, lowerCircle[(i + 1)%slices].y, lowerCircle[(i + 1)%slices].z);
-            glVertex3f(lowerCircle[i%slices].x, lowerCircle[i%slices].y, lowerCircle[i%slices].z);
+            glVertex3f(upperCircle[i%slices].x, upperCircle[i%slices].y, upperCircle[i%slices].z);
         }
         glEnd();
     }
+
+#if DEBUG_CYLINDER == 1
+    printf("\n\n\nPrinting points for rectangle 1: \n");
+    printf("%lf, %lf, %lf\n", circle[0].x, (heightCylinder * 0.2), circle[0].z);
+    printf("%lf, %lf, %lf\n", circle[0].x, (heightCylinder * 0.8), circle[0].z);
+    printf("%lf, %lf, %lf\n", circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
+    printf("%lf, %lf, %lf\n", circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
+
+    printf("------ ----- ");
+    printf("%lf, %lf, %lf\n", circle[(slices)].x,(heightCylinder * 0.2), circle[(slices)].z);
+    printf("%lf, %lf, %lf\n", circle[(slices)].x,(heightCylinder * 0.8), circle[(slices)].z);
+#endif // DEBUG_CYLINDER
+
+///Drawing the two rectangles
+
+    ///Different color for the rectangles
+    glColor3f(0.8, 0, 0);   //Red
+    //Rectangle 1
+    glBegin(GL_QUADS);  ///circle[0] (0 rev)  ----- circle[slices/2] (half rev) ---- circle[slices] (full rev)
+    {
+        glVertex3f(circle[0].x,(heightCylinder * 0.2), circle[0].z);
+        glVertex3f(circle[0].x,(heightCylinder * 0.8), circle[0].z);
+        glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
+        glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
+    }
+    glEnd();
+
+    //Rect 2 [rotate 90 degrees acw wrt y-axis
+    glPushMatrix();
+    {
+        glRotatef(90, 0, 1, 0);
+        glBegin(GL_QUADS);  //Rectangle 1 code
+        {
+            glVertex3f(circle[0].x,(heightCylinder * 0.2), circle[0].z);
+            glVertex3f(circle[0].x,(heightCylinder * 0.8), circle[0].z);
+            glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.2), circle[(slices/2)].z);
+            glVertex3f(circle[(slices/2)].x,(heightCylinder * 0.8), circle[(slices/2)].z);
+        }
+        glEnd();
+    }
+    glPopMatrix();
+
 }
 
 
 void drawWheelFinally()
 {
-    double radiusCylinder = 15;
+    double radiusCylinder = 25;
     double heightCylinder = 15;
 
     glColor3f(0, 1, 0); ///Green
