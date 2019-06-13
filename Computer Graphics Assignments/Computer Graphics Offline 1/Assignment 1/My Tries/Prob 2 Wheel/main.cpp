@@ -7,6 +7,7 @@
 
 #define DEBUG 0
 #define DEBUG_CYLINDER 0
+#define DEBUG_INITIAL_POSITION 1
 
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
@@ -15,6 +16,9 @@
 #define INIT_X -80
 #define INIT_Y -40
 #define INIT_Z 50
+
+#define RADIUS 30
+#define HEIGHT 15
 
 #define DEL_ANGLE 5 ///How many degrees to move while MOVING
 
@@ -45,37 +49,28 @@ double magnitude(struct point p)
 }
 /// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-double angle_axis_wheel; ///angle of new X' with respect to old X axis
-double angle_turnOf_wheel;   /// angle of first quadrant of wheel (X') wrt new X' axis
-
-double center_wheel_x;
-double center_wheel_y;
+double angle_axis_wheel; ///angle of axle i.e. angle to change when wheel will move forward / backward
+double angle_turnOf_wheel;   /// angle for turning i.e. angle to change when rotation is done
 
 double radiusCylinder ;//= 25;
 double heightCylinder ;//= 15;
 
-struct point initialCenterPoint, centerPoint;
+struct point initialCenterPoint, center_wheel;
 
 void initialiseParameters()
 {
     angle_axis_wheel = 0;
     angle_turnOf_wheel = 0;
 
-    center_wheel_x = INIT_X;
-    center_wheel_y = INIT_Y;
+    radiusCylinder = RADIUS;
+    heightCylinder = HEIGHT;
 
-    radiusCylinder = 30;
-    heightCylinder = 15;
-
-    initialCenterPoint.x = INIT_X;
-    initialCenterPoint.y = INIT_Y;
-
-    centerPoint.x = INIT_X;
-    centerPoint.y = INIT_Y;
+    center_wheel = makePoint(INIT_X, INIT_Y, INIT_Z);
+    initialCenterPoint = makePoint(INIT_X, INIT_Y, INIT_Z);
 
     printf("---------------------- After Initializing Printing parameters begin------------------------------\n\n");
     printf("Center at %lf, %lf, radiusCylinder = %lf, heightCylinder = %lf, angle_axis = %lf, angle_turn = %lf\n",
-           center_wheel_x, center_wheel_y, radiusCylinder, heightCylinder, angle_axis_wheel, angle_turnOf_wheel);
+           center_wheel.x, center_wheel.y, radiusCylinder, heightCylinder, angle_axis_wheel, angle_turnOf_wheel);
     printf("---------------------- After Initializing Printing parameters done------------------------------\n\n");
 }
 
@@ -114,10 +109,6 @@ void drawGrid()
 		glColor3f(0.6, 0.6, 0.6);	//grey
 		glBegin(GL_LINES);{
 			for(i=-numTimes;i<=numTimes;i++){
-
-//				if(i==0)
-//					continue;	//SKIP the MAIN axes
-
 				//lines parallel to Y-axis
 				glVertex3f(i*10, -lineMax, 0);
 				glVertex3f(i*10,  lineMax, 0);
@@ -130,50 +121,6 @@ void drawGrid()
 	}
 }
 
-void drawSquare(double a)
-{
-    //glColor3f(1.0,0.0,0.0);
-    double h = 0;
-	glBegin(GL_QUADS);{
-		glVertex3f( a, a,h);
-		glVertex3f( a,-a,h);
-		glVertex3f(-a,-a,h);
-		glVertex3f(-a, a,h);
-	}glEnd();
-}
-
-void drawCircle_custom(double initX, double initY, double initZ, double radius)
-{
-    int i;
-    struct point points[100];
-
-    int segments = 50;
-    //generate points
-    for(i=0;i<=segments;i++)
-    {
-        points[i].x = initX + radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y = initY + radius*sin(((double)i/(double)segments)*2*pi);
-        points[i].z = initZ ;
-    }
-#if DEBUG == 1
-    printf("\n\nPrinting points:\n");
-    for(int i=0; i<=segments; i++){
-        points[i].printPoint();
-    }
-    printf("\n");
-#endif // DEBUG
-
-    //draw segments using generated points
-    for(i=0;i<segments;i++)
-    {
-        glBegin(GL_LINES);
-        {
-			glVertex3f(points[i].x, points[i].y, points[i].z);
-			glVertex3f(points[i+1].x, points[i+1].y, points[i+1].z);
-        }
-        glEnd();
-    }
-}
 ///------------------------------------------------------------------------------------------------------------------
 
 void positionWheelOnScreen()
@@ -264,11 +211,15 @@ void drawWheel()
     glPushMatrix();
     {
         //Translate wrt -ve x-axis , +ve y-axis and 0 z-axis
-        glTranslatef(-1.0 * center_wheel_x, center_wheel_y, 0);
+        glTranslatef(-1.0 * center_wheel.x, center_wheel.y, 0);
         glRotatef(angle_turnOf_wheel, 0, 0, -1);    ///Rotate with respect to down
 
+
+    //Without this , we CANNOT SIMPLY ROTATE WITHOUT causing the wheel to move its position
         glTranslatef(0, -heightCylinder * 0.5, radiusCylinder); ///Translate upto the center of circle/cylinder point
-        glRotatef(angle_axis_wheel, 0, -1, 0);  ///Rotate wrt -ve y axis
+
+
+        glRotatef(angle_axis_wheel, 0, -1, 0);  ///Rotate wrt -ve y axis [INITIAL ROTATION for MOVE]
 
         positionWheelOnScreen();
     }
@@ -277,12 +228,12 @@ void drawWheel()
 
 void moveWheel(double x_delta, double y_delta)
 {
-    center_wheel_x += x_delta;
-    center_wheel_y += y_delta;
+    center_wheel.x += x_delta;
+    center_wheel.y += y_delta;
 
 ///For testing how much wheel has moved
-    double x_del = center_wheel_x - initialCenterPoint.x;
-    double y_del = center_wheel_y - initialCenterPoint.y;
+    double x_del = center_wheel.x - initialCenterPoint.x;
+    double y_del = center_wheel.y - initialCenterPoint.y;
 
     struct point p = makePoint(x_del, y_del, 0);
     double perimeter_wheel = 2 * pi * radiusCylinder;
@@ -290,37 +241,76 @@ void moveWheel(double x_delta, double y_delta)
            x_del, y_del, magnitude(p), angle_axis_wheel, angle_turnOf_wheel, perimeter_wheel);
 }
 
+void fixAngles()
+{
+//    return ;
+    //fix axle angle
+    if(angle_axis_wheel < 0){
+        angle_axis_wheel = 360 + angle_axis_wheel;
+    }
+    else if(angle_axis_wheel > 360){
+        angle_axis_wheel = angle_axis_wheel - 360;
+    }
+    //fix turn angle
+    if(angle_turnOf_wheel < 0){
+        angle_turnOf_wheel = 360 + angle_turnOf_wheel;
+    }
+    else if(angle_turnOf_wheel > 360){
+        angle_turnOf_wheel = angle_turnOf_wheel - 360;
+    }
+}
+
 void moveForward()  ///w
 {
     ///center should move forward i.e. with respect to -ve x-axis direction
     angle_axis_wheel = angle_axis_wheel + DEL_ANGLE;
-    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
-    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0)) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
+    fixAngles();
+    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * /*For projection on x-axis, cosine is taken*/
+                    ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
+
+    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * /*For projection on y-axis, sine is taken*/
+                    ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
+
     moveWheel(x_delta, y_delta);
 }
 void moveBackward() ///s
 {
     angle_axis_wheel = angle_axis_wheel - DEL_ANGLE;
-    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
-    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0)) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
-    moveWheel(-x_delta, -y_delta);
+    fixAngles();
+
+    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) *  /*For projection on x-axis, cosine is taken*/
+                    ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
+
+    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * /*For projection on y-axis, sine is taken*/
+                    ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));
+
+    moveWheel(-x_delta, -y_delta);  //just reverse direction ??
 }
 void rotateLeft()   ///a
 {
-    angle_turnOf_wheel = angle_turnOf_wheel - DEL_ANGLE;
+    angle_turnOf_wheel = angle_turnOf_wheel - DEL_ANGLE;    //left so, -ve delta
+    fixAngles();
+    printf("\n\n--->>> Left Rotate, angle_turn_wheel = %lf, angle_axis = %lf, center.x = %lf, center.y = %lf\n",
+           angle_turnOf_wheel, angle_axis_wheel, center_wheel.x, center_wheel.y);
 }
 void rotateRight()  ///d
 {
-    angle_turnOf_wheel = angle_turnOf_wheel + DEL_ANGLE;
+    angle_turnOf_wheel = angle_turnOf_wheel + DEL_ANGLE;    //right so, +ve delta
+    fixAngles();
+    printf("\n\n--->>> Right Rotate, angle_turn_wheel = %lf, angle_axis = %lf, center.x = %lf, center.y = %lf\n",
+           angle_turnOf_wheel, angle_axis_wheel, center_wheel.x, center_wheel.y);
 }
 ///------------------------------------------------ Drawing functions end ------------------------------------
 //For debugging
 void setInitialPositionHere()
 {
-    initialCenterPoint.x = center_wheel_x;
-    initialCenterPoint.y = center_wheel_y;
-    printf("\nSetting initial pos here %lf, %lf\n\n", initialCenterPoint.x, initialCenterPoint.y);
+    initialCenterPoint.x = center_wheel.x;
+    initialCenterPoint.y = center_wheel.y;
+#if DEBUG_INITIAL_POSITION == 1
+    printf("\n<DEBUG MODE>Setting initial pos here %lf, %lf\n\n", initialCenterPoint.x, initialCenterPoint.y);
+#endif // DEBUG
 }
+
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
@@ -341,8 +331,8 @@ void keyboardListener(unsigned char key, int x,int y){
             rotateRight();
             break;
     ///Codes for move forward, backward AND rotate left, right end
-    //For debugging
-        case 'v':
+
+        case 'v':   ///For debugging [perimeter check for 360 degrees rotation]
             setInitialPositionHere();
             break;
 		default:
@@ -399,10 +389,6 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
 			break;
 
 		case GLUT_MIDDLE_BUTTON:
-		    if(state == GLUT_DOWN)
-            {
-                drawgrid = 1 - drawgrid;
-            }
 			//........
 			break;
 
@@ -468,7 +454,7 @@ void init(){
 
 	//codes for initialization
 	drawgrid=1;
-	drawaxes=1;
+	drawaxes=0;
 	cameraHeight=150.0;
 	cameraAngle=1.0;
 	angle=0;
@@ -502,7 +488,7 @@ int main(int argc, char **argv){
 	glutCreateWindow("Assignment 1 - Problem 2 (1505022)");
 
 	init();
-	initialiseParameters(); ///Initializing parameters
+	initialiseParameters(); ///Initializing parameters for center_wheel & angles
 
 	glEnable(GL_DEPTH_TEST);	//enable Depth Testing
 
