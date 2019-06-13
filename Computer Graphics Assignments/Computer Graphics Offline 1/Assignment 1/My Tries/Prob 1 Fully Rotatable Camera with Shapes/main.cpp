@@ -166,9 +166,9 @@ void fixTranslationUnit()
 }
 void computeParameters()
 {
-    radiusObject = threshold_movement - translation_unit;
-    heightCylinder = translation_unit * 2;
-    side_cube = translation_unit;
+    radiusObject = threshold_movement - translation_unit;   ///radius of object + translation of object = 40 [Constraint #1]
+    heightCylinder = translation_unit * 2;  ///Cylinder height gets double of the translation because cylinder is 2 X upper-lower
+    side_cube = translation_unit;   ///Cube is 1 X upper-lower
 }
 ///------------------------------------- My Variables End ---------------------------------------
 
@@ -487,13 +487,8 @@ void drawCylinderPartOfObject()
 
 }
 
-
-void drawSquarePartOfObject(double a) ///a = side length
+void draw2Squares(double a, double translation_cube)
 {
-//    side_cube = 0;
-    glColor3d(1, 1, 1); ///White color
-    double translation_cube = 40;
-
     glPushMatrix(); /// Bottom most
     {
         glTranslatef(0, 0, -translation_cube);
@@ -507,55 +502,29 @@ void drawSquarePartOfObject(double a) ///a = side length
         drawSquare(side_cube);
     }
     glPopMatrix();
+}
 
+void drawSquarePartOfObject(double a) ///a = side length
+{
+    glColor3d(1, 1, 1); ///White color
+    double translation_cube = 40;
 
-    glPushMatrix();
+    draw2Squares(a, translation_cube);  ///Bottom and Top
+
+    glPushMatrix(); ///Left front and right back
     {
         glRotatef(90, 0, 1, 0);
-        glPushMatrix(); ///Left facing
-        {
-            glTranslatef(0, 0, translation_cube);
-            drawSquare(side_cube);
-        }
-        glPopMatrix();
-    }
-    glPopMatrix();
-
-    glPushMatrix();
-    {
-        glRotatef(90, 0, 1, 0);
-        glPushMatrix(); ///Right facing
-        {
-            glTranslatef(0, 0, -translation_cube);
-            drawSquare(side_cube);
-        }
-        glPopMatrix();
+        draw2Squares(a, translation_cube);
     }
     glPopMatrix();
 
     glPushMatrix();
     {
         glRotatef(90, 1, 0, 0);
-        glPushMatrix(); ///Left facing 2
-        {
-            glTranslatef(0, 0, translation_cube);
-            drawSquare(side_cube);
-        }
-        glPopMatrix();
+        draw2Squares(a, translation_cube);
     }
     glPopMatrix();
 
-    glPushMatrix();
-    {
-        glRotatef(90, 1, 0, 0);
-        glPushMatrix(); ///Right facing 2
-        {
-            glTranslatef(0, 0, -translation_cube);
-            drawSquare(side_cube);
-        }
-        glPopMatrix();
-    }
-    glPopMatrix();
 }
 
 ///----------------------------- My Functions End ---------------------------------------
