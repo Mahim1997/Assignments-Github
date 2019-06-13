@@ -16,7 +16,7 @@
 #define INIT_Y -40
 #define INIT_Z 50
 
-#define INCREMENT 5 ///How many degrees to move while MOVING
+#define DEL_ANGLE 5 ///How many degrees to move while MOVING
 
 double cameraHeight;
 double cameraAngle;
@@ -280,23 +280,23 @@ void moveWheel(double x_delta, double y_delta)
     center_wheel_x += x_delta;
     center_wheel_y += y_delta;
 
+///For testing how much wheel has moved
     double x_del = center_wheel_x - initialCenterPoint.x;
     double y_del = center_wheel_y - initialCenterPoint.y;
 
     struct point p = makePoint(x_del, y_del, 0);
-    printf("Moved <%lf, %lf> magnitude = %lf, angle_axis_wheel = %lf, angle_turn = %lf\n\n",
-           x_del, y_del, magnitude(p), angle_axis_wheel, angle_turnOf_wheel);
+    double perimeter_wheel = 2 * pi * radiusCylinder;
+    printf("Moved <%lf, %lf> magnitude = %lf, angle_axis_wheel = %lf, angle_turn = %lf, perimeter_wheel = %lf\n\n",
+           x_del, y_del, magnitude(p), angle_axis_wheel, angle_turnOf_wheel, perimeter_wheel);
 }
 
 void moveForward()  ///w
 {
     ///center should move forward i.e. with respect to -ve x-axis direction
-    angle_axis_wheel = angle_axis_wheel + INCREMENT;
-    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180) * INCREMENT);
-    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180) * INCREMENT);
+    angle_axis_wheel = angle_axis_wheel + DEL_ANGLE;
+    double x_delta = cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0) ) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
+    double y_delta = sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * ( ((double)DEL_ANGLE / (double)(360.0)) * (2 * pi * radiusCylinder));//(radiusCylinder * (pi / 180) * DEL_ANGLE);
     moveWheel(x_delta, y_delta);
-//    center_wheel_x = center_wheel_x + ( cos(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180)) );
-//    center_wheel_y = center_wheel_y + ( sin(DEGREE_TO_RAD(angle_turnOf_wheel)) * (radiusCylinder * (pi / 180)) );
 }
 void moveBackward() ///s
 {
