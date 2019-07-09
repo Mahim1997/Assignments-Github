@@ -9,6 +9,17 @@
 #define SIZE 4
 #define INPUT_FILE_NAME "scene.txt"
 
+#define pi (2*acos(0.0))
+#define DEGREE_TO_RAD(x) ((x * pi) / 180)
+#define RAD_TO_DEGREE(x) (x * 180 / pi)
+
+#define DEBUG 1
+#if DEBUG == 1
+    #define DEBUG_TRANSFORMATION 0
+    #define DEBUG_TRIANGLE 1
+#endif // DEBUG
+
+
 using namespace std ;
 
 class Vector ///This is a 4X4 vector used throughout
@@ -209,6 +220,9 @@ Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3)
     m.formColumn(v3, 2);
     Vector v4(0, 0, 0, 1);
     m.formColumn(v4, 3);
+    for(int i=0; i<(SIZE - 1); i++){
+        m.elements[SIZE - 1][i] = 0.0;
+    }
     return m;
 }
 Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3, Vector v4)
@@ -273,6 +287,7 @@ void pushToStackProduct(Matrix toPush)
 {
     Matrix top = stack_transformations.top();
     Matrix prod = MatrixProduct(top, toPush);
+//    prod.makeHomogenousAgain();
     stack_transformations.push(prod);
 }
 void pushToStackInitial(Matrix toPush)
@@ -346,8 +361,10 @@ Matrix Transformation_Scale(double sx, double sy, double sz)
 
 Vector Rodrigues_Formula(Vector x, Vector a, double theta)
 {
+    theta = DEGREE_TO_RAD(theta);
     Vector v1 = vectorScale(x, cos(theta));
-    Vector v2 = vectorScale(a, (1 - cos(theta) * (vectorDotProduct(a, x))));
+//    Vector v2 = vectorScale(  a, vectorScale( vectorDotProduct(a, x) , (1 - cos(theta) ) )  );
+    Vector v2 = vectorScale(a, (1 - cos(theta)) * (vectorDotProduct(a, x)));
     Vector v3 = vectorScale(vectorCrossProduct(a, x), sin(theta));
     Vector rodrigues_ans = vectorAddition(v1, vectorAddition(v2, v3));
     return rodrigues_ans;
@@ -355,19 +372,32 @@ Vector Rodrigues_Formula(Vector x, Vector a, double theta)
 
 Matrix Transformation_Rotate(double angle, double ax, double ay, double az)
 {
-    Vector a(ax, ay, az, 1);
+    Vector a(ax, ay, az, 1); //Shouldn't it be 0 ?
     a = vectorNormalize(a); //Normalize the vector
 
     Vector c1, c2, c3;
-    Vector i(1, 0, 0), j(0, 1, 0), k(0, 0, 1);
+    Vector i(1, 0, 0, 0), j(0, 1, 0, 0), k(0, 0, 1, 0);
     c1 = Rodrigues_Formula(i, a, angle);
     c2 = Rodrigues_Formula(j, a, angle);
     c3 = Rodrigues_Formula(k, a, angle);
 
+
+    printf("--------------------------------------------------------------------------------\n");
+    printf("Inside Transformation_Rotate .... angle = %lf, ax = %lf, ay = %lf, az = %lf\n", angle, ax, ay, az);
+    printf("Now printing c1, c2, c3\n");
+    c1.printVector();
+    c2.printVector();
+    c3.printVector();
     Matrix rotate_matrix = MatrixFormationFromVector_WrtCol(Vector(c1.x, c1.y, c1.z, 0),
                                                             Vector(c2.x, c2.y, c2.z, 0),
                                                             Vector(c3.x, c3.y, c3.z, 0),
                                                             Vector(0, 0, 0, 1));
+
+    printf("RETURNING THE MATRIX OF ROTATION \n");
+    rotate_matrix.printMatrix();
+
+    printf("--------------------------------------------------------------------------------\n");
+
     return rotate_matrix;
 }
 
@@ -382,26 +412,31 @@ void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
 
     //Output Triangle to output stream
 //    cout << "Inside outputTriangleToFile ... printing vectors v1, v2, v3" << endl ;
-//    v1.printVector();
-//    v2.printVector();
-//    v3.printVector();
+//    v1.printVector(true);
+//    v2.printVector(true);
+//    v3.printVector(true);
 
     Matrix m;
-    m = MatrixFormationFromVector_WrtRow(v1, v2, v3);
-//    m.printMatrix(false);
+    m = MatrixFormationFromVector_WrtCol(v1, v2, v3);
+//    cout << "Printing the triangle matrix \n";
+//    m.printMatrix(true);
 
     Matrix triangle;
     triangle = MatrixProduct(topStack, m);
+    triangle.makeHomogenousAgain();
 
-    Vector row1, row2, row3;
-    row1 = triangle.getRowVector(0);
-    row2 = triangle.getRowVector(1);
-    row3 = triangle.getRowVector(2);
+    Vector col1, col2, col3;
+    col1 = triangle.getColumnVector(0);
+    col2 = triangle.getColumnVector(1);
+    col3 = triangle.getColumnVector(2);
 
+#if DEBUG_TRIANGLE == 1
     cout << "Triangle" << endl;
-    row1.printVector();
-    row2.printVector();
-    row3.printVector();
+    col1.printVector(true);
+    col2.printVector(true);
+    col3.printVector(true);
+    cout << endl;
+#endif // DEBUG_TRIANGLE
 
 }
 
@@ -441,7 +476,15 @@ int extractCommand()
         stack_how_many_transformations_to_remove.pop();
         stack_how_many_transformations_to_remove.push(top);
 
+        Matrix translation_matrix = Transformation_Translation(x, y, z);
 
+#if DEBUG_TRANSFORMATION == 1
+        cout << "Translation matrix is : " << endl ;
+        translation_matrix.printMatrix();
+#endif // DEBUG_TRANSFORMATION
+
+        //Push to matrix
+        pushToStackProduct(translation_matrix);
     }
     else if(inputString == "scale"){
         double x, y, z;
@@ -451,6 +494,16 @@ int extractCommand()
         top++;
         stack_how_many_transformations_to_remove.pop();
         stack_how_many_transformations_to_remove.push(top);
+
+        Matrix scale_matrix = Transformation_Scale(x, y, z);
+
+#if DEBUG_TRANSFORMATION == 1
+        cout << "Scale matrix is : " << endl ;
+        scale_matrix.printMatrix();
+#endif // DEBUG_TRANSFORMATION
+
+        //Push to matrix
+        pushToStackProduct(scale_matrix);
     }
     else if(inputString == "rotate"){
         double angle, x, y, z;
@@ -460,15 +513,30 @@ int extractCommand()
         top++;
         stack_how_many_transformations_to_remove.pop();
         stack_how_many_transformations_to_remove.push(top);
+
+        Matrix rotate_matrix = Transformation_Rotate(angle, x, y, z);
+#if DEBUG_TRANSFORMATION == 1
+        cout << "Rotation matrix is : " << endl ;
+        rotate_matrix.printMatrix();
+#endif // DEBUG_TRANSFORMATION
+        //Push to matrix
+        pushToStackProduct(rotate_matrix);
+
     }
     else if(inputString == "push"){
         //TO DO
+#if DEBUG_TRANSFORMATION == 1
+        cout << "Pushing to count_stack 0\n";
+#endif // DEBUG_TRANSFORMATION
         stack_how_many_transformations_to_remove.push(0); //Push how many indices to remove
     }
     else if(inputString == "pop"){
         //TO DO
         int how_many_to_remove = stack_how_many_transformations_to_remove.top(); //Pop how many to remove
         stack_how_many_transformations_to_remove.pop();
+#if DEBUG_TRANSFORMATION == 1
+        cout << "To remove [pop] from transformations_stack is " << how_many_to_remove << endl ;
+#endif // DEBUG_TRANSFORMATION
         for(int i=0; i<how_many_to_remove; i++){
             stack_transformations.pop(); ///Pop THESE many items from stack_transformations
         }
