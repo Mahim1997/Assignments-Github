@@ -28,8 +28,13 @@ public:
         this->x = a; this->y = b; this->z = c; this->w = d;
     }
 
-    void printVector(){
-        cout << x << " " << y << " " << z << " " << w << endl;
+    void printVector(bool flag = false){
+        if(flag == true){
+            cout << x << " " << y << " " << z << endl ;
+        }
+        else{
+            cout << x << " " << y << " " << z << " " << w << endl;
+        }
     }
     double magnitude(){
         double ans = (x*x) + (y*y) + (z*z);
@@ -175,6 +180,25 @@ public:
         this->elements[2][index_col] = v.z;
         this->elements[3][index_col] = v.w;
     }
+    Vector getColumnVector(int index_col)
+    {
+        Vector v;
+        v.x = elements[0][index_col];
+        v.y = elements[1][index_col];
+        v.z = elements[2][index_col];
+        v.w = elements[3][index_col];
+        return v;
+    }
+    Vector getRowVector(int index_row)
+    {
+        Vector v;
+        v.x = elements[index_row][0];
+        v.y = elements[index_row][1];
+        v.z = elements[index_row][2];
+        v.w = elements[index_row][3];
+        return v;
+    }
+
 };
 
 Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3)
@@ -183,6 +207,27 @@ Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3)
     m.formColumn(v1, 0);
     m.formColumn(v2, 1);
     m.formColumn(v3, 2);
+    Vector v4(0, 0, 0, 1);
+    m.formColumn(v4, 3);
+    return m;
+}
+Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3, Vector v4)
+{
+    Matrix m;
+    m.formColumn(v1, 0);
+    m.formColumn(v2, 1);
+    m.formColumn(v3, 2);
+    m.formColumn(v4, 3);
+    return m;
+}
+
+Matrix MatrixFormationFromVector_WrtRow(Vector v1, Vector v2, Vector v3, Vector v4)
+{
+    Matrix m;
+    m.formRow(v1, 0);
+    m.formRow(v2, 1);
+    m.formRow(v3, 2);
+    m.formRow(v4, 3);
     return m;
 }
 
@@ -192,6 +237,8 @@ Matrix MatrixFormationFromVector_WrtRow(Vector v1, Vector v2, Vector v3)
     m.formRow(v1, 0);
     m.formRow(v2, 1);
     m.formRow(v3, 2);
+    Vector v4(0, 0, 0, 1);
+    m.formColumn(v4, 3);
     return m;
 }
 
@@ -276,18 +323,61 @@ void extractFirst4Lines()
 
 //----------------------------------------------------- Transformation functions begin -------------------------------------------
 
+Matrix Transformation_Translation(double tx, double ty, double tz)
+{
+    Vector translationVector(tx, ty, tz, 1);
+    Matrix m;
+    m.formColumn(Vector(1, 0, 0, 0), 0);
+    m.formColumn(Vector(0, 1, 0, 0), 1);
+    m.formColumn(Vector(0, 0, 1, 0), 2);
+    m.formColumn(translationVector, 3);
+    return m;
+}
 
+Matrix Transformation_Scale(double sx, double sy, double sz)
+{
+    Matrix m;
+    m.formColumn(Vector(sx, 0, 0, 0), 0);
+    m.formColumn(Vector(0, sy, 0, 0), 1);
+    m.formColumn(Vector(0, 0, sz, 0), 2);
+    m.formColumn(Vector(0, 0, 0, 1), 3);
+    return m;
+}
 
+Vector Rodrigues_Formula(Vector x, Vector a, double theta)
+{
+    Vector v1 = vectorScale(x, cos(theta));
+    Vector v2 = vectorScale(a, (1 - cos(theta) * (vectorDotProduct(a, x))));
+    Vector v3 = vectorScale(vectorCrossProduct(a, x), sin(theta));
+    Vector rodrigues_ans = vectorAddition(v1, vectorAddition(v2, v3));
+    return rodrigues_ans;
+}
 
+Matrix Transformation_Rotate(double angle, double ax, double ay, double az)
+{
+    Vector a(ax, ay, az, 1);
+    a = vectorNormalize(a); //Normalize the vector
 
+    Vector c1, c2, c3;
+    Vector i(1, 0, 0), j(0, 1, 0), k(0, 0, 1);
+    c1 = Rodrigues_Formula(i, a, angle);
+    c2 = Rodrigues_Formula(j, a, angle);
+    c3 = Rodrigues_Formula(k, a, angle);
+
+    Matrix rotate_matrix = MatrixFormationFromVector_WrtCol(Vector(c1.x, c1.y, c1.z, 0),
+                                                            Vector(c2.x, c2.y, c2.z, 0),
+                                                            Vector(c3.x, c3.y, c3.z, 0),
+                                                            Vector(0, 0, 0, 1));
+    return rotate_matrix;
+}
 
 
 //----------------------------------------------------- Transformation functions end -------------------------------------------
 
 void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
 {
-    //Make Transformation
-
+    //Apply Transformation
+    Matrix topStack = stack_transformations.top();
 
 
     //Output Triangle to output stream
@@ -298,7 +388,20 @@ void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
 
     Matrix m;
     m = MatrixFormationFromVector_WrtRow(v1, v2, v3);
-    m.printMatrix(false);
+//    m.printMatrix(false);
+
+    Matrix triangle;
+    triangle = MatrixProduct(topStack, m);
+
+    Vector row1, row2, row3;
+    row1 = triangle.getRowVector(0);
+    row2 = triangle.getRowVector(1);
+    row3 = triangle.getRowVector(2);
+
+    cout << "Triangle" << endl;
+    row1.printVector();
+    row2.printVector();
+    row3.printVector();
 
 }
 
@@ -337,6 +440,8 @@ int extractCommand()
         top++;
         stack_how_many_transformations_to_remove.pop();
         stack_how_many_transformations_to_remove.push(top);
+
+
     }
     else if(inputString == "scale"){
         double x, y, z;
