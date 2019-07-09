@@ -3,6 +3,7 @@
 #include <string>
 #include<algorithm> // ?
 #include<cstdio>
+#include<cmath>
 #include<cstdlib>
 #include <stack> //Stack inspiration from https://www.geeksforgeeks.org/stack-push-and-pop-in-c-stl/
 #define SIZE 4
@@ -30,7 +31,68 @@ public:
     void printVector(){
         cout << x << " " << y << " " << z << " " << w << endl;
     }
+    double magnitude(){
+        double ans = (x*x) + (y*y) + (z*z);
+        ans = sqrt(ans);
+        return ans;
+    }
 };
+
+//--------------------------------------------------------- Vector functions begin --------------------------------------------------------------
+Vector vectorScale(Vector a, double scale)
+{
+    Vector ans;
+    ans.x = a.x * scale;
+    ans.y = a.y * scale;
+    ans.z = a.z * scale;
+    ans.w = a.w * scale;
+    return ans;
+}
+Vector vectorNormalize(Vector a)
+{
+    double factor = a.magnitude();
+    Vector v = vectorScale(a, factor);
+    return v;
+}
+Vector vectorMakeHomogenous(Vector a)
+{
+    double scale = 1;
+    if(a.w != 1){
+        scale = (double)(1.0 / a.w);
+    }
+    Vector v = vectorScale(a, scale);
+    return v;
+}
+Vector vectorCrossProduct(Vector a, Vector b)
+{
+    Vector ans;
+    ans.x = (a.y * b.z) - (b.y * a.z);
+    ans.y = -((a.x * b.z) - (b.x * a.z));
+    ans.z = (a.x * b.y) - (b.x * a.y);
+    return ans;
+};
+Vector vectorAddition(Vector a, Vector b)
+{
+    Vector ans;
+    ans.x = a.x + b.x;
+    ans.y = a.y + b.y;
+    ans.z = a.z + b.z;
+    return ans;
+};
+Vector vectorSubtraction(Vector a, Vector b)
+{
+    Vector ans;
+    ans.x = a.x - b.x;
+    ans.y = a.y - b.y;
+    ans.z = a.z - b.z;
+    return ans;
+};
+double vectorDotProduct(Vector a, Vector b)
+{
+    return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z));
+};
+
+//--------------------------------------------------------- Vector functions end --------------------------------------------------------------
 
 class Matrix ///This is 4X4 matrix used throughout
 {
@@ -59,10 +121,14 @@ public:
             }
         }
     }
-    void printMatrix()
+    void printMatrix(bool flag = true)
     {
-        for(int i=0; i<SIZE; i++){
-            for(int j=0; j<SIZE; j++){
+        int SIZE_USED = SIZE;
+        if(flag == false){
+            SIZE_USED = SIZE - 1;
+        }
+        for(int i=0; i<SIZE_USED; i++){
+            for(int j=0; j<SIZE_USED; j++){
                 cout << elements[i][j] << " ";
             }
             cout << endl ;
@@ -95,8 +161,39 @@ public:
         factor = (double)1.0 / factor; //eg. if w = 5, then factor = 1/5 = 0.2
         scale(factor); //Scale back to make w = 1 again
     }
-
+    void formRow(Vector v, int index_row)
+    {
+        this->elements[index_row][0] = v.x;
+        this->elements[index_row][1] = v.y;
+        this->elements[index_row][2] = v.z;
+        this->elements[index_row][3] = v.w;
+    }
+    void formColumn(Vector v, int index_col)
+    {
+        this->elements[0][index_col] = v.x;
+        this->elements[1][index_col] = v.y;
+        this->elements[2][index_col] = v.z;
+        this->elements[3][index_col] = v.w;
+    }
 };
+
+Matrix MatrixFormationFromVector_WrtCol(Vector v1, Vector v2, Vector v3)
+{
+    Matrix m;
+    m.formColumn(v1, 0);
+    m.formColumn(v2, 1);
+    m.formColumn(v3, 2);
+    return m;
+}
+
+Matrix MatrixFormationFromVector_WrtRow(Vector v1, Vector v2, Vector v3)
+{
+    Matrix m;
+    m.formRow(v1, 0);
+    m.formRow(v2, 1);
+    m.formRow(v3, 2);
+    return m;
+}
 
 Matrix MatrixProduct(Matrix a, Matrix b)
 {
@@ -118,6 +215,12 @@ ifstream fileReaderStream;  //ifstream used to read the file
 Vector eye, look, up;
 double fovY, aspectRatio, nearDistance, farDistance;
 stack<Matrix> stack_transformations;
+stack<int> stack_how_many_transformations_to_remove;
+
+
+ofstream ouptutStage1File;
+ofstream ouptutStage2File;
+ofstream ouptutStage3File;
 
 void pushToStackProduct(Matrix toPush)
 {
@@ -171,7 +274,33 @@ void extractFirst4Lines()
     fileReaderStream >> fovY >> aspectRatio >> nearDistance >> farDistance;
 }
 
+//----------------------------------------------------- Transformation functions begin -------------------------------------------
 
+
+
+
+
+
+
+//----------------------------------------------------- Transformation functions end -------------------------------------------
+
+void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
+{
+    //Make Transformation
+
+
+
+    //Output Triangle to output stream
+//    cout << "Inside outputTriangleToFile ... printing vectors v1, v2, v3" << endl ;
+//    v1.printVector();
+//    v2.printVector();
+//    v3.printVector();
+
+    Matrix m;
+    m = MatrixFormationFromVector_WrtRow(v1, v2, v3);
+    m.printMatrix(false);
+
+}
 
 int extractCommand()
 {
@@ -185,32 +314,80 @@ int extractCommand()
         toReturn = -1;
     }
     else if(inputString == "triangle"){
+        double x1, x2, x3, y1, y2, y3, z1, z2, z3;
+        fileReaderStream >> x1 >> y1 >> z1;
+        fileReaderStream >> x2 >> y2 >> z2;
+        fileReaderStream >> x3 >> y3 >> z3;
+
+        //cout << "TRIANGLE\n";
+        //printf("%lf, %lf, %lf\n%lf, %lf, %lf\n%lf, %lf, %lf\n\n", x1, y1, z1, x2, y2, z2, x3, y3, z3);
+
+        Vector v1(x1, y1, z1);
+        Vector v2(x2, y2, z2);
+        Vector v3(x3, y3, z3);
+
+        outputTriangleToFile(v1, v2, v3);
 
     }
     else if(inputString == "translate"){
-
+        double x, y, z;
+        fileReaderStream >> x >> y >> z;
+        //TO DO
+        int top = stack_how_many_transformations_to_remove.top();
+        top++;
+        stack_how_many_transformations_to_remove.pop();
+        stack_how_many_transformations_to_remove.push(top);
     }
     else if(inputString == "scale"){
-
+        double x, y, z;
+        fileReaderStream >> x >> y >> z;
+        //TO DO
+        int top = stack_how_many_transformations_to_remove.top();
+        top++;
+        stack_how_many_transformations_to_remove.pop();
+        stack_how_many_transformations_to_remove.push(top);
     }
     else if(inputString == "rotate"){
-
+        double angle, x, y, z;
+        fileReaderStream >> angle >> x >> y >> z;
+        //TO DO
+        int top = stack_how_many_transformations_to_remove.top();
+        top++;
+        stack_how_many_transformations_to_remove.pop();
+        stack_how_many_transformations_to_remove.push(top);
     }
     else if(inputString == "push"){
-
+        //TO DO
+        stack_how_many_transformations_to_remove.push(0); //Push how many indices to remove
     }
     else if(inputString == "pop"){
-
+        //TO DO
+        int how_many_to_remove = stack_how_many_transformations_to_remove.top(); //Pop how many to remove
+        stack_how_many_transformations_to_remove.pop();
+        for(int i=0; i<how_many_to_remove; i++){
+            stack_transformations.pop(); ///Pop THESE many items from stack_transformations
+        }
     }
 
 
     return toReturn;
 }
 
+//Forward declarations
+void testStack();
+
 int main()
 {
     //I/O inspiration from http://www.cplusplus.com/forum/beginner/8388/
     fileReaderStream.open(INPUT_FILE_NAME);
+    ouptutStage1File.open("stage1.txt");
+    ouptutStage2File.open("stage2.txt");
+    ouptutStage3File.open("stage3.txt");
+
+    //Push identity matrix
+    Matrix m1;
+    pushToStackInitial(m1.getIdentityMatrix());
+
     //while(true) //Wait until the 'END' command is found
     extractFirst4Lines();
     //printEyeLookUpParams(); //Done
@@ -222,7 +399,7 @@ int main()
         }
     }
 
-    //testStack(); //Works
+//    testStack(); //Works
 
     fileReaderStream.close(); //close the ifstream
 }
