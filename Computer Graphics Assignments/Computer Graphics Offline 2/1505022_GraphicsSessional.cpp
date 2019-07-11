@@ -13,12 +13,12 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG == 1
     #define DEBUG_TRANSFORMATION 0
     #define DEBUG_TRIANGLE 1
     #define DEBUG_TRANSFORMATION_FUNCTION 1
-    #define DEBUG_STACK 1
+    #define DEBUG_STACK 0
 #endif // DEBUG
 
 
@@ -411,8 +411,8 @@ Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
     a = vectorNormalize(a); //Normalize the vector
     a.w = 1; // ??
 
-    printf("--->>> Vector a = "); a.printVector();
-    printf("---===--->>> NORMALIZED VECTOR a = "); a.printVector();
+//    printf("--->>> Vector a = "); a.printVector();
+//    printf("---===--->>> NORMALIZED VECTOR a = "); a.printVector();
 
 
     Vector c1, c2, c3;
@@ -648,6 +648,8 @@ void testStack();
 
 int main()
 {
+    printf("Running ... \n\n");
+
     cout << std::fixed;
 
     fileReaderStream.open(INPUT_FILE_NAME);
@@ -676,6 +678,9 @@ int main()
     ouptutStage1File.close(); //close the ofstreams
     ouptutStage2File.close();
     ouptutStage3File.close();
+
+    printf("Completed\n\n");
+
 }
 
 void testStack()
