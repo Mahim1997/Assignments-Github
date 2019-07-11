@@ -6,6 +6,10 @@
 #include<cmath>
 #include<cstdlib>
 #include <stack>
+
+#include<iomanip>
+#include<limits>
+
 #define SIZE 4
 #define INPUT_FILE_NAME "scene.txt"
 
@@ -689,28 +693,35 @@ int extractCommand()
     return toReturn;
 }
 
-//Forward declarations
-void testStack();
 
 int main()
 {
+    cout << std::fixed;
     printf("Running ... \n\n");
 
-    cout << std::fixed;
+    fileReaderStream.open(INPUT_FILE_NAME); ///Open the input_file_stream
+    if(fileReaderStream.fail() || fileReaderStream.bad())
+    {
+        printf("FAIL IN READING FILE scene.txt\n\n");
+        return -1;
+    }
 
-    fileReaderStream.open(INPUT_FILE_NAME);
+
+    ///Open the output file streams
     ouptutStage1File.open("stage1.txt");
     ouptutStage2File.open("stage2.txt");
     ouptutStage3File.open("stage3.txt");
 
-    ouptutStage1File << std::fixed ;
-    ouptutStage2File << std::fixed ;
-    ouptutStage3File << std::fixed ;
+    ///To remove scientific notations + to set 7 decimal digits
+    ouptutStage1File <<  setprecision(7) << std::fixed ;
+    ouptutStage2File <<  setprecision(7) << std::fixed ;
+    ouptutStage3File <<  setprecision(7) << std::fixed ;
 
 
     //Push identity matrix
     Matrix m1;
     pushToStackInitial(m1.getIdentityMatrix());
+
 
     //while(true) //Wait until the 'END' command is found
     extractFirst4Lines();
