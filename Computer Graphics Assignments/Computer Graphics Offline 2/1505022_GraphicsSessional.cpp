@@ -469,8 +469,40 @@ Vector vectorProductWithMatrix(Matrix mat, Vector v)
 
 void obtainProjectionMatrix()
 {
+//Calculate parameters
+    double fovX = fovY * aspectRatio;           //fovX = fovY * aspectRatio
+    double t = nearDistance * tan((fovY * 0.5)); //t = near * tan(fovY / 2)
+    double r = nearDistance * tan((fovX * 0.5)); //r = near * tan(fovX / 2)
 
+//Row obtaining for projection matrix
+    double element_row3_1 = (-1.0) * ( (farDistance + nearDistance) / (farDistance - nearDistance) ); //matrix[row=3][col=3]
+    double element_row3_2 = (-1.0) * ( (2 * farDistance * nearDistance) / (farDistance - nearDistance) ); //matrix[row=3][col=4]
+    Vector row1 = Vector((nearDistance / r), 0, 0, 0);
+    Vector row2 = Vector(0, (nearDistance / t), 0, 0);
+    Vector row3 = Vector(0, 0, element_row3_1, element_row3_2);
+    Vector row4 = Vector(0, 0, -1, 0);
+//Set the projection matrix
+    projection_matrix = MatrixFormationFromVector_WrtRow(row1, row2, row3, row4);
 }
+//For stage3.txt
+void outputTriangleToFileStage3(Vector v1, Vector v2, Vector v3)
+{
+///Obtain the product with the projection matrix of each triangle vector obtained from stage2.txt
+    Vector transformed_v1 = vectorProductWithMatrix(projection_matrix, v1);
+    Vector transformed_v2 = vectorProductWithMatrix(projection_matrix, v2);
+    Vector transformed_v3 = vectorProductWithMatrix(projection_matrix, v3);
+///Make homogenous again
+    transformed_v1 = vectorMakeHomogenous(transformed_v1);
+    transformed_v2 = vectorMakeHomogenous(transformed_v2);
+    transformed_v3 = vectorMakeHomogenous(transformed_v3);
+
+///Output to stage3.txt
+    transformed_v1.outputToStage3();
+    transformed_v2.outputToStage3();
+    transformed_v3.outputToStage3();
+    ouptutStage3File << endl ; //output a new line
+}
+
 
 ///To obtain the view matrix
 void obtainViewMatrix()
@@ -499,7 +531,7 @@ void obtainViewMatrix()
 ///For stage2.txt output
 void outputTriangleToFileStage2(Vector v1, Vector v2, Vector v3)
 {
-///Obtain the product with the view matrix of each triangle vector
+///Obtain the product with the view matrix of each triangle vector obtained from stage1.txt
     Vector transformed_v1 = vectorProductWithMatrix(view_matrix, v1);
     Vector transformed_v2 = vectorProductWithMatrix(view_matrix, v2);
     Vector transformed_v3 = vectorProductWithMatrix(view_matrix, v3);
@@ -513,6 +545,8 @@ void outputTriangleToFileStage2(Vector v1, Vector v2, Vector v3)
     transformed_v2.outputToStage2();
     transformed_v3.outputToStage2();
     ouptutStage2File << endl ; //output a new line
+//Go to do things for stage3.txt
+    outputTriangleToFileStage3(transformed_v1, transformed_v2, transformed_v3);
 }
 
 int triangle_num = 1; ///For debugging purposes
