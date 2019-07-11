@@ -16,7 +16,8 @@
 #define DEBUG 1
 #if DEBUG == 1
     #define DEBUG_TRANSFORMATION 0
-    #define DEBUG_TRIANGLE 1
+    #define DEBUG_TRIANGLE 0
+    #define DEBUG_TRANSFORMATION_FUNCTION 1
 #endif // DEBUG
 
 
@@ -26,7 +27,7 @@ class Vector ///This is a 4X4 vector used throughout
 {
 public:
     double x, y, z, w;
-    Vector(){x = 0; y = 0; z = 0; w = 0;}
+    Vector(){x = 0; y = 0; z = 0; w = 1;}
     Vector(double a, double b, double c)
     {
         this->x = a; this->y = b; this->z = c; this->w = 1;
@@ -40,6 +41,7 @@ public:
     }
 
     void printVector(bool flag = false){
+        cout << std::fixed ;
         if(flag == true){
             cout << x << " " << y << " " << z << endl ;
         }
@@ -85,6 +87,10 @@ Vector vectorCrossProduct(Vector a, Vector b)
     ans.x = (a.y * b.z) - (b.y * a.z);
     ans.y = -((a.x * b.z) - (b.x * a.z));
     ans.z = (a.x * b.y) - (b.x * a.y);
+
+//    printf("---->>>> Inside CROSS PRODUCT ... a =  "); a.printVector(); printf("   b = "); b.printVector();
+//    printf("Cross prod is "); ans.printVector();
+
     return ans;
 };
 Vector vectorAddition(Vector a, Vector b)
@@ -338,7 +344,7 @@ void extractFirst4Lines()
 
 //----------------------------------------------------- Transformation functions begin -------------------------------------------
 
-Matrix Transformation_Translation(double tx, double ty, double tz)
+Matrix Transformation_Translation(double tx, double ty, double tz)  //Works
 {
     Vector translationVector(tx, ty, tz, 1);
     Matrix m;
@@ -349,54 +355,54 @@ Matrix Transformation_Translation(double tx, double ty, double tz)
     return m;
 }
 
-Matrix Transformation_Scale(double sx, double sy, double sz)
+Matrix Transformation_Scale(double sx, double sy, double sz) //Works
 {
     Matrix m;
     m.formColumn(Vector(sx, 0, 0, 0), 0);
     m.formColumn(Vector(0, sy, 0, 0), 1);
     m.formColumn(Vector(0, 0, sz, 0), 2);
-    m.formColumn(Vector(0, 0, 0, 1), 3);
+    m.formColumn(Vector(0, 0, 0,  1), 3);
     return m;
 }
 
-Vector Rodrigues_Formula(Vector x, Vector a, double theta)
+Vector Rodrigues_Formula(Vector x, Vector a, double theta)  //Rodrigues Formula works
 {
+
     theta = DEGREE_TO_RAD(theta);
     Vector v1 = vectorScale(x, cos(theta));
 //    Vector v2 = vectorScale(  a, vectorScale( vectorDotProduct(a, x) , (1 - cos(theta) ) )  );
     Vector v2 = vectorScale(a, (1 - cos(theta)) * (vectorDotProduct(a, x)));
     Vector v3 = vectorScale(vectorCrossProduct(a, x), sin(theta));
     Vector rodrigues_ans = vectorAddition(v1, vectorAddition(v2, v3));
+
+    printf("==>>Inside Rodrigues_Formula ... theta = %lf, x = ", theta); x.printVector(); printf("   and  a = "); a.printVector();
+    printf("---->> RETURNING FROM RODRIGUEZ ... ans is "); rodrigues_ans.printVector();
+
     return rodrigues_ans;
 }
 
-Matrix Transformation_Rotate(double angle, double ax, double ay, double az)
+Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
 {
     Vector a(ax, ay, az, 1); //Shouldn't it be 0 ?
     a = vectorNormalize(a); //Normalize the vector
 
     Vector c1, c2, c3;
-    Vector i(1, 0, 0, 0), j(0, 1, 0, 0), k(0, 0, 1, 0);
+    Vector i(1, 0, 0, 1), j(0, 1, 0, 1), k(0, 0, 1, 1);  // w = 1 is kept
+///Obtain the columns where unit axes x, y, and z are going to be mapped to as c1, c2, c3 respectively.
     c1 = Rodrigues_Formula(i, a, angle);
     c2 = Rodrigues_Formula(j, a, angle);
     c3 = Rodrigues_Formula(k, a, angle);
 
+//    printf("C1 column is :"); c1.printVector();
+//    printf("C2 column is :"); c2.printVector();
+//    printf("C3 column is :"); c3.printVector();
 
-    printf("--------------------------------------------------------------------------------\n");
-    printf("Inside Transformation_Rotate .... angle = %lf, ax = %lf, ay = %lf, az = %lf\n", angle, ax, ay, az);
-    printf("Now printing c1, c2, c3\n");
-    c1.printVector();
-    c2.printVector();
-    c3.printVector();
-    Matrix rotate_matrix = MatrixFormationFromVector_WrtCol(Vector(c1.x, c1.y, c1.z, 0),
+    Matrix rotate_matrix = MatrixFormationFromVector_WrtCol(Vector(c1.x, c1.y, c1.z, 0), /*Matrix formation using c1 as col1 , c2 as col2 and so on*/
                                                             Vector(c2.x, c2.y, c2.z, 0),
                                                             Vector(c3.x, c3.y, c3.z, 0),
-                                                            Vector(0, 0, 0, 1));
+                                                            Vector(0, 0, 0, 1));  /// Last column is simply 0, 0, 0, 1
 
-    printf("RETURNING THE MATRIX OF ROTATION \n");
-    rotate_matrix.printMatrix();
-
-    printf("--------------------------------------------------------------------------------\n");
+//    rotate_matrix.printMatrix();
 
     return rotate_matrix;
 }
