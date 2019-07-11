@@ -63,19 +63,16 @@ public:
     }
     void outputToStage1()
     {
-        ouptutStage1File << std::fixed ;
         ouptutStage1File << x << " " << y << " " << z ;
         ouptutStage1File << endl ;
     }
     void outputToStage2()
     {
-        ouptutStage2File << std::fixed ;
         ouptutStage2File << x << " " << y << " " << z ;
         ouptutStage2File << endl ;
     }
     void outputToStage3()
     {
-        ouptutStage3File << std::fixed ;
         ouptutStage3File << x << " " << y << " " << z ;
         ouptutStage3File << endl ;
     }
@@ -656,6 +653,10 @@ int main()
     ouptutStage1File.open("stage1.txt");
     ouptutStage2File.open("stage2.txt");
     ouptutStage3File.open("stage3.txt");
+
+    ouptutStage1File << std::fixed ;
+    ouptutStage2File << std::fixed ;
+    ouptutStage3File << std::fixed ;
 
     //Push identity matrix
     Matrix m1;
