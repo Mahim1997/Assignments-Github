@@ -5,7 +5,7 @@
 #include<cstdio>
 #include<cmath>
 #include<cstdlib>
-#include <stack> //Stack inspiration from https://www.geeksforgeeks.org/stack-push-and-pop-in-c-stl/
+#include <stack>
 #define SIZE 4
 #define INPUT_FILE_NAME "scene.txt"
 
@@ -16,12 +16,19 @@
 #define DEBUG 1
 #if DEBUG == 1
     #define DEBUG_TRANSFORMATION 0
-    #define DEBUG_TRIANGLE 0
+    #define DEBUG_TRIANGLE 1
     #define DEBUG_TRANSFORMATION_FUNCTION 1
+    #define DEBUG_STACK 1
 #endif // DEBUG
 
 
 using namespace std ;
+
+///Output streams to stage1.txt, stage2.txt, stage3.txt respectively
+ofstream ouptutStage1File;
+ofstream ouptutStage2File;
+ofstream ouptutStage3File;
+
 
 class Vector ///This is a 4X4 vector used throughout
 {
@@ -53,6 +60,24 @@ public:
         double ans = (x*x) + (y*y) + (z*z);
         ans = sqrt(ans);
         return ans;
+    }
+    void outputToStage1()
+    {
+        ouptutStage1File << std::fixed ;
+        ouptutStage1File << x << " " << y << " " << z ;
+        ouptutStage1File << endl ;
+    }
+    void outputToStage2()
+    {
+        ouptutStage2File << std::fixed ;
+        ouptutStage2File << x << " " << y << " " << z ;
+        ouptutStage2File << endl ;
+    }
+    void outputToStage3()
+    {
+        ouptutStage3File << std::fixed ;
+        ouptutStage3File << x << " " << y << " " << z ;
+        ouptutStage3File << endl ;
     }
 };
 
@@ -277,6 +302,7 @@ Matrix MatrixProduct(Matrix a, Matrix b)
     }
     return mult;
 }
+
 ///---------------------------------------------------------------- GLOBAL VARIABLES ---------------------------------------------------------------
 ifstream fileReaderStream;  //ifstream used to read the file
 Vector eye, look, up;
@@ -285,9 +311,6 @@ stack<Matrix> stack_transformations;
 stack<int> stack_how_many_transformations_to_remove;
 
 
-ofstream ouptutStage1File;
-ofstream ouptutStage2File;
-ofstream ouptutStage3File;
 
 void pushToStackProduct(Matrix toPush)
 {
@@ -375,8 +398,8 @@ Vector Rodrigues_Formula(Vector x, Vector a, double theta)  //Rodrigues Formula 
     Vector v3 = vectorScale(vectorCrossProduct(a, x), sin(theta));
     Vector rodrigues_ans = vectorAddition(v1, vectorAddition(v2, v3));
 
-    printf("==>>Inside Rodrigues_Formula ... theta = %lf, x = ", theta); x.printVector(); printf("   and  a = "); a.printVector();
-    printf("---->> RETURNING FROM RODRIGUEZ ... ans is "); rodrigues_ans.printVector();
+//    printf("==>>Inside Rodrigues_Formula ... theta = %lf, x = ", theta); x.printVector(); printf("   and  a = "); a.printVector();
+//    printf("---->> RETURNING FROM RODRIGUEZ ... ans is "); rodrigues_ans.printVector();
 
     return rodrigues_ans;
 }
@@ -410,39 +433,80 @@ Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
 
 //----------------------------------------------------- Transformation functions end -------------------------------------------
 
+void printLine()
+{
+    printf("----------------------------------------------------------------\n");
+}
+
+///Vector product
+Vector vectorProductWithMatrix(Matrix mat, Vector v)
+{
+    ///Multiply matrix with vector
+    Vector answer_vector;
+
+    double elements_vector[4];
+
+    ///Convert to array for multiplication
+    elements_vector[0] = v.x;
+    elements_vector[1] = v.y;
+    elements_vector[2] = v.z;
+    elements_vector[3] = v.w;
+
+    double answer_array[4];
+    //multiply now
+    for(int row=0; row<SIZE; row++)
+    {
+        double ans_temp = 0.0; //keep a temporary variable ...
+        for(int col=0; col<SIZE; col++){
+            ans_temp += (mat.elements[row][col] * elements_vector[col]);
+        }
+        answer_array[row] = ans_temp;
+    }
+    ///Convert back to vector to return the answer
+    answer_vector.x = answer_array[0];
+    answer_vector.y = answer_array[1];
+    answer_vector.z = answer_array[2];
+    answer_vector.w = answer_array[3];
+
+    return answer_vector; ///return answer
+}
+int triangle_num = 1; ///For debugging purposes
 void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
 {
-    //Apply Transformation
-    Matrix topStack = stack_transformations.top();
+    ///Get the matrix which lies at the top of the stack
+    Matrix topStackMatrix = stack_transformations.top();
 
+    ///Find the product of each vector of triangle with the top_stack transformation matrix
+    Vector transformed_v1 = vectorProductWithMatrix(topStackMatrix, v1);
+    Vector transformed_v2 = vectorProductWithMatrix(topStackMatrix, v2);
+    Vector transformed_v3 = vectorProductWithMatrix(topStackMatrix, v3);
 
-    //Output Triangle to output stream
-//    cout << "Inside outputTriangleToFile ... printing vectors v1, v2, v3" << endl ;
-//    v1.printVector(true);
-//    v2.printVector(true);
-//    v3.printVector(true);
+    ///Make each transformed vector homogenous again
+    transformed_v1 = vectorMakeHomogenous(transformed_v1);
+    transformed_v2 = vectorMakeHomogenous(transformed_v2);
+    transformed_v3 = vectorMakeHomogenous(transformed_v3);
 
-    Matrix m;
-    m = MatrixFormationFromVector_WrtCol(v1, v2, v3);
-//    cout << "Printing the triangle matrix \n";
-//    m.printMatrix(true);
-
-    Matrix triangle;
-    triangle = MatrixProduct(topStack, m);
-    triangle.makeHomogenousAgain();
-
-    Vector col1, col2, col3;
-    col1 = triangle.getColumnVector(0);
-    col2 = triangle.getColumnVector(1);
-    col3 = triangle.getColumnVector(2);
-
+    ///Print for debugging ... So far OK
 #if DEBUG_TRIANGLE == 1
-    cout << "Triangle" << endl;
-    col1.printVector(true);
-    col2.printVector(true);
-    col3.printVector(true);
-    cout << endl;
+
+    if(stack_how_many_transformations_to_remove.empty() == false){
+        printf("\nStackIndices . size = "); cout << stack_how_many_transformations_to_remove.size(); cout << " , stackIndices.top = " << stack_how_many_transformations_to_remove.top() << endl ;
+    }
+    printf("\nPrinting StackTransformations  [size = "); cout << stack_transformations.size() << "]" << endl ;
+    stack_transformations.top().printMatrix();
+//
+//    printf("\nPrinting the vectors of the transformed triangle num = %d .... \n\n", triangle_num);
+//    triangle_num++;
+//    printf("transformed_v1 = "); transformed_v1.printVector();
+//    printf("transformed_v2 = "); transformed_v2.printVector();
+//    printf("transformed_v3 = "); transformed_v3.printVector();
 #endif // DEBUG_TRIANGLE
+
+    ///Now output to the output file
+    transformed_v1.outputToStage1();
+    transformed_v2.outputToStage1();
+    transformed_v3.outputToStage1();
+    ouptutStage1File << endl ;
 
 }
 
@@ -546,6 +610,10 @@ int extractCommand()
         for(int i=0; i<how_many_to_remove; i++){
             stack_transformations.pop(); ///Pop THESE many items from stack_transformations
         }
+#if DEBUG_STACK == 1
+        printf("POP IS DONE ---> stack transformations . size = "); cout << stack_transformations.size() << endl ;
+        stack_transformations.top().printMatrix();
+#endif // DEBUG_STACK
     }
 
 
@@ -557,7 +625,8 @@ void testStack();
 
 int main()
 {
-    //I/O inspiration from http://www.cplusplus.com/forum/beginner/8388/
+    cout << std::fixed;
+
     fileReaderStream.open(INPUT_FILE_NAME);
     ouptutStage1File.open("stage1.txt");
     ouptutStage2File.open("stage2.txt");
@@ -581,6 +650,9 @@ int main()
 //    testStack(); //Works
 
     fileReaderStream.close(); //close the ifstream
+    ouptutStage1File.close(); //close the ofstreams
+    ouptutStage2File.close();
+    ouptutStage3File.close();
 }
 
 void testStack()
