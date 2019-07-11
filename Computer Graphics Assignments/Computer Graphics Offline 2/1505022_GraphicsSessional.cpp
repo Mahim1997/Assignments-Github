@@ -13,12 +13,14 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG == 1
     #define DEBUG_TRANSFORMATION 0
-    #define DEBUG_TRIANGLE 1
-    #define DEBUG_TRANSFORMATION_FUNCTION 1
+    #define DEBUG_TRIANGLE 0
+    #define DEBUG_TRANSFORMATION_FUNCTION 0
     #define DEBUG_STACK 0
+    #define DEBUG_STAGE_2 1
+    #define DEBUG_STAGE_3 1
 #endif // DEBUG
 
 
@@ -308,7 +310,8 @@ double fovY, aspectRatio, nearDistance, farDistance;
 stack<Matrix> stack_transformations;
 stack<int> stack_how_many_transformations_to_remove;
 
-
+Matrix view_matrix; ///Used for stage2.txt purposes
+Matrix projection_matrix; ///Used for stage3.txt purposes
 
 void pushToStackProduct(Matrix toPush)
 {
@@ -404,13 +407,9 @@ Vector Rodrigues_Formula(Vector x, Vector a, double theta)  //Rodrigues Formula 
 
 Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
 {
-    Vector a(ax, ay, az, 0); //Shouldn't it be 0 ?
+    Vector a(ax, ay, az, 0); //Start with w = 0 ... after normalizing ... make w = 1
     a = vectorNormalize(a); //Normalize the vector
-    a.w = 1; // ??
-
-//    printf("--->>> Vector a = "); a.printVector();
-//    printf("---===--->>> NORMALIZED VECTOR a = "); a.printVector();
-
+    a.w = 1; //To make 'w' = 1 since it will be added later
 
     Vector c1, c2, c3;
     Vector i(1, 0, 0, 1), j(0, 1, 0, 1), k(0, 0, 1, 1);  // w = 1 is kept
@@ -419,29 +418,11 @@ Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
     c2 = Rodrigues_Formula(j, a, angle);
     c3 = Rodrigues_Formula(k, a, angle);
 
-#if DEBUG_TRANSFORMATION_FUNCTION == 1
-    printf("====++++----->>>> Inside Transformation_Rotation ... \n");
-    printf("c1 = "); c1.printVector();
-    printf("c2 = "); c2.printVector();
-    printf("c3 = "); c3.printVector();
-#endif // DEBUG_TRANSFORMATION_FUNCTION
-
-    //Make homogenos ??
-//    c1 = vectorMakeHomogenous(c1);
-//    c2 = vectorMakeHomogenous(c2);
-//    c3 = vectorMakeHomogenous(c3);
-
-//    printf("C1 column is :"); c1.printVector();
-//    printf("C2 column is :"); c2.printVector();
-//    printf("C3 column is :"); c3.printVector();
 
     Matrix rotate_matrix = MatrixFormationFromVector_WrtCol(Vector(c1.x, c1.y, c1.z, 0), /*Matrix formation using c1 as col1 , c2 as col2 and so on*/
                                                             Vector(c2.x, c2.y, c2.z, 0),
                                                             Vector(c3.x, c3.y, c3.z, 0),
                                                             Vector(0, 0, 0, 1));  /// Last column is simply 0, 0, 0, 1
-
-//    rotate_matrix.printMatrix();
-
     return rotate_matrix;
 }
 
@@ -485,6 +466,55 @@ Vector vectorProductWithMatrix(Matrix mat, Vector v)
 
     return answer_vector; ///return answer
 }
+
+void obtainProjectionMatrix()
+{
+
+}
+
+///To obtain the view matrix
+void obtainViewMatrix()
+{
+///Step 1 determining the l, r, u vectors
+    Vector l = vectorSubtraction(look, eye);
+    l = vectorNormalize(l);
+    Vector r = vectorCrossProduct(l, up);
+    r = vectorNormalize(r);
+    Vector u = vectorCrossProduct(r, l);
+    //Make each 'w' component = 1 now since it will be added later...
+    l.w = 1; r.w = 1; u.w = 1;
+
+///Step 2 determine the Translation matrix 'T' to translate eye to (0, 0, 0)
+    Matrix translation_mat = Transformation_Translation(-eye.x, -eye.y, -eye.z);
+
+///Step 3 determine the Rotation matrix 'R' to align l, u, r with -z, y, x axes respectively
+    Matrix rotation_mat = MatrixFormationFromVector_WrtRow  (   Vector(r.x, r.y, r.z, 0),
+                                                                Vector(u.x, u.y, u.z, 0),
+                                                                Vector(-l.x, -l.y, -l.z, 0),
+                                                                Vector(0, 0, 0, 1) );
+///View Matrix V = RT [Global Variable]
+    view_matrix = MatrixProduct(rotation_mat, translation_mat);
+}
+
+///For stage2.txt output
+void outputTriangleToFileStage2(Vector v1, Vector v2, Vector v3)
+{
+///Obtain the product with the view matrix of each triangle vector
+    Vector transformed_v1 = vectorProductWithMatrix(view_matrix, v1);
+    Vector transformed_v2 = vectorProductWithMatrix(view_matrix, v2);
+    Vector transformed_v3 = vectorProductWithMatrix(view_matrix, v3);
+///Make homogenous again
+    transformed_v1 = vectorMakeHomogenous(transformed_v1);
+    transformed_v2 = vectorMakeHomogenous(transformed_v2);
+    transformed_v3 = vectorMakeHomogenous(transformed_v3);
+
+///Output to stage2.txt
+    transformed_v1.outputToStage2();
+    transformed_v2.outputToStage2();
+    transformed_v3.outputToStage2();
+    ouptutStage2File << endl ; //output a new line
+}
+
 int triangle_num = 1; ///For debugging purposes
 void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
 {
@@ -501,32 +531,14 @@ void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
     transformed_v2 = vectorMakeHomogenous(transformed_v2);
     transformed_v3 = vectorMakeHomogenous(transformed_v3);
 
-    ///Print for debugging ... So far OK
-#if DEBUG_TRIANGLE == 1
-
-    if(stack_how_many_transformations_to_remove.empty() == false){
-        printf("\nStackIndices . size = "); cout << stack_how_many_transformations_to_remove.size(); cout << " , stackIndices.top = " << stack_how_many_transformations_to_remove.top() << endl ;
-    }
-    printf("\nPrinting StackTransformations  [size = "); cout << stack_transformations.size() << "]" << endl ;
-    stack_transformations.top().printMatrix();
-
-    printf("\nPrinting normal vectors of triangle num = %d\n", triangle_num);
-    v1.printVector();
-    v2.printVector();
-    v3.printVector();
-
-    printf("\nPrinting the vectors of the transformed triangle num = %d .... \n\n", triangle_num);
-    triangle_num++;
-    printf("transformed_v1 = "); transformed_v1.printVector();
-    printf("transformed_v2 = "); transformed_v2.printVector();
-    printf("transformed_v3 = "); transformed_v3.printVector();
-#endif // DEBUG_TRIANGLE
-
     ///Now output to the output file
     transformed_v1.outputToStage1();
     transformed_v2.outputToStage1();
     transformed_v3.outputToStage1();
     ouptutStage1File << endl ;
+
+    ///To output to stage2.txt
+    outputTriangleToFileStage2(transformed_v1, transformed_v2, transformed_v3);
 
 }
 
@@ -658,6 +670,7 @@ int main()
     ouptutStage2File << std::fixed ;
     ouptutStage3File << std::fixed ;
 
+
     //Push identity matrix
     Matrix m1;
     pushToStackInitial(m1.getIdentityMatrix());
@@ -665,6 +678,12 @@ int main()
     //while(true) //Wait until the 'END' command is found
     extractFirst4Lines();
     //printEyeLookUpParams(); //Done
+
+///Calculate the view matrix
+    obtainViewMatrix();
+///Calculate the projection matrix
+    obtainProjectionMatrix();
+
     while(true)
     {
         int ret = extractCommand();
@@ -683,56 +702,5 @@ int main()
     printf("Completed\n\n");
 
 }
-
-void testStack()
-{
-    Matrix m1;
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++){
-            m1.elements[i][j] = (int)(i + 1)*(j + 1);
-        }
-    }
-    Matrix m2;
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++){
-            m2.elements[i][j] = (int)(i + 4)*(j + 2);
-        }
-    }
-    Matrix m3;
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++){
-            m3.elements[i][j] = (int)(i - 1)*(j - 2);
-        }
-    }
-    pushToStackInitial(m1.getIdentityMatrix());
-    printStack();
-    pushToStackProduct(m1);
-    printStack();
-    pushToStackProduct(m2);
-    printStack();
-    pushToStackProduct(m3);
-    printStack();
-
-    Matrix temp;
-    temp = popFromStack();
-    temp.printMatrix();
-    printStack();
-}
-
-/*
-    while(fileReaderStream.eof() != true)
-    {
-        extractFirst4Lines();
-    }
-*/
-
-/*
-        getline(fileReaderStream, inputString); // Saves the line in inputString
-        cout << inputString;  // Prints our STRING.
-        cout << endl ;
-*/
-
-
-
 
 
