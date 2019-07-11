@@ -469,10 +469,13 @@ Vector vectorProductWithMatrix(Matrix mat, Vector v)
 
 void obtainProjectionMatrix()
 {
-//Calculate parameters
+//Calculate parameters [Convert angle to radian mode]
     double fovX = fovY * aspectRatio;           //fovX = fovY * aspectRatio
-    double t = nearDistance * tan((fovY * 0.5)); //t = near * tan(fovY / 2)
-    double r = nearDistance * tan((fovX * 0.5)); //r = near * tan(fovX / 2)
+    double t = nearDistance * tan(DEGREE_TO_RAD(fovY * 0.5)); //t = near * tan(fovY / 2)
+    double r = nearDistance * tan(DEGREE_TO_RAD(fovX * 0.5)); //r = near * tan(fovX / 2)
+
+//    printf("fovX = %lf, fovY = %lf, aspectRatio = %lf, t = %lf, r = %lf, nearDistance = %lf, farDis = %lf\n",
+//           fovX, fovY, aspectRatio, t, r, nearDistance, farDistance);
 
 //Row obtaining for projection matrix
     double element_row3_1 = (-1.0) * ( (farDistance + nearDistance) / (farDistance - nearDistance) ); //matrix[row=3][col=3]
