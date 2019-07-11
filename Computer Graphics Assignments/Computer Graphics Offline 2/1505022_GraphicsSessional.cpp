@@ -94,6 +94,7 @@ Vector vectorScale(Vector a, double scale)
 Vector vectorNormalize(Vector a)
 {
     double factor = a.magnitude();
+    factor = (double)(1.0 / factor);
     Vector v = vectorScale(a, factor);
     return v;
 }
@@ -406,8 +407,13 @@ Vector Rodrigues_Formula(Vector x, Vector a, double theta)  //Rodrigues Formula 
 
 Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
 {
-    Vector a(ax, ay, az, 1); //Shouldn't it be 0 ?
+    Vector a(ax, ay, az, 0); //Shouldn't it be 0 ?
     a = vectorNormalize(a); //Normalize the vector
+    a.w = 1; // ??
+
+    printf("--->>> Vector a = "); a.printVector();
+    printf("---===--->>> NORMALIZED VECTOR a = "); a.printVector();
+
 
     Vector c1, c2, c3;
     Vector i(1, 0, 0, 1), j(0, 1, 0, 1), k(0, 0, 1, 1);  // w = 1 is kept
@@ -415,6 +421,18 @@ Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
     c1 = Rodrigues_Formula(i, a, angle);
     c2 = Rodrigues_Formula(j, a, angle);
     c3 = Rodrigues_Formula(k, a, angle);
+
+#if DEBUG_TRANSFORMATION_FUNCTION == 1
+    printf("====++++----->>>> Inside Transformation_Rotation ... \n");
+    printf("c1 = "); c1.printVector();
+    printf("c2 = "); c2.printVector();
+    printf("c3 = "); c3.printVector();
+#endif // DEBUG_TRANSFORMATION_FUNCTION
+
+    //Make homogenos ??
+//    c1 = vectorMakeHomogenous(c1);
+//    c2 = vectorMakeHomogenous(c2);
+//    c3 = vectorMakeHomogenous(c3);
 
 //    printf("C1 column is :"); c1.printVector();
 //    printf("C2 column is :"); c2.printVector();
@@ -494,12 +512,17 @@ void outputTriangleToFile(Vector v1, Vector v2, Vector v3)
     }
     printf("\nPrinting StackTransformations  [size = "); cout << stack_transformations.size() << "]" << endl ;
     stack_transformations.top().printMatrix();
-//
-//    printf("\nPrinting the vectors of the transformed triangle num = %d .... \n\n", triangle_num);
-//    triangle_num++;
-//    printf("transformed_v1 = "); transformed_v1.printVector();
-//    printf("transformed_v2 = "); transformed_v2.printVector();
-//    printf("transformed_v3 = "); transformed_v3.printVector();
+
+    printf("\nPrinting normal vectors of triangle num = %d\n", triangle_num);
+    v1.printVector();
+    v2.printVector();
+    v3.printVector();
+
+    printf("\nPrinting the vectors of the transformed triangle num = %d .... \n\n", triangle_num);
+    triangle_num++;
+    printf("transformed_v1 = "); transformed_v1.printVector();
+    printf("transformed_v2 = "); transformed_v2.printVector();
+    printf("transformed_v3 = "); transformed_v3.printVector();
 #endif // DEBUG_TRIANGLE
 
     ///Now output to the output file
