@@ -17,12 +17,12 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG == 1
-    #define DEBUG_TRANSFORMATION 0
-    #define DEBUG_TRIANGLE 0
-    #define DEBUG_TRANSFORMATION_FUNCTION 0
-    #define DEBUG_STACK 0
+    #define DEBUG_TRANSFORMATION 1
+    #define DEBUG_TRIANGLE 1
+    #define DEBUG_TRANSFORMATION_FUNCTION 1
+    #define DEBUG_STACK 1
     #define DEBUG_STAGE_2 1
     #define DEBUG_STAGE_3 1
 #endif // DEBUG
@@ -340,6 +340,11 @@ Matrix Transformation_Rotate(double angle, double ax, double ay, double az) //OK
     Vector a(ax, ay, az, 0); //Start with w = 0 ... after normalizing ... make w = 1
     a = vectorNormalize(a); //Normalize the vector
     a.w = 1; //To make 'w' = 1 since it will be added later
+
+#if DEBUG_TRANSFORMATION_FUNCTION == 1
+    printf("Normal a = %lf, %lf, %lf angle = %lf\n", ax, ay, az, angle);
+    printf("a.normalize() = "); a.printVector();
+#endif // DEBUG_TRANSFORMATION_FUNCTION
 
     Vector c1, c2, c3;
     Vector i(1, 0, 0, 1), j(0, 1, 0, 1), k(0, 0, 1, 1);  // w = 1 is kept
