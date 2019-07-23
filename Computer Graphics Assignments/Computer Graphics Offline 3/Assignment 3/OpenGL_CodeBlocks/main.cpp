@@ -28,7 +28,8 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
-#define NUM_TILES 67 // 2*1000 / 30 = 2000/30 = 66.6667 =~ 67
+#define NUM_TILES 66 // 2*1000 / 30 = 2000/30 = 66.6667 =~ 67
+#define NUM_TILES_HALF 33
 
 #define CHECKER_BOARD_WIDTH 30 //width of each tile of checker-board is 30
 #define INFINITE_INDEX 1000
@@ -38,7 +39,7 @@ using namespace std ;
 
 int drawaxes;
 int angle;
-
+int drawgrid;
 ///------------------- My global variables and functions -----------------
 ifstream fin; // for description.txt reading
 
@@ -326,6 +327,12 @@ public:
     Vector3D left_most_point; //left most point
     CheckerBoardTile(){}
     CheckerBoardTile(double col){color = col;}
+    void printCheckerBoardTile()
+    {
+        cout << "Left-most point:";
+        left_most_point.printVector(false);
+        cout << endl << "Color:" << color << endl;
+    }
 };
 
 
@@ -361,6 +368,29 @@ vector<Pyramid> pyramids_list;
 CheckerBoardTile checker_board[NUM_TILES][NUM_TILES]; //2D array
 ///------------------------- Global Variables End --------------------------------
 
+void drawGrid()
+{
+	int i;
+	if(drawgrid==1)
+	{
+		glColor3f(0.6, 0.6, 0.6);	//grey
+		glBegin(GL_LINES);{
+			for(i=-8;i<=8;i++){
+
+				if(i==0)
+					continue;	//SKIP the MAIN axes
+
+				//lines parallel to Y-axis
+				glVertex3f(i*10, -90, 0);
+				glVertex3f(i*10,  90, 0);
+
+				//lines parallel to X-axis
+				glVertex3f(-90, i*10, 0);
+				glVertex3f( 90, i*10, 0);
+			}
+		}glEnd();
+	}
+}
 void drawAxes()
 {
     if(drawaxes==1)
@@ -384,6 +414,8 @@ void drawAxes()
 void drawSquare(double a)
 {
     //glColor3f(1.0,0.0,0.0);
+//    glPushMatrix();
+//    glTranslatef(translation_vect.x, translation_vect.y, translation_vect.z);
     glBegin(GL_QUADS);
     {
         glVertex3f( a, a,0);
@@ -392,7 +424,160 @@ void drawSquare(double a)
         glVertex3f(-a, a,0);
     }
     glEnd();
+//    glPopMatrix();
 }
+
+
+
+void initialiseParams()
+{
+    //------------ Just like in Assignment 1 -------------
+    u.assignVector(0, 0, 1);
+    r.assignVector(-1/sqrt(2), 1/sqrt(2), 0);
+    l.assignVector(-1/sqrt(2), -1/sqrt(2), 0);
+//    pos.assignVector(100, 100, 0);
+    pos.assignVector(100, 100, 50);
+}
+
+void printAllData()
+{
+    cout << "----------------------- Printing Data Begin ---------------------" << endl ;
+    cout << "Printing Spheres:\n";
+    for(int i=0; i<spheres_list.size(); i++){
+        spheres_list[i].printSphere();
+    }
+    cout << "\nPrinting Pyramids\n";
+    for(int i=0; i<pyramids_list.size(); i++){
+        pyramids_list[i].printPyramid();
+    }
+//    cout << "\nPrinting Checkerboard\n";
+//    for(int i=0; i<NUM_TILES; i++){
+//        for(int j=0; j<NUM_TILES; j++){
+//            checker_board[i][j].printCheckerBoardTile();
+//        }
+//    }
+
+    cout << endl << "----------------------- Printing Data ENDS ---------------------" << endl ;
+}
+
+void loadCheckerBoard()
+{
+    checker_board[0][0] = CheckerBoardTile(WHITE);
+    checker_board[0][0].left_most_point.assignVector(0, 0, 0); //origin as left-most point having WHITE color
+
+    Vector3D point_left_most(0, 0, 0); //the left-most point
+    int col;
+
+    double x_last, y_last;
+    x_last = -INFINITE_INDEX * CHECKER_BOARD_WIDTH;
+    y_last = -INFINITE_INDEX * CHECKER_BOARD_WIDTH;
+
+    ///---------- NOTHING IS DONE FOR NOW -------------------
+}
+string trim(const string& str) //trim string function
+{
+    size_t first = str.find_first_not_of(' ');
+    if (string::npos == first)
+    {
+        return str;
+    }
+    size_t last = str.find_last_not_of(' ');
+    return str.substr(first, (last - first + 1));
+}
+
+void loadAllData()
+{
+    initialiseParams(); //load look, right, up, pos vectors just like in assignment 1
+    //Initial parameters reading
+    fin >> recursion_level;
+    fin >> num_pixels_along_axes;
+    fin >> num_objects;
+
+//    cout << "----->> RECURSION LEVEL = " << recursion_level << ", NUM_PIXELS_ALONG_AXES = " << num_pixels_along_axes << ", NUM_OBJ = " << num_objects << endl;
+
+    //Now read the objects
+    string inputString;
+
+    double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
+    //Objects reading
+    int num_ob_rec_so_far = 1;
+    while(num_ob_rec_so_far < num_objects){
+        getline(fin, inputString); // Saves the line in inputString [input command]
+//        cout << "----->>>getLIne inputsString got is <" << inputString << ">\n";
+        if(inputString == ""){
+            continue;
+        }
+        if(inputString == "\n"){
+            continue;
+        }
+        num_ob_rec_so_far++;
+        if(trim(inputString) == "pyramid"){
+            //load pyramid
+//            cout << "---------->>> PYRAMID READING\n";
+            fin >> x >> y >> z; //lowest points
+            fin >> base >> height; //base length and height
+            fin >> c_r >> c_g >> c_b; //colors r,g,b
+            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
+            fin >> spec_exp; //specular exponent
+            Pyramid pyramid;
+            pyramid.formPyramid(x, y, z, base, height, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
+            pyramid.id = num_ob_rec_so_far - 1;
+            pyramids_list.push_back(pyramid);
+        }
+        else if(trim(inputString) == "sphere"){
+            //load sphere
+//            cout << "---------->>> SPHERE READING\n";
+            fin >> x >> y >> z; //center
+            fin >> radius; //radius
+            fin >> c_r >> c_g >> c_b; //colors r,g,b
+            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
+            fin >> spec_exp; //specular exponent
+
+            Sphere sphere;
+            sphere.id = num_ob_rec_so_far - 1;
+            sphere.formSphere(x, y, z, radius, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
+            spheres_list.push_back(sphere);
+        }
+    }
+    //Light sources reading
+    fin >> num_light_sources;
+    for(int i=0; i<num_light_sources; i++){
+        fin >> x >> y >> z;
+        Vector3D vec(x, y, z);
+        light_sources.push_back(vec);
+    }
+
+    loadCheckerBoard();
+    printAllData();
+}
+
+void drawAllObjects()
+{
+    //Draw all objects in opengl
+    int deb_val = INFINITE_INDEX;
+    for(int i=-deb_val; i<deb_val; i+=CHECKER_BOARD_WIDTH){
+        for(int j=-deb_val; j<deb_val; j+=CHECKER_BOARD_WIDTH){
+            if(((i + j) % 2) == 0){
+                //even
+                glColor3f(1, 1, 1); //white
+            }else{
+                //odd
+                glColor3f(0, 0, 0); //black
+            }
+//            glColor3f(1, 0, 0); //debugging
+            Vector3D vect(i, j, 0); //z axis is 0
+            glPushMatrix();
+            glTranslatef(-vect.x, -vect.y, -vect.z);
+            drawSquare(CHECKER_BOARD_WIDTH);
+            glPopMatrix();
+
+//            drawSquare(vect, CHECKER_BOARD_WIDTH);
+        }
+    }
+}
+
+///----------------------------- My Functions End ---------------------------------------
+
 
 
 void keyboardListener(unsigned char key, int x,int y)
@@ -478,109 +663,15 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
         break;
 
     case GLUT_MIDDLE_BUTTON:
-
+        if(state == GLUT_DOWN){
+            drawgrid = 1 - drawgrid;
+        }
         break;
 
     default:
         break;
     }
 }
-
-
-void initialiseParams()
-{
-    //------------ Just like in Assignment 1 -------------
-    u.assignVector(0, 0, 1);
-    r.assignVector(-1/sqrt(2), 1/sqrt(2), 0);
-    l.assignVector(-1/sqrt(2), -1/sqrt(2), 0);
-    pos.assignVector(100, 100, 0);
-}
-
-
-void loadCheckerBoard()
-{
-    checker_board[0][0] = CheckerBoardTile(WHITE);
-    checker_board[0][0].left_most_point.assignVector(0, 0, 0); //origin as left-most point having WHITE color
-
-    Vector3D point_left_most(0, 0, 0); //the left-most point
-    int col;
-
-    for(int i=0; i<(2*INFINITE_INDEX); i++){
-        //Rows switch
-        point_left_most.y += ((i * CHECKER_BOARD_WIDTH) - (INFINITE_INDEX * CHECKER_BOARD_WIDTH));
-        for(int j=0; j<(2*INFINITE_INDEX); j++){
-            //Columns switch
-
-            if(((i + j) % 2) == 0){
-                //even
-                col = WHITE;
-            }else{
-                //odd
-                col = BLACK;
-            }
-            point_left_most.x += ((j * CHECKER_BOARD_WIDTH) - (INFINITE_INDEX*CHECKER_BOARD_WIDTH));
-            checker_board[i][j].left_most_point.assignVector(point_left_most.x, point_left_most.y, point_left_most.z);
-            checker_board[i][j].color = col;
-        }
-    }
-}
-
-void loadAllData()
-{
-    initialiseParams(); //load look, right, up, pos vectors just like in assignment 1
-    //Initial parameters reading
-    fin >> recursion_level;
-    fin >> num_pixels_along_axes;
-    fin >> num_objects;
-    //Now read the objects
-    string inputString;
-
-    double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
-    //Objects reading
-    for(int i=0; i<num_objects; i++){
-        getline(fin, inputString); // Saves the line in inputString [input command]
-        if(inputString == "pyramid"){
-            //load pyramid
-            fin >> x >> y >> z; //lowest points
-            fin >> base >> height; //base length and height
-            fin >> c_r >> c_g >> c_b; //colors r,g,b
-            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
-            fin >> spec_exp; //specular exponent
-            Pyramid pyramid;
-            pyramid.formPyramid(x, y, z, base, height, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
-            pyramids_list.push_back(pyramid);
-        }
-        else if(inputString == "sphere"){
-            //load sphere
-            fin >> x >> y >> z; //center
-            fin >> radius; //radius
-            fin >> c_r >> c_g >> c_b; //colors r,g,b
-            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
-            fin >> spec_exp; //specular exponent
-
-            Sphere sphere;
-            sphere.formSphere(x, y, z, radius, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
-            spheres_list.push_back(sphere);
-        }
-    }
-    //Light sources reading
-    fin >> num_light_sources;
-    for(int i=0; i<num_light_sources; i++){
-        fin >> x >> y >> z;
-        Vector3D vec(x, y, z);
-        light_sources.push_back(vec);
-    }
-
-    loadCheckerBoard();
-}
-
-void drawAllObjects()
-{
-    //
-}
-
-///----------------------------- My Functions End ---------------------------------------
-
 
 void display()
 {
@@ -621,13 +712,11 @@ void display()
     //add objects
 
     drawAxes();
-
-//    drawGrid();
+    drawGrid();
 
 ///CODE FOR DRAWING OBJECT BEGIN
 
     drawAllObjects();
-
 ///CODE FOR DRAWING OBJECT END
 
     //ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
@@ -645,12 +734,12 @@ void animate()
 void init()
 {
     //codes for initialization
-//    drawgrid=0;
 //    drawaxes=1;
 //    cameraHeight=150.0;
 //    cameraAngle=1.0;
     angle=0;
     drawaxes = 1;
+    drawgrid = 1;
     //clear the screen
     glClearColor(0,0,0,0);
 
@@ -664,7 +753,8 @@ void init()
     glLoadIdentity();
 
     //give PERSPECTIVE parameters
-    gluPerspective(80,	1,	1,	1000.0);
+//    gluPerspective(80,	1,	1,	1000.0);
+    gluPerspective(90,	1,	1,	1000.0);
     //field of view in the Y (vertically)
     //aspect ratio that determines the field of view in the X direction (horizontally)
     //near distance
