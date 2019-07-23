@@ -233,17 +233,38 @@ public:
     {
         //First we form base triangles [2 triangles] ... we keep base of pyramid at x-y plane
         Vector3D lowest_point(lowest_x, lowest_y, lowest_z);
-        Vector3D p1, p2, p3; //Temporary variables for further use ...
 
-        //Triangle 1 [base]
-        p1 = lowest_point;  // one point is the left-bottom-most point
-        p2 = p1;            // another point is len_base units away in x-direction
-        p2.x = p2.x + len_base;
-        p3 = p1;            // another point is len_base units away in y-direction
+        Vector3D bottom_left, bottom_right, top_left, top_right, upper_most, mid_point;
 
-        //Triangle 2 [base]
+        //------------------- Square Base points calculation ---------------------------------
+        bottom_left = lowest_point;  // one point is the left-bottom-most point
+        bottom_right = bottom_left;            // another point is len_base units away in x-direction
+        bottom_right.x = lowest_point.x + len_base;
+        top_left = bottom_left;            // another point is len_base units away in y-direction
+        top_left.y = lowest_point.y + len_base;
+        top_right.x = lowest_point.x + len_base; //top right most point
+        top_right.y = lowest_point.y + len_base;
+        top_right.z = lowest_point.z ;
+        //-------------------------- Top most point and mid point calculation -------------------
+        mid_point.z = lowest_point.z; //mid point
+        mid_point.x = 0.5 * (bottom_left.x + bottom_right.x);
+        mid_point.y = 0.5 * (bottom_left.y + bottom_right.y);
+        upper_most = mid_point; //upper-most point [same x, y as mid-point, but z = mid.z + height]
+        upper_most.z = lowest_point.z + len_height;
 
-
+        //Triangle idx = 0 [base -> 1]
+        triangles[0].assignTriangle(top_left, bottom_left, bottom_right); //anti-clockwise direction
+        //Triangle idx = 1 [base -> 2]
+        triangles[1].assignTriangle(bottom_right, top_right, top_left); //anti-clockwise direction
+        //Now we assign Other triangles
+        //Left-most face
+        triangles[2].assignTriangle(top_left, upper_most, bottom_left);
+        //Front face
+        triangles[3].assignTriangle(bottom_right, upper_most, bottom_left);
+        //Right-most face
+        triangles[4].assignTriangle(top_right, upper_most, bottom_right);
+        //Back face
+        triangles[5].assignTriangle(top_left, upper_most, top_right);
     }
 
     void assignCoefficients(double a, double d, double s, double r){
