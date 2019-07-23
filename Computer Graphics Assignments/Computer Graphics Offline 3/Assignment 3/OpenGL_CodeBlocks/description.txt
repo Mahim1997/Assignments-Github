@@ -67,3 +67,17 @@ sphere type of object
 1.0 1.0 0.0
 0.4 0.3 0.1 0.2
 10
+
+2 pyramid type of object 
+0.0 0.0 0.0 lowest x y z ordinate
+30.0 60 length of base and height of pyramid 
+1.0 0.0 0.0 color
+0.4 0.2 0.1 0.3 ambient diffuse specular reflection coefficient
+5 specular exponent
+
+
+2 number of light sources
+
+70.0 70.0 70.0 position of first light source
+
+-70.0 70.0 70.0 position of second light source
