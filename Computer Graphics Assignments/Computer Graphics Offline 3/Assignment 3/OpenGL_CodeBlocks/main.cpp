@@ -12,6 +12,9 @@
 #define DEBUG 0
 #define DRAW_GRID 1
 
+#define WHITE 7
+#define BLACK 10
+
 #define RADIUS_SHAPE 20
 #define DEGREE_ANGLE_INIT 0.3
 
@@ -24,6 +27,12 @@
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
+
+#define NUM_TILES 67 // 2*1000 / 30 = 2000/30 = 66.6667 =~ 67
+
+#define CHECKER_BOARD_WIDTH 30 //width of each tile of checker-board is 30
+#define INFINITE_INDEX 1000
+
 
 using namespace std ;
 
@@ -150,7 +159,7 @@ public:
     double co_efficients[4]; //0->ambient, 1->diffuse, 2->specular, 3->reflection co-efficients
     double specular_exponent; //Final line
 
-    Sphere(int type)
+    Sphere()
     {
         this->typeOfObject = SPHERE_TYPE; //Which type of object
         for(int i=0; i<3; i++){colors[i] = 0.0;} //initalise as black
@@ -165,7 +174,7 @@ public:
     void assignRadius(double r){radius = r;}
     void assignCenter(double x, double y, double z){center.x = x; center.y = y; center.z = z;}
 
-    void assignSphere(double cx, double cy, double cz, double r, double c_r, double c_g, double c_b,
+    void formSphere(double cx, double cy, double cz, double r, double c_r, double c_g, double c_b,
                       double am, double dif, double sp, double refl, double spec_exp){
         assignCenter(cx, cy, cz);
         assignRadius(r);
@@ -310,6 +319,15 @@ public:
 };
 
 
+class CheckerBoardTile
+{
+public:
+    double color; //BLACK or WHITE
+    Vector3D left_most_point; //left most point
+    CheckerBoardTile(){}
+    CheckerBoardTile(double col){color = col;}
+};
+
 
 ///------------------------------ My Objects End ----------------------------------
 
@@ -324,6 +342,10 @@ double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
 //-------------- Unit vectors for look, up, right, pos(camera position) ------------
 Vector3D l, u, r, pos;
+double nearDistance = 1;
+double farDistance = 1000;
+double WINDOW_SIZE = 500;
+double field_angle = 90; //degrees
 // ----------------- Other parameters ------------------
 int recursion_level = 1; //default -> 1
 int num_pixels_along_axes;
@@ -331,12 +353,12 @@ int num_objects;
 
 // ------------------ Light Sources -------------
 int num_light_sources;
-vector<Vector3D> vector_light_sources; //positions of light sources
+vector<Vector3D> light_sources; //positions of light sources
 
 // ---------------------- Objects list i.e. vector<Objects> ------------------
 vector<Sphere> spheres_list;
 vector<Pyramid> pyramids_list;
-
+CheckerBoardTile checker_board[NUM_TILES][NUM_TILES]; //2D array
 ///------------------------- Global Variables End --------------------------------
 
 void drawAxes()
@@ -418,6 +440,9 @@ void keyboardListener(unsigned char key, int x,int y)
         ///Fix 'r' [mutual perpendicular]
         r = vectorCrossProduct(l, u);
         break;
+    case '0':
+        cout << "-------->> TO DO ... capture image" << endl;
+        break;
     default:
         break;
     }
@@ -471,14 +496,39 @@ void initialiseParams()
     pos.assignVector(100, 100, 0);
 }
 
-void printLoadedData() //For testing
-{
 
+void loadCheckerBoard()
+{
+    checker_board[0][0] = CheckerBoardTile(WHITE);
+    checker_board[0][0].left_most_point.assignVector(0, 0, 0); //origin as left-most point having WHITE color
+
+    Vector3D point_left_most(0, 0, 0); //the left-most point
+    int col;
+
+    for(int i=0; i<(2*INFINITE_INDEX); i++){
+        //Rows switch
+        point_left_most.y += ((i * CHECKER_BOARD_WIDTH) - (INFINITE_INDEX * CHECKER_BOARD_WIDTH));
+        for(int j=0; j<(2*INFINITE_INDEX); j++){
+            //Columns switch
+
+            if(((i + j) % 2) == 0){
+                //even
+                col = WHITE;
+            }else{
+                //odd
+                col = BLACK;
+            }
+            point_left_most.x += ((j * CHECKER_BOARD_WIDTH) - (INFINITE_INDEX*CHECKER_BOARD_WIDTH));
+            checker_board[i][j].left_most_point.assignVector(point_left_most.x, point_left_most.y, point_left_most.z);
+            checker_board[i][j].color = col;
+        }
+    }
 }
 
 void loadAllData()
 {
     initialiseParams(); //load look, right, up, pos vectors just like in assignment 1
+    //Initial parameters reading
     fin >> recursion_level;
     fin >> num_pixels_along_axes;
     fin >> num_objects;
@@ -486,8 +536,9 @@ void loadAllData()
     string inputString;
 
     double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
+    //Objects reading
     for(int i=0; i<num_objects; i++){
-        getline(fileReaderStream, inputString); // Saves the line in inputString [input command]
+        getline(fin, inputString); // Saves the line in inputString [input command]
         if(inputString == "pyramid"){
             //load pyramid
             fin >> x >> y >> z; //lowest points
@@ -496,7 +547,7 @@ void loadAllData()
             fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
             fin >> spec_exp; //specular exponent
             Pyramid pyramid;
-            pyramid.formPyramid(x, y, z, base, height, r, g, b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
+            pyramid.formPyramid(x, y, z, base, height, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
             pyramids_list.push_back(pyramid);
         }
         else if(inputString == "sphere"){
@@ -507,14 +558,25 @@ void loadAllData()
             fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
             fin >> spec_exp; //specular exponent
 
-            ------------------------ TO DO ------------------------
+            Sphere sphere;
+            sphere.formSphere(x, y, z, radius, c_r, c_g, c_b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
+            spheres_list.push_back(sphere);
         }
     }
+    //Light sources reading
+    fin >> num_light_sources;
+    for(int i=0; i<num_light_sources; i++){
+        fin >> x >> y >> z;
+        Vector3D vec(x, y, z);
+        light_sources.push_back(vec);
+    }
+
+    loadCheckerBoard();
 }
 
 void drawAllObjects()
 {
-
+    //
 }
 
 ///----------------------------- My Functions End ---------------------------------------
