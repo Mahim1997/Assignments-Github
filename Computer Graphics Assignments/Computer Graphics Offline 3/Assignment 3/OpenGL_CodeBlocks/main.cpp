@@ -333,6 +333,10 @@ int num_objects;
 int num_light_sources;
 vector<Vector3D> vector_light_sources; //positions of light sources
 
+// ---------------------- Objects list i.e. vector<Objects> ------------------
+vector<Sphere> spheres_list;
+vector<Pyramid> pyramids_list;
+
 ///------------------------- Global Variables End --------------------------------
 
 void drawAxes()
@@ -467,10 +471,45 @@ void initialiseParams()
     pos.assignVector(100, 100, 0);
 }
 
+void printLoadedData() //For testing
+{
+
+}
+
 void loadAllData()
 {
     initialiseParams(); //load look, right, up, pos vectors just like in assignment 1
+    fin >> recursion_level;
+    fin >> num_pixels_along_axes;
+    fin >> num_objects;
+    //Now read the objects
+    string inputString;
 
+    double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
+    for(int i=0; i<num_objects; i++){
+        getline(fileReaderStream, inputString); // Saves the line in inputString [input command]
+        if(inputString == "pyramid"){
+            //load pyramid
+            fin >> x >> y >> z; //lowest points
+            fin >> base >> height; //base length and height
+            fin >> c_r >> c_g >> c_b; //colors r,g,b
+            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
+            fin >> spec_exp; //specular exponent
+            Pyramid pyramid;
+            pyramid.formPyramid(x, y, z, base, height, r, g, b, coef_am, coef_dif, coef_spec, coef_ref, spec_exp);
+            pyramids_list.push_back(pyramid);
+        }
+        else if(inputString == "sphere"){
+            //load sphere
+            fin >> x >> y >> z; //center
+            fin >> radius; //radius
+            fin >> c_r >> c_g >> c_b; //colors r,g,b
+            fin >> coef_am >> coef_dif >> coef_spec >> coef_ref; //co-efficients of ambient, diffuse, specular, reflection
+            fin >> spec_exp; //specular exponent
+
+            ------------------------ TO DO ------------------------
+        }
+    }
 }
 
 void drawAllObjects()
