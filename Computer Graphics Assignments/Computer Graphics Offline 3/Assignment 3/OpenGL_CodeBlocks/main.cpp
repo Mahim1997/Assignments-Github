@@ -19,6 +19,7 @@
 #define PYRAMID_TYPE 2
 
 #define EPSILON_COMPARISON 0.00001  // for comparison of two doubles or floats
+#define NUM_TRIANGLES_IN_PYRAMID 6  // NUM_TRIANGLES_IN_PYRAMID is 6 [4 triangles + square base (2 triangles)]
 
 #define pi (2*acos(0.0))
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
@@ -70,9 +71,13 @@ public:
         this->z = c;
     }
 
-    void printVector()
+    void printVector(bool flag = false)
     {
-        cout << x << " " << y << " " << z << endl ;
+        if(flag == true){
+            cout << x << " " << y << " " << z ;
+        }else{
+            cout << x << " " << y << " " << z << endl ;
+        }
     }
 
     double magnitude()
@@ -132,7 +137,7 @@ double vectorDotProduct(Vector3D a, Vector3D b)
 
 ///---------------------- My Objects Begin -------------------------------
 
-string coefficients_arr = {"Ambient", "Diffuse", "Specular", "Reflection"};
+string coefficients_arr[] = {"Ambient", "Diffuse", "Specular", "Reflection"};
 
 class Sphere
 {
@@ -171,7 +176,7 @@ public:
     void printSphere()
     {
         cout << "------------------ Printing Sphere -------------- ID = " << id << "--------" << endl;
-        cout << "Center:" << center.x << " " << center.y << " " << center.z << " " << end;
+        cout << "Center:" << center.x << " " << center.y << " " << center.z << " " << endl;
         cout << "Radius:" << radius << ",";
         cout << "Color:";
         for(int i=0; i<3; i++){cout << colors[i] << " ";}
@@ -187,10 +192,102 @@ public:
 
 };
 
+//Surface
+class Triangle
+{
+public:
+    int id_triangle = -1; //debug
+    Vector3D point1, point2, point3;
+    double assignTriangle(Vector3D p1, Vector3D p2, Vector3D p3){point1 = p1; point2 = p2; point3 = p3;}
+    void printTriangle(){
+        cout << "Triangle ID: " << id_triangle << endl;
+        point1.printVector(false);
+        cout << " ";
+        point2.printVector(false);
+        cout << " ";
+        point3.printVector(false);
+        cout << endl;
+    }
+};
+
 class Pyramid
 {
+public:
+    //triangles[0] and triangles[1] are bases
+    Triangle triangles[NUM_TRIANGLES_IN_PYRAMID]; //NUM_TRIANGLES_IN_PYRAMID = 6 [considered base as two triangles]
+    int id = -1; //default [for debugging]
+    int typeOfObject; //1 -> Sphere, 2 -> Pyramid
+    double colors[3]; //three colors ... colors[0] -> r, colors[1] -> g, colors[2] -> b  [red, green, blue]
+    double co_efficients[4]; //0->ambient, 1->diffuse, 2->specular, 3->reflection co-efficients
+    double specular_exponent; //Final line
 
+    Pyramid()
+    {
+        this->typeOfObject = PYRAMID_TYPE;
+        for(int i=0; i<NUM_TRIANGLES_IN_PYRAMID; i++){
+            triangles[i].id_triangle = i;
+        }
+    }
+    //------------Form Triangles----------------
+    void formTriangles(double lowest_x, double lowest_y, double lowest_z, double len_base, double len_height)
+    {
+        //First we form base triangles [2 triangles] ... we keep base of pyramid at x-y plane
+        Vector3D lowest_point(lowest_x, lowest_y, lowest_z);
+        Vector3D p1, p2, p3; //Temporary variables for further use ...
+
+        //Triangle 1 [base]
+        p1 = lowest_point;  // one point is the left-bottom-most point
+        p2 = p1;            // another point is len_base units away in x-direction
+        p2.x = p2.x + len_base;
+        p3 = p1;            // another point is len_base units away in y-direction
+
+        //Triangle 2 [base]
+
+
+    }
+
+    void assignCoefficients(double a, double d, double s, double r){
+        co_efficients[0] = a; co_efficients[1] = d; co_efficients[2] = s; co_efficients[3] = r;
+    }
+    void assignColors(double r, double b, double g){
+        colors[0] = r; colors[1] = b; colors[2] = g;
+    }
+    void assignSpecularExponent(double sp){specular_exponent = sp;}
+
+    void formPyramid(double lowest_x, double lowest_y, double lowest_z, double len_base, double len_height,
+                     double color_r, double color_g, double color_b,
+                     double co_am, double co_dif, double co_spec, double co_ref,
+                     double spec_exp){
+        this->typeOfObject = PYRAMID_TYPE;
+        formTriangles(lowest_x, lowest_y, lowest_z, len_base, len_height);
+        assignCoefficients(co_am, co_dif, co_spec, co_ref);
+        assignColors(color_r, color_g, color_b);
+        assignSpecularExponent(spec_exp);
+    }
+
+    void printPyramid()
+    {
+        cout << "------------------ Printing PYRAMID -------------- ID = " << id << "--------" << endl;
+
+        cout << "BASE:" << endl;
+        for(int i=0; i<2; i++){triangles[i].printTriangle();}
+        cout << "SIDES:" << endl;
+        for(int i=2; i<6; i++){triangles[i].printTriangle();}
+
+        cout << "Color:";
+        for(int i=0; i<3; i++){cout << colors[i] << " ";}
+        cout << endl;
+
+        cout << "Coeffcients:";
+        for(int i=0; i<4; i++){
+            cout << coefficients_arr[i] << ":" << co_efficients[i] << " ";
+        }
+        cout << endl;
+        cout << "Specular Exponent:" << specular_exponent << endl;
+        cout << "------------------ Printing PYRAMID DONE --------------  " << endl;
+    }
 };
+
 
 
 ///------------------------------ My Objects End ----------------------------------
@@ -340,8 +437,18 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
 }
 
 
+void initialiseParams()
+{
+    //------------ Just like in Assignment 1 -------------
+    u.assignVector(0, 0, 1);
+    r.assignVector(-1/sqrt(2), 1/sqrt(2), 0);
+    l.assignVector(-1/sqrt(2), -1/sqrt(2), 0);
+    pos.assignVector(100, 100, 0);
+}
+
 void loadAllData()
 {
+    initialiseParams(); //load look, right, up, pos vectors just like in assignment 1
 
 }
 
