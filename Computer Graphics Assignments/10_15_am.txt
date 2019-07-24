@@ -258,7 +258,7 @@ public:
         //-------------------------- Top most point and mid point calculation -------------------
         mid_point.z = lowest_point.z; //mid point
         mid_point.x = 0.5 * (bottom_left.x + bottom_right.x);
-        mid_point.y = 0.5 * (bottom_left.y + top_left.y);
+        mid_point.y = 0.5 * (bottom_left.y + bottom_right.y);
         upper_most = mid_point; //upper-most point [same x, y as mid-point, but z = mid.z + height]
         upper_most.z = lowest_point.z + len_height;
 
@@ -435,46 +435,7 @@ void drawSquare(double b)
 //    glPopMatrix();
 }
 
-void drawSphere(double radius)
-{
-    double slices = 24;
-    double stacks = 30;
-	Vector3D points[100][100];
-	int i,j;
-	double h,r;
-	//generate points
-	for(i=0;i<=stacks;i++)
-	{
-		h=radius*sin(((double)i/(double)stacks)*(pi/2));
-		r=radius*cos(((double)i/(double)stacks)*(pi/2));
-		for(j=0;j<=slices;j++)
-		{
-			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-			points[i][j].z=h;
-		}
-	}
-	//draw quads using generated points
-	for(i=0;i<stacks;i++)
-	{
-//        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-		for(j=0;j<slices;j++)
-		{
-			glBegin(GL_QUADS);{
-			    //upper hemisphere
-				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-                //lower hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
-			}glEnd();
-		}
-	}
-}
+
 
 void initialiseParams()
 {
@@ -503,10 +464,6 @@ void printAllData()
 //            checker_board[i][j].printCheckerBoardTile();
 //        }
 //    }
-    cout << "\nPrinting Light Sources num_light_sources = " << num_light_sources << "\n";
-    for(int i=0; i<num_light_sources; i++){
-        light_sources[i].printVector();
-    }
 
     cout << endl << "----------------------- Printing Data ENDS ---------------------" << endl ;
 }
@@ -551,7 +508,7 @@ void loadAllData()
 
     double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
     //Objects reading
-    int num_ob_rec_so_far = 0;
+    int num_ob_rec_so_far = 1;
     while(num_ob_rec_so_far < num_objects){
         getline(fin, inputString); // Saves the line in inputString [input command]
 //        cout << "----->>>getLIne inputsString got is <" << inputString << ">\n";
@@ -561,7 +518,6 @@ void loadAllData()
         if(inputString == "\n"){
             continue;
         }
-//        cout << "===+++>>>> Now num_ob_so_far = " << num_ob_rec_so_far << endl;
         num_ob_rec_so_far++;
         if(trim(inputString) == "pyramid"){
             //load pyramid
@@ -603,8 +559,9 @@ void loadAllData()
     printAllData();
 }
 
-void drawCheckerBoard()
+void drawAllObjects()
 {
+    //Draw all objects in opengl
     int col_inner = 1, col_outer = 1;
     int deb_val = 200; //1000
     int checkerBoardWidth = CHECKER_BOARD_WIDTH;
@@ -627,57 +584,6 @@ void drawCheckerBoard()
         else{col_outer = 1;}
     }
 }
-
-void drawTriangle(Triangle triangle)
-{
-    Vector3D p1; Vector3D p2; Vector3D p3;
-    p1 = triangle.point1;
-    p2 = triangle.point2;
-    p3 = triangle.point3;
-//    printf("--->>About to draw triangle ... \n");
-//    cout << "p1:"; p1.printVector();
-//    cout << "p2:"; p2.printVector();
-//    cout << "p3:"; p3.printVector();
-    glBegin(GL_TRIANGLES);
-    {
-        glVertex3f(p1.x, p1.y, p1.z);
-        glVertex3f(p2.x, p2.y, p2.z);
-        glVertex3f(p3.x, p3.y, p3.z);
-    }
-    glEnd();
-}
-
-void drawPyramids()
-{
-    for(int i=0; i<pyramids_list.size(); i++){ //for each pyramid
-        Pyramid pyramid = pyramids_list[i];
-        glColor3f(pyramid.colors[0], pyramid.colors[1], pyramid.colors[2]);
-        for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){ //for each triangle of $pyramid
-            Triangle triangle = pyramid.triangles[j];
-            drawTriangle(triangle);
-        }
-    }
-}
-void drawSpheres()
-{
-    for(int i=0; i<spheres_list.size(); i++){
-        Sphere sphere = spheres_list[i];
-        glColor3f(sphere.colors[0], sphere.colors[1], sphere.colors[2]);
-        glPushMatrix();
-//        printf("--->>Sphere radius = %lf, <%lf, %lf, %lf>\n", sphere.radius, sphere.center.x, sphere.center.y, sphere.center.z);
-        glTranslatef(sphere.center.x, sphere.center.y, sphere.center.z);
-        drawSphere(sphere.radius);
-        glPopMatrix();
-    }
-}
-void drawAllObjects()
-{
-    //Draw all objects in opengl
-    drawCheckerBoard(); //draw checker-board
-    drawPyramids(); //draw pyramids
-    drawSpheres(); //draw spheres
-}
-
 
 ///----------------------------- My Functions End ---------------------------------------
 
