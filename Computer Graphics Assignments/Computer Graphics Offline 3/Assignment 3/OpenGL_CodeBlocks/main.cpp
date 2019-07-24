@@ -771,24 +771,30 @@ void drawPixelsWindow()
 
     cout << "To Move left = " << to_move_left << ", to move down = " << to_move_down << endl;
 
-    ------------------------------------------------------------- TO DO ------------------------------------
+//    ------------------------------------------------------------- TO DO ------------------------------------
 
-    Vector3D bottom_most_left_point = vectorAddition(vectorScale(r, -to_move_left), vectorScale(u, -to_move_down));
+//    Vector3D bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(r, -(to_move_left * 1.0)), vectorScale(u, -(to_move_down * 1.0))));
+
+    cout << "Here, u = "; u.printVector(false); cout << " , r = "; r.printVector();
+
+    Vector3D bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(u, -1), vectorScale(r, -1)));
+
 
     cout << "BOTTOM MOST LEFT POINT "; bottom_most_left_point.printVector();
 
 
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
-            Vector3D new_point = vectorAddition(vectorAddition(bottom_most_left_point, vectorScale(r, (j * increment_width))) ,
-                                                vectorAddition(bottom_most_left_point, vectorScale(u, (i * increment_height))));
-            pixel_window_mid_points[i][j] = new_point;
+            pixel_window_mid_points[i][j] = vectorAddition(
+                                        vectorAddition(bottom_most_left_point, vectorScale(r, (j * increment_width))),
+                                        vectorScale(u, (i * increment_height)));
         }
     }
 
-#ifdef DEBUG_MID_POINTS
-    #define DEBUG_MID_POINTS 0
-#endif // DEBUG_MID_POINTS
+//#ifdef DEBUG_MID_POINTS
+//    #define DEBUG_MID_POINTS 0
+//#endif // DEBUG_MID_POINTS
+
 
 #if DEBUG_MID_POINTS == 1
     ofstream out;
