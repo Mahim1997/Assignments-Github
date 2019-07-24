@@ -780,20 +780,34 @@ void drawPixelsWindow()
     Vector3D bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(u, -1), vectorScale(r, -1)));
 
 
-    cout << "BOTTOM MOST LEFT POINT "; bottom_most_left_point.printVector();
+    Vector3D bottom_most_left_mid_point = vectorAddition(bottom_most_left_point,
+                                                         vectorAddition(vectorScale(r, (0.5 * increment_width)),
+                                                                        vectorScale(u, (0.5 * increment_height))));
 
+    cout << "BOTTOM MOST LEFT POINT "; bottom_most_left_point.printVector();
+    cout << "Bottom most left mid-point :"; bottom_most_left_mid_point.printVector();
+
+    //make each zero
+    for(int i=0; i<PIXEL_NUM; i++){
+        for(int j=0; j<PIXEL_NUM; j++){
+            pixel_window_mid_points[i][j].assignVector(0, 0, 0);
+        }
+    }
 
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
             pixel_window_mid_points[i][j] = vectorAddition(
-                                        vectorAddition(bottom_most_left_point, vectorScale(r, (j * increment_width))),
+                                        vectorAddition(bottom_most_left_mid_point, vectorScale(r, (j * increment_width))),
                                         vectorScale(u, (i * increment_height)));
         }
     }
 
-//#ifdef DEBUG_MID_POINTS
-//    #define DEBUG_MID_POINTS 0
-//#endif // DEBUG_MID_POINTS
+    cout << "FIRST POINT IS: "; pixel_window_mid_points[0][0].printVector();
+    cout << "LAST POINT IS: "; pixel_window_mid_points[PIXEL_NUM - 1][PIXEL_NUM - 1].printVector();
+
+#ifdef DEBUG_MID_POINTS
+    #define DEBUG_MID_POINTS 0
+#endif // DEBUG_MID_POINTS
 
 
 #if DEBUG_MID_POINTS == 1
@@ -801,8 +815,10 @@ void drawPixelsWindow()
     out.open("mid_points.txt");
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
+//            cout << "for i = " << i << " , j = " << j << endl;
             out << pixel_window_mid_points[i][j].x << ", " << pixel_window_mid_points[i][j].y << ", " << pixel_window_mid_points[i][j].z << endl;
         }
+//        cout << endl << endl;
         out << endl << endl;
     }
     out.close();
@@ -814,7 +830,9 @@ void captureImage()
 {
 //    cout << "-------->> TO DO ... capture image" << endl;
 
-    drawPixelsWindow(); //drawPixelsWindow
+    drawPixelsWindow(); //drawPixelsWindow [most probably OK]
+
+
 
 }
 
