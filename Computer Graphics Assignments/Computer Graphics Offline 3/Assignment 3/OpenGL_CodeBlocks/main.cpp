@@ -31,9 +31,10 @@
 #define NUM_TILES 66 // 2*1000 / 30 = 2000/30 = 66.6667 =~ 67
 #define NUM_TILES_HALF 33
 
-#define CHECKER_BOARD_WIDTH 30 //width of each tile of checker-board is 30
+#define WIDTH_CHECKER_BOARD 30 //width of each tile of checker-board is 30
 #define INFINITE_INDEX 1000
 
+#define PIXEL_NUM 768 //pixel-window-size = 768 X 768
 
 using namespace std ;
 
@@ -483,7 +484,8 @@ void initialiseParams()
     r.assignVector(-1/sqrt(2), 1/sqrt(2), 0);
     l.assignVector(-1/sqrt(2), -1/sqrt(2), 0);
 //    pos.assignVector(100, 100, 0);
-    pos.assignVector(100, 100, 50);
+//    pos.assignVector(50,50,100); //50,50,100
+    pos.assignVector(100,100,50);
 }
 
 void printAllData()
@@ -520,8 +522,8 @@ void loadCheckerBoard()
     int col;
 
     double x_last, y_last;
-    x_last = -INFINITE_INDEX * CHECKER_BOARD_WIDTH;
-    y_last = -INFINITE_INDEX * CHECKER_BOARD_WIDTH;
+    x_last = -INFINITE_INDEX * WIDTH_CHECKER_BOARD;
+    y_last = -INFINITE_INDEX * WIDTH_CHECKER_BOARD;
 
     ///---------- NOTHING IS DONE FOR NOW -------------------
 }
@@ -600,14 +602,14 @@ void loadAllData()
     }
 
     loadCheckerBoard();
-    printAllData();
+//    printAllData();
 }
 
 void drawCheckerBoard()
 {
     int col_inner = 1, col_outer = 1;
     int deb_val = 200; //1000
-    int checkerBoardWidth = CHECKER_BOARD_WIDTH;
+    int checkerBoardWidth = WIDTH_CHECKER_BOARD;
 //    int i = 0;
     for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth){
         col_inner = col_outer;
@@ -670,17 +672,126 @@ void drawSpheres()
         glPopMatrix();
     }
 }
+
+void drawCircle(double radius)
+{
+    int segments = 50;
+    int i;
+    Vector3D points[100];
+
+    //generate points
+    for(i=0;i<=segments;i++)
+    {
+        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
+        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
+    }
+    //draw segments using generated points
+    for(i=0;i<segments;i++)
+    {
+        glBegin(GL_LINES);
+        {
+			glVertex3f(points[i].x,points[i].y,0);
+			glVertex3f(points[i+1].x,points[i+1].y,0);
+        }
+        glEnd();
+    }
+}
+void drawDebugCircle(double x, double y, double z)
+{
+    glPushMatrix();
+    {
+        glTranslatef(x, y, z);
+    }
+    drawCircle(10);
+    glPopMatrix();
+}
+
+void drawLightSources()
+{
+    for(int i=0; i<num_light_sources; i++){
+        Vector3D light = light_sources[i];
+        glPushMatrix();
+        {
+            glColor3f(1, 0, 1); //white
+            glTranslatef(light.x, light.y, light.z);
+            drawSphere(2);
+        }
+        glPopMatrix();
+    }
+}
+
 void drawAllObjects()
 {
     //Draw all objects in opengl
     drawCheckerBoard(); //draw checker-board
     drawPyramids(); //draw pyramids
     drawSpheres(); //draw spheres
+    drawLightSources(); //draw light-sources
+//    glColor3f(1,0,0);
+//    drawDebugCircle(50, 50, 100); //debugger circle
+//    glColor3f(1, 0, 0);
+//    drawDebugCircle(50, 50, 0); //debugger circle
 }
 
 
-///----------------------------- My Functions End ---------------------------------------
+///------------------------------- My Functions End ---------------------------------------
 
+//---------- Further global variables --------------
+Vector3D pixel_window_mid_points[PIXEL_NUM][PIXEL_NUM];
+double fovX = 90, fovY = 90;
+
+
+void drawPixelsWindow()
+{
+    //near plane
+    Vector3D mid_point_pixel_window;
+
+    //determine mid-point of the pixel_window by look * nearDistance
+    mid_point_pixel_window = vectorAddition(pos, vectorScale(l, nearDistance)); //camera-eye + look * nearDistance
+
+    //now determine horizontal and vertical i.e. width and height
+    double width_pixel_window  = 2.0 * (double)(nearDistance * tan(DEGREE_TO_RAD(fovX * 0.5))); // width = nearDistance * tan(fovX/2)
+    double height_pixel_window = 2.0 * (double)(nearDistance * tan(DEGREE_TO_RAD(fovY * 0.5))); // width = nearDistance * tan(fovY/2)
+
+
+    double increment_width  = (double)(width_pixel_window  / PIXEL_NUM);
+    double increment_height = (double)(height_pixel_window / PIXEL_NUM);
+
+    cout << "Inside drawPixelsWindow() ... \n";
+    cout << "--->> Width of pixel_window = " << width_pixel_window << " , Height of pixel_window = " << height_pixel_window << endl;
+    cout << "-->Mid-point of pixel window is "; mid_point_pixel_window.printVector();
+    cout << "Here, increment_width = " << increment_width << ", increment_height = " << increment_height << endl;
+
+    //384 down, 384 left
+    double to_move_left = increment_width * (PIXEL_NUM / 2);
+    double to_move_down = increment_height * (PIXEL_NUM / 2);
+
+    cout << "To Move left = " << to_move_left << ", to move down = " << to_move_down << endl;
+
+    Vector3D bottom_left_most_point;
+    bottom_left_most_point.x = mid_point_pixel_window.x - to_move_left;
+    bottom_left_most_point.y = mid_point_pixel_window.y - to_move_down;
+    bottom_left_most_point.z = mid_point_pixel_window.z;
+
+    cout << "Bottom-Left-most point is at "; bottom_left_most_point.printVector();
+
+    double x, y, z;
+    z = bottom_left_most_point.z ;
+    for(int i=0; i<PIXEL_NUM; i++){
+        y = bottom_left_most_point.y + (u.y * increment_width * i);
+        for(int j=0; j<PIXEL_NUM; j++){
+            x = bottom_left_most_point.x + (r.x * increment_width * j);
+        }
+    }
+}
+
+void captureImage()
+{
+//    cout << "-------->> TO DO ... capture image" << endl;
+
+    drawPixelsWindow(); //drawPixelsWindow
+
+}
 
 
 void keyboardListener(unsigned char key, int x,int y)
@@ -729,7 +840,7 @@ void keyboardListener(unsigned char key, int x,int y)
         r = vectorCrossProduct(l, u);
         break;
     case '0':
-        cout << "-------->> TO DO ... capture image" << endl;
+        captureImage();
         break;
     default:
         break;
@@ -746,21 +857,27 @@ void specialKeyListener(int key, int x,int y)
         break;
     case GLUT_KEY_UP:		///Move with respect to LOOK
         pos = vectorAddition(pos, vectorScale(l, scalar_forwardBackward));
+        cout << "Now pos = "; pos.printVector();
         break;
     case GLUT_KEY_DOWN:		// up arrow key
         pos = vectorSubtraction(pos, vectorScale(l, scalar_forwardBackward));
+        cout << "Now pos = "; pos.printVector();
         break;
     case GLUT_KEY_RIGHT:    ///Move with respect to RIGHT
         pos = vectorAddition(pos, vectorScale(r, scalar_rightLeft));
+        cout << "Now pos = "; pos.printVector();
         break;
     case GLUT_KEY_LEFT:
         pos = vectorSubtraction(pos, vectorScale(r, scalar_rightLeft));
+        cout << "Now pos = "; pos.printVector();
         break;
     case GLUT_KEY_PAGE_UP:  ///Move with respect to UP
         pos = vectorAddition(pos, vectorScale(u, scalar_upDown));
+        cout << "Now pos = "; pos.printVector();
         break;
     case GLUT_KEY_PAGE_DOWN:
         pos = vectorSubtraction(pos, vectorScale(u, scalar_upDown));
+        cout << "Now pos = "; pos.printVector();
         break;
     default:
         break;
@@ -835,7 +952,6 @@ void display()
     drawGrid();
 
 ///CODE FOR DRAWING OBJECT BEGIN
-
     drawAllObjects();
 ///CODE FOR DRAWING OBJECT END
 
@@ -874,7 +990,7 @@ void init()
 
     //give PERSPECTIVE parameters
 //    gluPerspective(80,	1,	1,	1000.0);
-    gluPerspective(90,	1,	1,	1000.0);
+    gluPerspective(field_angle,	1,	1,	1000.0); //field_angle = 90
     //field of view in the Y (vertically)
     //aspect ratio that determines the field of view in the X direction (horizontally)
     //near distance
@@ -895,7 +1011,7 @@ int main(int argc, char **argv)
 
 
     glutInit(&argc,argv);
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);   //glutInitWindowSize(500, 500);
     glutInitWindowPosition(0, 0);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 
