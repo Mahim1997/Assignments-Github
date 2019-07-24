@@ -8,8 +8,11 @@
 #include <windows.h>
 #include <glut.h>
 
+
 #define DEBUG_SPHERE 0
 #define DEBUG 0
+#define DEBUG_MID_POINTS 1
+
 #define DRAW_GRID 1
 
 #define WHITE 7
@@ -768,21 +771,37 @@ void drawPixelsWindow()
 
     cout << "To Move left = " << to_move_left << ", to move down = " << to_move_down << endl;
 
-    Vector3D bottom_left_most_point;
-    bottom_left_most_point.x = mid_point_pixel_window.x - to_move_left;
-    bottom_left_most_point.y = mid_point_pixel_window.y - to_move_down;
-    bottom_left_most_point.z = mid_point_pixel_window.z;
+    ------------------------------------------------------------- TO DO ------------------------------------
 
-    cout << "Bottom-Left-most point is at "; bottom_left_most_point.printVector();
+    Vector3D bottom_most_left_point = vectorAddition(vectorScale(r, -to_move_left), vectorScale(u, -to_move_down));
 
-    double x, y, z;
-    z = bottom_left_most_point.z ;
+    cout << "BOTTOM MOST LEFT POINT "; bottom_most_left_point.printVector();
+
+
     for(int i=0; i<PIXEL_NUM; i++){
-        y = bottom_left_most_point.y + (u.y * increment_width * i);
         for(int j=0; j<PIXEL_NUM; j++){
-            x = bottom_left_most_point.x + (r.x * increment_width * j);
+            Vector3D new_point = vectorAddition(vectorAddition(bottom_most_left_point, vectorScale(r, (j * increment_width))) ,
+                                                vectorAddition(bottom_most_left_point, vectorScale(u, (i * increment_height))));
+            pixel_window_mid_points[i][j] = new_point;
         }
     }
+
+#ifdef DEBUG_MID_POINTS
+    #define DEBUG_MID_POINTS 0
+#endif // DEBUG_MID_POINTS
+
+#if DEBUG_MID_POINTS == 1
+    ofstream out;
+    out.open("mid_points.txt");
+    for(int i=0; i<PIXEL_NUM; i++){
+        for(int j=0; j<PIXEL_NUM; j++){
+            out << pixel_window_mid_points[i][j].x << ", " << pixel_window_mid_points[i][j].y << ", " << pixel_window_mid_points[i][j].z << endl;
+        }
+        out << endl << endl;
+    }
+    out.close();
+#endif // DEBUG_MID_POINTS
+
 }
 
 void captureImage()
