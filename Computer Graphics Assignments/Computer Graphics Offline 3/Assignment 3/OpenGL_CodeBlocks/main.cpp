@@ -1,3 +1,4 @@
+#include "bitmap_image.hpp"
 #include<iostream>
 #include<cstdio>
 #include<cstdlib>
@@ -39,7 +40,8 @@
 #define WIDTH_CHECKER_BOARD 30 //width of each tile of checker-board is 30
 #define INFINITE_INDEX 1000
 
-#define PIXEL_NUM 768 //pixel-window-size = 768 X 768
+//#define PIXEL_NUM 768 //pixel-window-size = 768 X 768
+#define PIXEL_NUM 200 //debug
 
 using namespace std ;
 
@@ -217,6 +219,8 @@ public:
 
     double find_intersecting_value_t(Ray ray)
     {
+//        cout << "Inside find_intersecting_value_t of sphere ... " ;
+
         double t = NULL_VALUE_T;
 
         //quadratic equation at^2 + bt + c = 0
@@ -225,17 +229,23 @@ public:
         direction_vect = vectorNormalize(direction_vect);
 
         double a = vectorDotProduct(initial_pos, initial_pos);
-        double b = vectorDotProduct(direction_vect, initial_pos);
+        double b = 2 * vectorDotProduct(direction_vect, initial_pos);
         double c = vectorDotProduct(initial_pos, initial_pos) - (radius * radius) ;
 
-        double discriminant = (b * b) - (4 * a * c);
+        double discriminant = (b * b) - (4.0 * a * c);
+
+//        cout << "discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
+
         if(discriminant < 0){
             return NULL_VALUE_T;
         }
+        //else
         discriminant = sqrt(discriminant);
 
-        double t1 = (-b - discriminant)/(2 * a);
-        double t2 = (-b + discriminant)/(2 * a);
+        double t1 = (-b - discriminant)/(2.0 * a);
+        double t2 = (-b + discriminant)/(2.0 * a);
+
+//        cout << "  ,  t1 = " << t1 << " , t2 = " << t2;
 
         t = NULL_VALUE_T; //initialize as null
         if(t1 >= 0){
@@ -248,6 +258,8 @@ public:
                 t = t2; //simply t2 is now value of t
             }
         }
+
+//        cout << " , finally returning t = " << t << endl;
 
         return t;
     }
@@ -1046,7 +1058,10 @@ int color_of_pixel_checker_board(Vector3D point)
 }
 
 ofstream pixel_deb; //for pixel debugging ...
-void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains the initial position
+bitmap_image image_bitmap_pixel;
+Vector3D pixels_image_colors[PIXEL_NUM][PIXEL_NUM];
+
+void find_intersection_for_each_pixel(Ray ray, int row_val, int col_val) //ray.initial_position contains the initial position
 {
     ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
@@ -1055,6 +1070,7 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
     Vector3D colors_so_far;
     colors_so_far.assignVector(0, 0, 0);
 
+    bool is_triangle = false, is_sphere = false, is_checker = false;
     //Triangles...
     for(int i=0; i<pyramids_list.size(); i++){
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
@@ -1064,6 +1080,9 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
             if(temp != NULL_VALUE_T){
                 t = temp;
                 if(t < min_t){
+//                    cout << "--->>>TRIANGLE MATCH for i = " << i << " , j = " << j << " , col : " << triangle.colors.x << " " << triangle.colors.y << " " << triangle.colors.z << endl;
+
+                    is_triangle = true;
                     min_t = t; //min_t stores t.
                     colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
                 }
@@ -1077,6 +1096,9 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
         if(t != NULL_VALUE_T){
             //if not null then compare if min or not
             if(t < min_t){
+                is_triangle = false;
+                is_sphere = true;
+//                cout << "++--++-->> SPHERE MATCH for i = " << row_val << ", j = " << col_val << " , col: " << sphere.colors[0] << " " << sphere.colors[1] << " " << sphere.colors[2] << endl;
                 min_t = t;
                 colors_so_far.assignVector(sphere.colors[0], sphere.colors[1], sphere.colors[2]); //assign the color of this sphere
             }
@@ -1087,6 +1109,9 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
     bool is_checker_board = false;
     t = -(ray.initial_position.z) / (ray.direction_vector.z);
     if(t < min_t){
+//        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
+        is_checker = true;
+        is_sphere = false;
         min_t = t;
         is_checker_board = true;
     }
@@ -1100,6 +1125,7 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
         intersection_point.assignVector(farDistance, farDistance, farDistance);
     }
 
+//    cout << "--==---==->FINALLY for i = " << row_val << " , j = " << col_val << " , isChecker = " << is_checker << " , is_sphere = " << is_sphere << " , is_triangle = " << is_triangle << endl << endl;
 
     //check if checker_board ... then find which color i.e. WHITE or BLACK
     if(is_checker_board == true)
@@ -1109,11 +1135,11 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
         colors_so_far.assignVector(color_ret, color_ret, color_ret);
     }
 
-    pixel_deb << "IntersectionPoint:" << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z;
-    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
-    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
+//    pixel_deb << "IntersectionPoint:" << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z;
+//    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
+//    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
     //Spheres....
-
+    pixels_image_colors[row_val][col_val].assignVector(colors_so_far.x, colors_so_far.y, colors_so_far.z);
 }
 
 void find_intersection_points()
@@ -1125,6 +1151,9 @@ void find_intersection_points()
 
     initial_pos.assignVector(pos.x, pos.y, pos.z);
 
+    //debugging with only one pixel
+
+
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
             pixel_pos = pixel_window_mid_points[i][j];
@@ -1132,15 +1161,20 @@ void find_intersection_points()
             direction_vect.y = pixel_pos.y - initial_pos.y;
             direction_vect.z = pixel_pos.z - initial_pos.z;
             direction_vect = vectorNormalize(direction_vect);
-            cout << "For i = " << i << " , j = " << j << " " ;
-            pixel_deb << "Idx:(" << i << "," << j << ")" ;
+//            cout << "For i = " << i << " , j = " << j << " " ;
+//            pixel_deb << "Idx:(" << i << "," << j << ")" ;
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
-            find_intersection_for_each_pixel(ray);
+            find_intersection_for_each_pixel(ray, i, j);
+//            printf("To set pic i = %d, j = %d window .. x = %lf, y = %lf, pixel colors = %lf, %lf, %lf\n",i, j, pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
+            image_bitmap_pixel.set_pixel(pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
         }
-        pixel_deb << endl << endl;
-//        cout << endl << endl;
+//        pixel_deb << endl << endl;
+        if(i%10 == 0){
+            cout << "Row " << i << " is complete\n";
+        }
     }
-    cout << "Printing to file pixel_deb.txt done" << endl;
+    cout << "Printing to file pixel_deb.txt done .. PRINTING IMAGE" << endl;
+    image_bitmap_pixel.save_image("out_test.bmp");
 }
 
 
@@ -1367,6 +1401,7 @@ int main(int argc, char **argv)
     fin.open("description.txt");
     loadAllData();
     pixel_deb.open("pixel_deb.txt");
+    image_bitmap_pixel.setwidth_height(WINDOW_SIZE, WINDOW_SIZE);
     ///Initialize pos, u, l, and r done
 
 
