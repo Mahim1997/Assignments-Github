@@ -1108,20 +1108,19 @@ bitmap_image image_bitmap_pixel;
 class IntersectionObject
 {
 public:
-    double specular_exp;
     int type = -1;
     Vector3D normal;
     Vector3D color;
     Vector3D intersection_point;
     double co_efficients[4]; //co-efficients of those surfaces
-    void assignIntersectionObject(Vector3D c, Vector3D ip, double ambient, double diffuse, double specular, double reflective, double sp)
+    void assignIntersectionObject(Vector3D c, Vector3D ip, double ambient, double diffuse, double specular, double reflective)
     {
+
         intersection_point.assignVector(ip.x, ip.y, ip.z);
         co_efficients[0] = ambient;
         co_efficients[1] = diffuse;
         co_efficients[2] = specular;
         co_efficients[3] = reflective;
-        specular_exp = sp;
     }
     void assignColor(Vector3D c){
         color.assignVector(c.x, c.y, c.z);
@@ -1143,9 +1142,6 @@ public:
         for(int i=0; i<4; i++){
             co_efficients[i] = c[i];
         }
-    }
-    void assignExponent(double exp){
-        specular_exp = exp;
     }
 };
 
@@ -1178,7 +1174,6 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
                     colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
                     intersectingObj.assignCoEfficients(pyramids_list[i].co_efficients);
                     intersectingObj.type = TRIANGLE_TYPE;
-                    intersectingObj.specular_exp = pyramids_list[i].specular_exponent;
                     //assign normal here...
                     Vector3D _normal_vector, _P, _A, _B, _AP, _BP;
                     _A.assignVector(triangle.point1.x, triangle.point1.y, triangle.point1.z);
@@ -1212,13 +1207,10 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
                 intersectingObj.assignCoEfficients(sphere.co_efficients);
                 intersectingObj.type = SPHERE_TYPE;
                 Vector3D _normal;
-                ray.normalise();
                 Vector3D _P = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
-                //_normal.assignVector(vectorAddition(sphere.center, vectorScale(_P , -1))); //center - intersection = normal
-                _normal = vectorSubtraction(_P, sphere.center);
+                _normal.assignVector(vectorAddition(sphere.center, vectorScale(_P , -1))); //center - intersection = normal
                 _normal.normalise();
                 intersectingObj.assignNormal(_normal);
-                intersectingObj.specular_exp = sphere.specular_exponent;
             }
         }
     }
@@ -1247,7 +1239,6 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
         //find which color's tile is this vector in.
         colors_so_far = color_of_pixel_checker_board(intersection_point);
         intersectingObj.assignCoEfficients(FLOOR_COEFFICIENTS); //assign floor's co-efficients ...
-        intersectingObj.specular_exp = FLOOR_SPECULAR_EXPONENT;
     }
     intersectingObj.assignIntersectionPoint(intersection_point);
     intersectingObj.assignColor(colors_so_far);
@@ -1294,34 +1285,20 @@ void find_intersection_points()
             //----- FOR EACH LIGHT SOURCE -----
             for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++){
                 lightSourcePosition = light_sources[light_src_cnt];
-
                 _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
-                _incident_ray.normalise(); //normalize
-                intersecting_point = vectorAddition(intersecting_point, (_incident_ray)); //move forward 1 step
-                _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point); //recalculation
-
-                _incident_ray.normalise();
-                normal_vector.normalise();
                 //refl = 2*(L.N)N - L
-                _reflected_ray = vectorSubtraction(_incident_ray,
-                                       vectorScale(_incident_ray, (2 * vectorDotProduct(_incident_ray, normal_vector))));
-                _reflected_ray.normalise();
-                _ray_from_eye_to_intersection = vectorSubtraction(intersecting_point, pos); //intersection point - pos
-                _ray_from_eye_to_intersection.normalise();
-                cos_theta_sum += max(vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude(), 0.0);
+                _reflected_ray = vectorSubtraction(vectorScale(_incident_ray, (2 * vectorDotProduct(_incident_ray, normal_vector))), _incident_ray);
 
-                double temp = max( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection)),0.0);
-                temp = pow(temp, intersectionObj.specular_exp);
-//                cout << "Here, specular_exp = " << intersectionObj.specular_exp << endl;
-                cos_phi_sum += temp;
+                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //eye - intersection point
+                cos_theta_sum += max(vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude(), 0.0);
+                cos_phi_sum += vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection) / (_ray_from_eye_to_intersection.magnitude() * _reflected_ray.magnitude());
             }
             // FOR EACH LIGHT SOURCE COMPUTED VALUES
 
             Vector3D _ambient_rgb_component = vectorScale(color_this_pixel, ambient_coeffcient); //ambient_coeff * [r, g, b]
             double diffuse_multiplier = diffuse_coefficient * cos_theta_sum;
             Vector3D _diffuse_rgb_component = vectorScale(color_this_pixel, diffuse_multiplier);
-            double specular_multiplier = specular_coefficient * cos_phi_sum;
-            Vector3D _specular_rgb_component = vectorScale(Vector3D(1.0, 1.0, 1.0), specular_multiplier);
+
 
             //Only ambient
             color_this_pixel = vectorAddition(color_this_pixel, _ambient_rgb_component);
@@ -1329,12 +1306,8 @@ void find_intersection_points()
             //Add diffuse component too
             color_this_pixel = vectorAddition(color_this_pixel, _diffuse_rgb_component);
 
-            //Add specular component too
-            color_this_pixel = vectorAddition(color_this_pixel, _specular_rgb_component);
-
             //image_bitmap_pixel.set_pixel(767-i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
-            image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i,color_this_pixel.x * 255, color_this_pixel.y * 255,
-                                         color_this_pixel.z * 255);
+            image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i,color_this_pixel.x * 255, color_this_pixel.y * 255, color_this_pixel.z * 255);
         }
 //        pixel_deb << endl << endl;
         //if(i%10 == 0){
