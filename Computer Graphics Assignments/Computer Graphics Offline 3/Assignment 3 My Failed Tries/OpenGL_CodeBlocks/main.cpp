@@ -22,7 +22,7 @@
 #define BLACK 10
 
 #define RADIUS_SHAPE 20
-#define DEGREE_ANGLE_INIT 0.3
+#define DEGREE_ANGLE_INIT 5  //movement angle
 
 #define SPHERE_TYPE 1
 #define PYRAMID_TYPE 2
@@ -975,7 +975,14 @@ void computePixelsWindow()
             pixel_window_mid_points[i][j].assignVector(0, 0, 0);
         }
     }
+/*
+        //top-down approach
+            pixel_window_mid_points[i][j] = vectorAddition(
+                                        vectorAddition(bottom_most_left_mid_point, vectorScale(r, (j * increment_width))),
+                                        vectorScale(u, ((PIXEL_NUM - 1 - i) * increment_height)));
+*/
 
+    Vector3D top_moft_left_mid_point = vectorAddition(bottom_most_left_mid_point, Vector3D(0, (PIXEL_NUM - 1) * increment_height , 0));
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
             pixel_window_mid_points[i][j] = vectorAddition(
@@ -983,6 +990,7 @@ void computePixelsWindow()
                                         vectorScale(u, (i * increment_height)));
         }
     }
+
 
     cout << "FIRST POINT IS: "; pixel_window_mid_points[0][0].printVector();
     cout << "LAST POINT IS: "; pixel_window_mid_points[PIXEL_NUM - 1][PIXEL_NUM - 1].printVector();
@@ -1059,7 +1067,6 @@ int color_of_pixel_checker_board(Vector3D point)
 
 ofstream pixel_deb; //for pixel debugging ...
 bitmap_image image_bitmap_pixel;
-Vector3D pixels_image_colors[PIXEL_NUM][PIXEL_NUM];
 
 Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
 {
@@ -1136,8 +1143,11 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
         double color_ret = color_of_pixel_checker_board(intersection_point);
         colors_so_far.assignVector(color_ret, color_ret, color_ret);
     }
-
+//    pixel_deb << "IDX:(" << row_val << "," << col_val << ") ";
 //    pixel_deb << "IntersectionPoint:" << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z;
+//    pixel_deb << endl;
+
+
 //    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
 //    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
     //Spheres....
@@ -1167,14 +1177,16 @@ void find_intersection_points()
 
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
             Vector3D color_this_pixel = find_intersection_color_for_each_pixel(ray, i, j);
-            image_bitmap_pixel.set_pixel(i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
+            //image_bitmap_pixel.set_pixel(767-i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
+            image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i,color_this_pixel.x * 255, color_this_pixel.y * 255, color_this_pixel.z * 255);
         }
 //        pixel_deb << endl << endl;
         //if(i%10 == 0){
         //    cout << "Row " << i << " is complete\n";
         //}
     }
-    cout << "Printing to file pixel_deb.txt done .. PRINTING IMAGE" << endl;
+    pixel_deb.close();
+    cout << "Printing to file pixel_deb.txt done .. PRINTING IMAGE to out_test.bmp DONE" << endl;
     image_bitmap_pixel.save_image("out_test.bmp");
 }
 
