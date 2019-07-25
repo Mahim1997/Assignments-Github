@@ -1061,7 +1061,7 @@ ofstream pixel_deb; //for pixel debugging ...
 bitmap_image image_bitmap_pixel;
 Vector3D pixels_image_colors[PIXEL_NUM][PIXEL_NUM];
 
-Vector3D find_intersection_color_for_each_pixel(Ray ray, int row_val, int col_val) //ray.initial_position contains the initial position
+Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
 {
     ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
@@ -1170,7 +1170,7 @@ void find_intersection_points()
 //            printf("To set pic i = %d, j = %d window .. x = %lf, y = %lf, pixel colors = %lf, %lf, %lf\n",i, j, pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x,
 //                   pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
 //            image_bitmap_pixel.set_pixel(767 - i, j, color_this_pixel.x, color_this_pixel.y, color_this_pixel.z);
-                        image_bitmap_pixel.set_pixel(767 - i, j, 255, 255, 255);
+            image_bitmap_pixel.set_pixel(767 - i, j, 255, 255, 255);
             //image_bitmap_pixel.set_pixel(pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
 //            image_bitmap_pixel.set_pixel(i, j, pixels_image_colors[767-i][j].x, pixels_image_colors[767-i][j].y, pixels_image_colors[767-i][j].z);
         }
