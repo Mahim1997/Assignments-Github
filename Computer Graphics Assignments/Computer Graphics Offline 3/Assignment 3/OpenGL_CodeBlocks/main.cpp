@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <glut.h>
 
+#define MAX_VAL 9999999
+#define NULL_VALUE_T -1000
 
 #define DEBUG_SPHERE 0
 #define DEBUG 0
@@ -153,6 +155,31 @@ double vectorDotProduct(Vector3D a, Vector3D b)
 
 string coefficients_arr[] = {"Ambient", "Diffuse", "Specular", "Reflection"};
 
+///------------- Ray Class -----------------
+class Ray
+{
+public:
+    Vector3D initial_position;
+    Vector3D direction_vector;
+    void normalise() //normalize the direction vector
+    {
+        direction_vector = vectorNormalize(direction_vector);
+    }
+    void assignRay(Vector3D init, Vector3D dir)
+    {
+        initial_position = init;
+        direction_vector = dir;
+        normalise();
+    }
+    void assignRay(double x_pos, double y_pos, double z_pos, double x_dir, double y_dir, double z_dir)
+    {
+        Vector3D init(x_pos, y_pos, z_pos);
+        Vector3D dirn(x_dir, y_dir, z_dir);
+        assignRay(init, dirn);
+        normalise();
+    }
+};
+
 class Sphere
 {
 public:
@@ -206,13 +233,45 @@ public:
 
 };
 
+class Matrix
+{
+public:
+    double elements[3][3];
+    void printMatrix()
+    {
+        for(int i=0; i<3; i++){
+            for(int j=0; j<3; j++){
+                cout << elements[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    double getDeterminant()
+    {
+        double det1 = elements[0][0] * ( (elements[1][1] * elements[2][2]) - (elements[2][1] * elements[1][2]) );
+        double det2 = elements[0][1] * ( (elements[1][0] * elements[2][2]) - (elements[1][2] * elements[2][0]) );
+        double det3 = elements[0][2] * ( (elements[1][0] * elements[2][1]) - (elements[2][0] * elements[1][1]) );
+
+        return (det1 - det2 + det3);
+    }
+};
+
 //Surface
 class Triangle
 {
 public:
     int id_triangle = -1; //debug
     Vector3D point1, point2, point3;
-    double assignTriangle(Vector3D p1, Vector3D p2, Vector3D p3){point1 = p1; point2 = p2; point3 = p3;}
+    Vector3D colors;
+    void assignTriangle(Vector3D p1, Vector3D p2, Vector3D p3){point1 = p1; point2 = p2; point3 = p3;}
+    void assignTriangle(Vector3D p1, Vector3D p2, Vector3D p3, Vector3D col){
+        point1 = p1; point2 = p2; point3 = p3;
+        colors.x = col.x; colors.y = col.y; colors.z = col.z;
+    }
+    void assignColors(double c1, double c2, double c3){
+        colors.x = c1; colors.y = c2; colors.z = c3;
+    }
     void printTriangle(){
         cout << "Triangle ID: " << id_triangle << endl;
         point1.printVector(false);
@@ -220,7 +279,76 @@ public:
         point2.printVector(false);
         cout << " ";
         point3.printVector(false);
+        cout << "Colors <R,G,B> " << colors.x << " " << colors.y << " " << colors.z;
         cout << endl;
+    }
+    double find_intersecting_value_t(Ray ray)
+    {
+        //find CLOSEST intersecting point with THIS ray.
+        ray.normalise(); //normalize the direction vector
+        Vector3D direction_vect = ray.direction_vector;
+
+        Matrix A;
+        A.elements[0][0] = point1.x - point2.x;
+        A.elements[0][1] = point1.x - point3.x;
+        A.elements[0][2] = direction_vect.x;
+        A.elements[1][0] = point1.y - point2.y;
+        A.elements[1][1] = point1.y - point3.y;
+        A.elements[1][2] = direction_vect.y;
+        A.elements[2][0] = point1.z - point2.z;
+        A.elements[2][1] = point1.z - point3.z;
+        A.elements[2][2] = direction_vect.z;
+
+        Matrix mat_for_beta;
+        mat_for_beta.elements[0][0] = point1.x - ray.initial_position.x;
+        mat_for_beta.elements[0][1] = point1.x - point3.x;
+        mat_for_beta.elements[0][2] = direction_vect.x;
+        mat_for_beta.elements[1][0] = point1.y - ray.initial_position.y;
+        mat_for_beta.elements[1][1] = point1.y - point3.y;
+        mat_for_beta.elements[1][2] = direction_vect.y;
+        mat_for_beta.elements[2][0] = point1.z - ray.initial_position.z;
+        mat_for_beta.elements[2][1] = point1.z - point3.z;
+        mat_for_beta.elements[2][2] = direction_vect.z;
+
+        Matrix mat_for_gamma;
+        mat_for_gamma.elements[0][0] = point1.x - point2.x;
+        mat_for_gamma.elements[0][1] = point1.x - ray.initial_position.x;
+        mat_for_gamma.elements[0][2] = direction_vect.x;
+        mat_for_gamma.elements[1][0] = point1.y - point2.y;
+        mat_for_gamma.elements[1][1] = point1.y - ray.initial_position.y;
+        mat_for_gamma.elements[1][2] = direction_vect.y;
+        mat_for_gamma.elements[2][0] = point1.z - point2.z;
+        mat_for_gamma.elements[2][1] = point1.z - ray.initial_position.z;
+        mat_for_gamma.elements[2][2] = direction_vect.z;
+
+        Matrix mat_for_t;
+        mat_for_t.elements[0][0] = point1.x - point2.x;
+        mat_for_t.elements[0][1] = point1.x - point3.x;
+        mat_for_t.elements[0][2] = point1.x - ray.initial_position.x;
+        mat_for_t.elements[1][0] = point1.y - point2.y;
+        mat_for_t.elements[1][1] = point1.y - point3.y;
+        mat_for_t.elements[1][2] = point1.y - ray.initial_position.y;
+        mat_for_t.elements[2][0] = point1.z - point2.z;
+        mat_for_t.elements[2][1] = point1.z - point3.z;
+        mat_for_t.elements[2][2] = point1.z - ray.initial_position.z;
+
+        double alpha, beta, gamma, t;
+
+        beta = mat_for_beta.getDeterminant() / A.getDeterminant();
+        gamma = mat_for_gamma.getDeterminant() / A.getDeterminant();
+        alpha = 1.0 - (beta + gamma);
+        t = mat_for_t.getDeterminant() / A.getDeterminant();
+
+        if(t >= 0){
+            //intersects ...
+            //each should be greater or equal than 0
+            if((alpha >= 0) && (beta >= 0) && (gamma >= 0)){
+                //Inside the triangle THIS intersecting point lies.
+                return t;
+            }
+        }
+        //else return NULL_VALUE_T
+        return NULL_VALUE_T;
     }
 };
 
@@ -286,6 +414,11 @@ public:
     }
     void assignColors(double r, double b, double g){
         colors[0] = r; colors[1] = b; colors[2] = g;
+        for(int i=0; i<NUM_TRIANGLES_IN_PYRAMID; i++){
+            triangles[i].colors.x = colors[0];
+            triangles[i].colors.y = colors[1];
+            triangles[i].colors.z = colors[2];
+        }
     }
     void assignSpecularExponent(double sp){specular_exponent = sp;}
 
@@ -308,7 +441,7 @@ public:
         for(int i=0; i<2; i++){triangles[i].printTriangle();}
         cout << "SIDES:" << endl;
         for(int i=2; i<6; i++){triangles[i].printTriangle();}
-
+        cout << endl;
         cout << "Color:";
         for(int i=0; i<3; i++){cout << colors[i] << " ";}
         cout << endl;
@@ -605,7 +738,7 @@ void loadAllData()
     }
 
     loadCheckerBoard();
-//    printAllData();
+    printAllData();
 }
 
 void drawCheckerBoard()
@@ -743,8 +876,7 @@ void drawAllObjects()
 Vector3D pixel_window_mid_points[PIXEL_NUM][PIXEL_NUM];
 double fovX = 90, fovY = 90;
 
-
-void drawPixelsWindow()
+void computePixelsWindow()
 {
     //near plane
     Vector3D mid_point_pixel_window;
@@ -816,7 +948,7 @@ void drawPixelsWindow()
     for(int i=0; i<PIXEL_NUM; i++){
         for(int j=0; j<PIXEL_NUM; j++){
 //            cout << "for i = " << i << " , j = " << j << endl;
-            out << pixel_window_mid_points[i][j].x << ", " << pixel_window_mid_points[i][j].y << ", " << pixel_window_mid_points[i][j].z << endl;
+            out << "Index:(" << i << "," << j << ") -> " << pixel_window_mid_points[i][j].x << ", " << pixel_window_mid_points[i][j].y << ", " << pixel_window_mid_points[i][j].z << endl;
         }
 //        cout << endl << endl;
         out << endl << endl;
@@ -825,15 +957,65 @@ void drawPixelsWindow()
 #endif // DEBUG_MID_POINTS
 
 }
+ofstream pixel_deb;
+void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains the initial position
+{
+    //FOR EACH OBJECT ... first start with triangle's surface
+    double min_t = MAX_VAL; //MAX VALUE
+    double t = MAX_VAL;
+    Vector3D colors_so_far;
+    colors_so_far.assignVector(0, 0, 0);
+    //Triangles...
+    for(int i=0; i<pyramids_list.size(); i++){
+        for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
+            //FOR EACH TRIANGLE ...
+            Triangle triangle = pyramids_list[i].triangles[j];
+            double temp = triangle.find_intersecting_value_t(ray);
+            if(temp != NULL_VALUE_T){
+                t = temp;
+                if(t < min_t){
+                    min_t = t; //min_t stores t.
+                    colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z);
+                }
+            }
+        }
+    }
+    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
+    //Spheres....
+
+}
+
+void find_intersection_points()
+{
+//FOR EACH PIXEL
+    cout << "--->>Inside find_intersection_points ... " << endl ;
+    Ray ray;
+    Vector3D initial_pos, direction_vect, pixel_pos;
+
+    initial_pos.assignVector(pos.x, pos.y, pos.z);
+
+    for(int i=0; i<PIXEL_NUM; i++){
+        for(int j=0; j<PIXEL_NUM; j++){
+            pixel_pos = pixel_window_mid_points[i][j];
+            direction_vect.x = pixel_pos.x - initial_pos.x;
+            direction_vect.y = pixel_pos.y - initial_pos.y;
+            direction_vect.z = pixel_pos.z - initial_pos.z;
+            direction_vect = vectorNormalize(direction_vect);
+            cout << "For i = " << i << " , j = " << j << " " ;
+            ray.assignRay(initial_pos, direction_vect); //initialize the ray.
+            find_intersection_for_each_pixel(ray);
+        }
+        cout << endl << endl;
+    }
+}
+
 
 void captureImage()
 {
 //    cout << "-------->> TO DO ... capture image" << endl;
 
-    drawPixelsWindow(); //drawPixelsWindow [most probably OK]
-
-
-
+    computePixelsWindow(); //computePixelsWindow [most probably OK]
+    find_intersection_points(); // find the points of intersection of each ray with each obj
 }
 
 
@@ -1050,6 +1232,7 @@ int main(int argc, char **argv)
     ///Initialize pos, u, l, and r begin
     fin.open("description.txt");
     loadAllData();
+    pixel_deb.open("pixel_deb.txt");
     ///Initialize pos, u, l, and r done
 
 
