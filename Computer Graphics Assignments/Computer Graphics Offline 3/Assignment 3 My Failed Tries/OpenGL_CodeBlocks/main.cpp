@@ -949,6 +949,7 @@ void drawAllObjects()
 
 //---------- Further global variables --------------
 Vector3D pixel_window_mid_points[PIXEL_NUM][PIXEL_NUM];
+Vector3D bottom_most_left_point;
 double fovX = 90, fovY = 90;
 
 void computePixelsWindow()
@@ -984,7 +985,7 @@ void computePixelsWindow()
 
     cout << "Here, u = "; u.printVector(false); cout << " , r = "; r.printVector();
 
-    Vector3D bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(u, -1), vectorScale(r, -1)));
+    bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(u, -1), vectorScale(r, -1)));
 
 
     Vector3D bottom_most_left_mid_point = vectorAddition(bottom_most_left_point,
@@ -1041,53 +1042,35 @@ void computePixelsWindow()
 
 }
 
-int color_of_pixel_checker_board(Vector3D point)
+Vector3D color_of_pixel_checker_board(Vector3D p)
 {
-    int col_inner = 1, col_outer = 1;
-    int deb_val = INFINITE_INDEX; //1000
-    int checkerBoardWidth = WIDTH_CHECKER_BOARD;
+    //B|_   _|W
+    //    C
+    //W|_   _|B
 
-    int color = -1;
+    p.x = p.x + abs(bottom_most_left_point.x);
+    p.y = p.y + abs(bottom_most_left_point.y);
 
-    for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth){
-        col_inner = col_outer;
-        for(int j= -deb_val; j<deb_val; j+=checkerBoardWidth){
-//            printf("-->> Value at (%d, %d), col = %d\n", i, j, col);
-            glColor3f(col_inner, col_inner, col_inner); //1,1,1 -> white
-            glPushMatrix();
-            glTranslatef((double)j, (double)i, 0.0);
-            drawSquare(checkerBoardWidth);
-            glPopMatrix();
+    int checker_x=(int)(p.x/WIDTH_CHECKER_BOARD);
+    int checker_y=(int)(p.y/WIDTH_CHECKER_BOARD);
 
-            //check if within bounds ...
-            double left_x, right_x, down_y, up_y;
-            left_x = j - (0.5 * checkerBoardWidth);
-            right_x = j + (0.5 * checkerBoardWidth);
-            down_y = i - (0.5 * checkerBoardWidth);
-            up_y = i + (0.5 * checkerBoardWidth);
+    Vector3D colour(0, 0, 0); //auto return black
 
-            if((point.x <= right_x) && (point.x >= left_x)){
-                if((point.y <= up_y && (point.y >= down_y))){
-                    //IS_WITHIN_BOUNDS
-                    if(col_inner == 1){//WHITE
-                        return 1;
-                    }else{
-                        return 0;
-                    }
-                }
-            }
-
-
-            //change turns of color
-            if(col_inner == 1){col_inner = 0;}
-            else{col_inner = 1;}
+    if((checker_x % 2) == 0)
+    {
+        if((checker_y) % 2 != 0)
+        {
+            colour.assignVector(1, 1, 1); //make white
         }
-        if(col_outer == 1){col_outer = 0;}
-        else{col_outer = 1;}
     }
-
-
-    return 1; //normally return WHITE
+    else
+    {
+        if((checker_y) % 2 == 0)
+        {
+            colour.assignVector(1, 1, 1); //make white
+        }
+    }
+    return colour;
 }
 
 ofstream pixel_deb; //for pixel debugging ...
@@ -1143,14 +1126,14 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
     //Checkerboard...
     //O_z + t.direction_z = 0 --> find value of t
     bool is_checker_board = false;
-//    t = -(ray.initial_position.z) / (ray.direction_vector.z);
-//    if(t < min_t){
-////        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
-//        is_checker = true;
-//        is_sphere = false;
-//        min_t = t;
-//        is_checker_board = true;
-//    }
+    t = -(ray.initial_position.z) / (ray.direction_vector.z);
+    if((t < min_t) && (t >= 0)){
+//        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
+        is_checker = true;
+        is_sphere = false;
+        min_t = t;
+        is_checker_board = true;
+    }
 
     //Find the intersecting point's co-ordinates
 
@@ -1160,25 +1143,15 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
     }else{
         intersection_point.assignVector(farDistance, farDistance, farDistance);
     }
-
-//    cout << "--==---==->FINALLY for i = " << row_val << " , j = " << col_val << " , isChecker = " << is_checker << " , is_sphere = " << is_sphere << " , is_triangle = " << is_triangle << endl << endl;
-
-    //check if checker_board ... then find which color i.e. WHITE or BLACK
     if(is_checker_board == true)
     {
         //find which color's tile is this vector in.
-        double color_ret = color_of_pixel_checker_board(intersection_point);
-        colors_so_far.assignVector(color_ret, color_ret, color_ret);
+        colors_so_far = color_of_pixel_checker_board(intersection_point);
+//        if((min_t >= INFINITE_INDEX) || (min_t < 0)){
+//            colors_so_far.assignVector(0, 0, 0); //black forced
+//        }
     }
-//    pixel_deb << "IDX:(" << row_val << "," << col_val << ") ";
-//    pixel_deb << "IntersectionPoint:" << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z;
-//    pixel_deb << endl;
 
-
-//    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
-//    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
-    //Spheres....
-    //pixels_image_colors[row_val][col_val].assignVector(colors_so_far.x, colors_so_far.y, colors_so_far.z);
     return colors_so_far;
 }
 
