@@ -216,6 +216,12 @@ public:
         assignRay(init, dirn);
         normalise();
     }
+    void printRay()
+    {
+        cout << "InitialPos[Ray]: "; initial_position.printVector(false);
+        cout << " , DirectionVect[Ray]: "; direction_vector.printVector(false);
+        cout << " , mag_direction_vec = " << direction_vector.magnitude() << endl;
+    }
 };
 
 
@@ -261,17 +267,18 @@ public:
         double t = NULL_VALUE_T;
 
         //quadratic equation at^2 + bt + c = 0
-        Vector3D initial_pos = ray.initial_position;
+        Vector3D initial_pos = vectorAddition(ray.initial_position, vectorScale(center, -1.0)); //translate to center
         Vector3D direction_vect = ray.direction_vector;
         direction_vect = vectorNormalize(direction_vect);
 
-        double a = vectorDotProduct(initial_pos, initial_pos);
+        double a = 1.0;//double a = vectorDotProduct(direction_vect, direction_vect);
         double b = 2 * vectorDotProduct(direction_vect, initial_pos);
-        double c = vectorDotProduct(initial_pos, initial_pos) - (radius * radius) ;
+        double c = (initial_pos.magnitude() * initial_pos.magnitude()) - (radius * radius);  //double c = vectorDotProduct(initial_pos, initial_pos) - (radius * radius) ;
 
         double discriminant = (b * b) - (4.0 * a * c);
 
-//        cout << "discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
+//        cout << endl << "Inside sphere.findInters() .. ray is "; ray.printRay();
+//        cout << "Discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
 
         if(discriminant < 0){
             return NULL_VALUE_T;
@@ -286,7 +293,8 @@ public:
 
         t = NULL_VALUE_T; //initialize as null
         double dist1 = -1, dist2 = -1; //to take which 't'
-        if(t1 >= 0){
+
+        if(t1 >= 0){ //compare with ACTUAL eye/camera position
             Vector3D point1 = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t1));
             dist1 = vectorGetDistanceBetweenTwo(ray.initial_position, point1);
         }
@@ -300,6 +308,9 @@ public:
         else if((dist2 < dist1) && (dist2 >= nearDistance) && (dist2 <= farDistance)){
             t = t2;
         }
+
+//        cout << " -->> Here, returning t = " << t << endl;
+
         return t;
     }
 
@@ -1112,6 +1123,8 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
         }
     }
     //Spheres ...
+//    cout << "SPHERE.list.size = " << spheres_list.size() << endl;
+
     for(int i=0; i<spheres_list.size(); i++){
         Sphere sphere = spheres_list[i];
         t = sphere.find_intersecting_value_t(ray);
