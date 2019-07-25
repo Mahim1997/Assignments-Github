@@ -107,6 +107,14 @@ public:
 };
 
 //-------------------------------------- Vector functions begin ------------------------------
+double vectorGetDistanceBetweenTwo(Vector3D a, Vector3D b)
+{
+    double dist = 0;
+    dist = ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) + ((a.z - b.z) * (a.z - b.z)) ;
+    dist = sqrt(dist);
+    return dist;
+}
+
 Vector3D vectorScale(Vector3D a, double scale)
 {
     Vector3D ans;
@@ -153,6 +161,34 @@ double vectorDotProduct(Vector3D a, Vector3D b)
 
 ///------------------------------------- Vector Functions End ---------------------------------------
 
+
+
+///------------------------- Global Variables Begin --------------------------------
+
+//---------- Angles for turning -----------
+double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
+//-------------- Unit vectors for look, up, right, pos(camera position) ------------
+Vector3D l, u, r, pos;
+double nearDistance = 1;
+double farDistance = 1000;
+double WINDOW_SIZE = 500;
+double field_angle = 90; //degrees
+// ----------------- Other parameters ------------------
+int recursion_level = 1; //default -> 1
+int num_pixels_along_axes;
+int num_objects;
+
+//Rotate things
+double scalar_upDown = 3;
+double scalar_forwardBackward = 3;
+double scalar_rightLeft = 5;
+
+
+///------------------------- Global Variables End --------------------------------
+
+
 ///---------------------- My Objects Begin -------------------------------
 
 string coefficients_arr[] = {"Ambient", "Diffuse", "Specular", "Reflection"};
@@ -181,6 +217,7 @@ public:
         normalise();
     }
 };
+
 
 class Sphere
 {
@@ -248,19 +285,21 @@ public:
 //        cout << "  ,  t1 = " << t1 << " , t2 = " << t2;
 
         t = NULL_VALUE_T; //initialize as null
+        double dist1 = -1, dist2 = -1; //to take which 't'
         if(t1 >= 0){
-            t = t1; //for now initialize as t1
-            if(t2 >= 0){
-                t = min(t1, t2); //take the minimum of both ONLY if t2 is >= 0
-            }
-        }else{ // t1 is < 0
-            if(t2 >= 0){
-                t = t2; //simply t2 is now value of t
-            }
+            Vector3D point1 = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t1));
+            dist1 = vectorGetDistanceBetweenTwo(ray.initial_position, point1);
         }
-
-//        cout << " , finally returning t = " << t << endl;
-
+        if(t2 >= 0){
+            Vector3D point2 = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t2));
+            dist2 = vectorGetDistanceBetweenTwo(ray.initial_position, point2);
+        }
+        if((dist1 < dist2) && (dist1 >= nearDistance) && (dist1 <= farDistance)){
+            t = t1;
+        }
+        else if((dist2 < dist1) && (dist2 >= nearDistance) && (dist2 <= farDistance)){
+            t = t2;
+        }
         return t;
     }
 
@@ -525,26 +564,7 @@ public:
 
 ///------------------------------ My Objects End ----------------------------------
 
-
-
-
-///------------------------- Global Variables Begin --------------------------------
-
-//---------- Angles for turning -----------
-double angle_upDownRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
-double angle_rightLeftRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
-double angle_tiltRad = DEGREE_TO_RAD(DEGREE_ANGLE_INIT);
-//-------------- Unit vectors for look, up, right, pos(camera position) ------------
-Vector3D l, u, r, pos;
-double nearDistance = 1;
-double farDistance = 1000;
-double WINDOW_SIZE = 500;
-double field_angle = 90; //degrees
-// ----------------- Other parameters ------------------
-int recursion_level = 1; //default -> 1
-int num_pixels_along_axes;
-int num_objects;
-
+///------------------------------ GLOBAL vars again begin ----------------------------------
 // ------------------ Light Sources -------------
 int num_light_sources;
 vector<Vector3D> light_sources; //positions of light sources
@@ -554,13 +574,7 @@ vector<Sphere> spheres_list;
 vector<Pyramid> pyramids_list;
 CheckerBoardTile checker_board[NUM_TILES][NUM_TILES]; //2D array
 
-//Rotate things
-double scalar_upDown = 3;
-double scalar_forwardBackward = 3;
-double scalar_rightLeft = 5;
-
-
-///------------------------- Global Variables End --------------------------------
+///------------------------------ GLOBAL vars again end ----------------------------------
 
 void drawGrid()
 {
