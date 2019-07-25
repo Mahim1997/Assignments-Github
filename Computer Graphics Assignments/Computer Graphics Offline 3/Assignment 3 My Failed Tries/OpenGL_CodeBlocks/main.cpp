@@ -9,6 +9,12 @@
 #include <windows.h>
 #include <glut.h>
 
+
+#define AMBIENT_INDEX 0
+#define DIFFUSE_INDEX 1
+#define SPECULAR_INDEX 2
+#define REFLECTION_INDEX 3
+
 #define MAX_VAL 9999999
 #define NULL_VALUE_T -1000
 
@@ -50,6 +56,16 @@ int angle;
 int drawgrid = 0;
 ///------------------- My global variables and functions -----------------
 ifstream fin; // for description.txt reading
+
+//floor co-efficients //0.4 0.2 0.2 0.2 3
+
+//double FLOOR_AMBIENT = 0.4;
+//double FLOOR_DIFFUSE = 0.2;
+//double FLOOR_SPECULAR = 0.2;
+//double FLOOR_REFLECTIVE = 0.2;
+
+double FLOOR_COEFFICIENTS[4] = {0.4, 0.2, 0.2, 0.2};
+double FLOOR_SPECULAR_EXPONENT = 1;
 
 bool isEqual(double val1, double val2, double threshold = EPSILON_COMPARISON){ //Is equal wrt the threshold?
     if(abs(val1 - val2) < threshold){
@@ -1076,8 +1092,45 @@ Vector3D color_of_pixel_checker_board(Vector3D p)
 ofstream pixel_deb; //for pixel debugging ...
 bitmap_image image_bitmap_pixel;
 
-Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
+//Object for intersection things...
+class IntersectionObject
 {
+public:
+    Vector3D color;
+    Vector3D intersection_point;
+    double co_efficients[4]; //co-efficients of those surfaces
+    void assignIntersectionObject(Vector3D c, Vector3D ip, double ambient, double diffuse, double specular, double reflective)
+    {
+
+        intersection_point.assignVector(ip.x, ip.y, ip.z);
+        co_efficients[0] = ambient;
+        co_efficients[1] = diffuse;
+        co_efficients[2] = specular;
+        co_efficients[3] = reflective;
+    }
+    void assignColor(Vector3D c){
+        color.assignVector(c.x, c.y, c.z);
+    }
+    void assignIntersectionPoint(Vector3D p){
+        intersection_point.assignVector(p.x, p.y, p.z);
+    }
+    void assignCoEfficients(double ambient, double diffuse, double specular, double reflective){
+        co_efficients[0] = ambient;
+        co_efficients[1] = diffuse;
+        co_efficients[2] = specular;
+        co_efficients[3] = reflective;
+    }
+    void assignCoEfficients(double c[4]){
+        for(int i=0; i<4; i++){
+            co_efficients[i] = c[i];
+        }
+    }
+};
+
+IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
+{
+    IntersectionObject intersectingObj; //return this object
+
     ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
     double min_t = MAX_VAL; //MAX VALUE
@@ -1101,6 +1154,7 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
                     is_triangle = true;
                     min_t = t; //min_t stores t.
                     colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
+                    intersectingObj.assignCoEfficients(pyramids_list[i].co_efficients);
                 }
             }
         }
@@ -1120,6 +1174,7 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
 //                cout << "++--++-->> SPHERE MATCH for i = " << row_val << ", j = " << col_val << " , col: " << sphere.colors[0] << " " << sphere.colors[1] << " " << sphere.colors[2] << endl;
                 min_t = t;
                 colors_so_far.assignVector(sphere.colors[0], sphere.colors[1], sphere.colors[2]); //assign the color of this sphere
+                intersectingObj.assignCoEfficients(sphere.co_efficients);
             }
         }
     }
@@ -1147,12 +1202,12 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
     {
         //find which color's tile is this vector in.
         colors_so_far = color_of_pixel_checker_board(intersection_point);
-//        if((min_t >= INFINITE_INDEX) || (min_t < 0)){
-//            colors_so_far.assignVector(0, 0, 0); //black forced
-//        }
+        intersectingObj.assignCoEfficients(FLOOR_COEFFICIENTS); //assign floor's co-efficients ...
     }
+    intersectingObj.assignIntersectionPoint(intersection_point);
+    intersectingObj.assignColor(colors_so_far);
 
-    return colors_so_far;
+    return intersectingObj;
 }
 
 void find_intersection_points()
@@ -1176,7 +1231,8 @@ void find_intersection_points()
             direction_vect = vectorNormalize(direction_vect);
 
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
-            Vector3D color_this_pixel = find_intersection_color_for_each_pixel(ray, i, j);
+            IntersectionObject intersectionObj = find_intersection_color_for_each_pixel(ray, i, j);
+            Vector3D color_this_pixel = intersectionObj.color;
             //image_bitmap_pixel.set_pixel(767-i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
             image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i,color_this_pixel.x * 255, color_this_pixel.y * 255, color_this_pixel.z * 255);
         }
