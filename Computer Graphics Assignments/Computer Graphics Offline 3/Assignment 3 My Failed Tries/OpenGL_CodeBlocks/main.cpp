@@ -40,8 +40,8 @@
 #define WIDTH_CHECKER_BOARD 30 //width of each tile of checker-board is 30
 #define INFINITE_INDEX 1000
 
-//#define PIXEL_NUM 768 //pixel-window-size = 768 X 768
-#define PIXEL_NUM 200 //debug
+#define PIXEL_NUM 768 //pixel-window-size = 768 X 768
+//#define PIXEL_NUM 200 //debug
 
 using namespace std ;
 
@@ -1061,7 +1061,7 @@ ofstream pixel_deb; //for pixel debugging ...
 bitmap_image image_bitmap_pixel;
 Vector3D pixels_image_colors[PIXEL_NUM][PIXEL_NUM];
 
-void find_intersection_for_each_pixel(Ray ray, int row_val, int col_val) //ray.initial_position contains the initial position
+Vector3D find_intersection_color_for_each_pixel(Ray ray, int row_val, int col_val) //ray.initial_position contains the initial position
 {
     ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
@@ -1139,13 +1139,14 @@ void find_intersection_for_each_pixel(Ray ray, int row_val, int col_val) //ray.i
 //    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
 //    cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
     //Spheres....
-    pixels_image_colors[row_val][col_val].assignVector(colors_so_far.x, colors_so_far.y, colors_so_far.z);
+    //pixels_image_colors[row_val][col_val].assignVector(colors_so_far.x, colors_so_far.y, colors_so_far.z);
+    return colors_so_far;
 }
 
 void find_intersection_points()
 {
 //FOR EACH PIXEL
-    cout << "--->>Inside find_intersection_points ... " << endl ;
+    cout << "--->>Inside find_intersection_points ... saving image " << endl ;
     Ray ray;
     Vector3D initial_pos, direction_vect, pixel_pos;
 
@@ -1164,14 +1165,19 @@ void find_intersection_points()
 //            cout << "For i = " << i << " , j = " << j << " " ;
 //            pixel_deb << "Idx:(" << i << "," << j << ")" ;
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
-            find_intersection_for_each_pixel(ray, i, j);
-//            printf("To set pic i = %d, j = %d window .. x = %lf, y = %lf, pixel colors = %lf, %lf, %lf\n",i, j, pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
-            image_bitmap_pixel.set_pixel(pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
+//            Vector3D color_this_pixel = find_intersection_color_for_each_pixel(ray, i, j);
+
+//            printf("To set pic i = %d, j = %d window .. x = %lf, y = %lf, pixel colors = %lf, %lf, %lf\n",i, j, pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x,
+//                   pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
+//            image_bitmap_pixel.set_pixel(767 - i, j, color_this_pixel.x, color_this_pixel.y, color_this_pixel.z);
+                        image_bitmap_pixel.set_pixel(767 - i, j, 255, 255, 255);
+            //image_bitmap_pixel.set_pixel(pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
+//            image_bitmap_pixel.set_pixel(i, j, pixels_image_colors[767-i][j].x, pixels_image_colors[767-i][j].y, pixels_image_colors[767-i][j].z);
         }
 //        pixel_deb << endl << endl;
-        if(i%10 == 0){
-            cout << "Row " << i << " is complete\n";
-        }
+        //if(i%10 == 0){
+        //    cout << "Row " << i << " is complete\n";
+        //}
     }
     cout << "Printing to file pixel_deb.txt done .. PRINTING IMAGE" << endl;
     image_bitmap_pixel.save_image("out_test.bmp");
@@ -1401,7 +1407,7 @@ int main(int argc, char **argv)
     fin.open("description.txt");
     loadAllData();
     pixel_deb.open("pixel_deb.txt");
-    image_bitmap_pixel.setwidth_height(WINDOW_SIZE, WINDOW_SIZE);
+    image_bitmap_pixel.setwidth_height(PIXEL_NUM, PIXEL_NUM);
     ///Initialize pos, u, l, and r done
 
 

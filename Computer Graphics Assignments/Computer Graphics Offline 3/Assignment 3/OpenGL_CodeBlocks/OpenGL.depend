@@ -1,17 +1,30 @@
 # depslib dependency file v1.0
-1564053132 source:f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\main.cpp
-	<iostream>
-	<cstdio>
-	<cstdlib>
-	<cmath>
-	<cstring>
-	<fstream>
-	<vector>
+1564057151 source:f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\main.cpp
+	<bits/stdc++.h>
 	<windows.h>
-	<glut.h>
+	"include/glut.h"
+	"bitmap_image.hpp"
+	"lib.h"
 
 1392007564 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\opengl\include\glut.h
 	<windows.h>
 	<GL/gl.h>
 	<GL/glu.h>
+
+1563193846 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1479975262 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\bitmap_image.hpp
+	<algorithm>
+	<cmath>
+	<cstdlib>
+	<fstream>
+	<iostream>
+	<iterator>
+	<limits>
+	<string>
+
+1564057148 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3\opengl_codeblocks\lib.h
 
