@@ -214,6 +214,44 @@ public:
         assignCoefficients(am, dif, sp, refl);
         assignSpecularExponent(spec_exp);
     }
+
+    double find_intersecting_value_t(Ray ray)
+    {
+        double t = NULL_VALUE_T;
+
+        //quadratic equation at^2 + bt + c = 0
+        Vector3D initial_pos = ray.initial_position;
+        Vector3D direction_vect = ray.direction_vector;
+        direction_vect = vectorNormalize(direction_vect);
+
+        double a = vectorDotProduct(initial_pos, initial_pos);
+        double b = vectorDotProduct(direction_vect, initial_pos);
+        double c = vectorDotProduct(initial_pos, initial_pos) - (radius * radius) ;
+
+        double discriminant = (b * b) - (4 * a * c);
+        if(discriminant < 0){
+            return NULL_VALUE_T;
+        }
+        discriminant = sqrt(discriminant);
+
+        double t1 = (-b - discriminant)/(2 * a);
+        double t2 = (-b + discriminant)/(2 * a);
+
+        t = NULL_VALUE_T; //initialize as null
+        if(t1 >= 0){
+            t = t1; //for now initialize as t1
+            if(t2 >= 0){
+                t = min(t1, t2); //take the minimum of both ONLY if t2 is >= 0
+            }
+        }else{ // t1 is < 0
+            if(t2 >= 0){
+                t = t2; //simply t2 is now value of t
+            }
+        }
+
+        return t;
+    }
+
     void printSphere()
     {
         cout << "------------------ Printing Sphere -------------- ID = " << id << "--------" << endl;
@@ -744,7 +782,7 @@ void loadAllData()
 void drawCheckerBoard()
 {
     int col_inner = 1, col_outer = 1;
-    int deb_val = 200; //1000
+    int deb_val = INFINITE_INDEX; //1000
     int checkerBoardWidth = WIDTH_CHECKER_BOARD;
 //    int i = 0;
     for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth){
@@ -957,14 +995,66 @@ void computePixelsWindow()
 #endif // DEBUG_MID_POINTS
 
 }
-ofstream pixel_deb;
+
+int color_of_pixel_checker_board(Vector3D point)
+{
+    int col_inner = 1, col_outer = 1;
+    int deb_val = INFINITE_INDEX; //1000
+    int checkerBoardWidth = WIDTH_CHECKER_BOARD;
+
+    int color = -1;
+
+    for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth){
+        col_inner = col_outer;
+        for(int j= -deb_val; j<deb_val; j+=checkerBoardWidth){
+//            printf("-->> Value at (%d, %d), col = %d\n", i, j, col);
+            glColor3f(col_inner, col_inner, col_inner); //1,1,1 -> white
+            glPushMatrix();
+            glTranslatef((double)j, (double)i, 0.0);
+            drawSquare(checkerBoardWidth);
+            glPopMatrix();
+
+            //check if within bounds ...
+            double left_x, right_x, down_y, up_y;
+            left_x = j - (0.5 * checkerBoardWidth);
+            right_x = j + (0.5 * checkerBoardWidth);
+            down_y = i - (0.5 * checkerBoardWidth);
+            up_y = i + (0.5 * checkerBoardWidth);
+
+            if((point.x <= right_x) && (point.x >= left_x)){
+                if((point.y <= up_y && (point.y >= down_y))){
+                    //IS_WITHIN_BOUNDS
+                    if(col_inner == 1){//WHITE
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                }
+            }
+
+
+            //change turns of color
+            if(col_inner == 1){col_inner = 0;}
+            else{col_inner = 1;}
+        }
+        if(col_outer == 1){col_outer = 0;}
+        else{col_outer = 1;}
+    }
+
+
+    return 1; //normally return WHITE
+}
+
+ofstream pixel_deb; //for pixel debugging ...
 void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains the initial position
 {
+    ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
     double min_t = MAX_VAL; //MAX VALUE
     double t = MAX_VAL;
     Vector3D colors_so_far;
     colors_so_far.assignVector(0, 0, 0);
+
     //Triangles...
     for(int i=0; i<pyramids_list.size(); i++){
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
@@ -975,11 +1065,52 @@ void find_intersection_for_each_pixel(Ray ray) //ray.initial_position contains t
                 t = temp;
                 if(t < min_t){
                     min_t = t; //min_t stores t.
-                    colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z);
+                    colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
                 }
             }
         }
     }
+    //Spheres ...
+    for(int i=0; i<spheres_list.size(); i++){
+        Sphere sphere = spheres_list[i];
+        t = sphere.find_intersecting_value_t(ray);
+        if(t != NULL_VALUE_T){
+            //if not null then compare if min or not
+            if(t < min_t){
+                min_t = t;
+                colors_so_far.assignVector(sphere.colors[0], sphere.colors[1], sphere.colors[2]); //assign the color of this sphere
+            }
+        }
+    }
+    //Checkerboard...
+    //O_z + t.direction_z = 0 --> find value of t
+    bool is_checker_board = false;
+    t = -(ray.initial_position.z) / (ray.direction_vector.z);
+    if(t < min_t){
+        min_t = t;
+        is_checker_board = true;
+    }
+
+    //Find the intersecting point's co-ordinates
+
+    Vector3D intersection_point;
+    if(min_t != MAX_VAL){
+        intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
+    }else{
+        intersection_point.assignVector(farDistance, farDistance, farDistance);
+    }
+
+
+    //check if checker_board ... then find which color i.e. WHITE or BLACK
+    if(is_checker_board == true)
+    {
+        //find which color's tile is this vector in.
+        double color_ret = color_of_pixel_checker_board(intersection_point);
+        colors_so_far.assignVector(color_ret, color_ret, color_ret);
+    }
+
+    pixel_deb << "IntersectionPoint:" << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z;
+    pixel_deb << " Col: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
     cout << "t = " << t << " , min_t = " << min_t << " , COL: " << colors_so_far.x << " " << colors_so_far.y << " " << colors_so_far.z << endl;
     //Spheres....
 
@@ -1002,11 +1133,14 @@ void find_intersection_points()
             direction_vect.z = pixel_pos.z - initial_pos.z;
             direction_vect = vectorNormalize(direction_vect);
             cout << "For i = " << i << " , j = " << j << " " ;
+            pixel_deb << "Idx:(" << i << "," << j << ")" ;
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
             find_intersection_for_each_pixel(ray);
         }
-        cout << endl << endl;
+        pixel_deb << endl << endl;
+//        cout << endl << endl;
     }
+    cout << "Printing to file pixel_deb.txt done" << endl;
 }
 
 
