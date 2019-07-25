@@ -1072,6 +1072,7 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
 
     bool is_triangle = false, is_sphere = false, is_checker = false;
     //Triangles...
+
     for(int i=0; i<pyramids_list.size(); i++){
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
             //FOR EACH TRIANGLE ...
@@ -1079,9 +1080,9 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
             double temp = triangle.find_intersecting_value_t(ray);
             if(temp != NULL_VALUE_T){
                 t = temp;
+//                cout << "TRIANGLE t returned for i = " << row_val << " , j = " << col_val << " is " << t << endl;
                 if(t < min_t){
 //                    cout << "--->>>TRIANGLE MATCH for i = " << i << " , j = " << j << " , col : " << triangle.colors.x << " " << triangle.colors.y << " " << triangle.colors.z << endl;
-
                     is_triangle = true;
                     min_t = t; //min_t stores t.
                     colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
@@ -1093,6 +1094,7 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
     for(int i=0; i<spheres_list.size(); i++){
         Sphere sphere = spheres_list[i];
         t = sphere.find_intersecting_value_t(ray);
+//        cout << "SPHERE t returned for i = " << row_val << " , j = " << col_val << " is " << t << endl;
         if(t != NULL_VALUE_T){
             //if not null then compare if min or not
             if(t < min_t){
@@ -1107,14 +1109,14 @@ Vector3D find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_v
     //Checkerboard...
     //O_z + t.direction_z = 0 --> find value of t
     bool is_checker_board = false;
-    t = -(ray.initial_position.z) / (ray.direction_vector.z);
-    if(t < min_t){
-//        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
-        is_checker = true;
-        is_sphere = false;
-        min_t = t;
-        is_checker_board = true;
-    }
+//    t = -(ray.initial_position.z) / (ray.direction_vector.z);
+//    if(t < min_t){
+////        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
+//        is_checker = true;
+//        is_sphere = false;
+//        min_t = t;
+//        is_checker_board = true;
+//    }
 
     //Find the intersecting point's co-ordinates
 
@@ -1162,17 +1164,10 @@ void find_intersection_points()
             direction_vect.y = pixel_pos.y - initial_pos.y;
             direction_vect.z = pixel_pos.z - initial_pos.z;
             direction_vect = vectorNormalize(direction_vect);
-//            cout << "For i = " << i << " , j = " << j << " " ;
-//            pixel_deb << "Idx:(" << i << "," << j << ")" ;
-            ray.assignRay(initial_pos, direction_vect); //initialize the ray.
-//            Vector3D color_this_pixel = find_intersection_color_for_each_pixel(ray, i, j);
 
-//            printf("To set pic i = %d, j = %d window .. x = %lf, y = %lf, pixel colors = %lf, %lf, %lf\n",i, j, pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x,
-//                   pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
-//            image_bitmap_pixel.set_pixel(767 - i, j, color_this_pixel.x, color_this_pixel.y, color_this_pixel.z);
-            image_bitmap_pixel.set_pixel(767 - i, j, 255, 255, 255);
-            //image_bitmap_pixel.set_pixel(pixel_window_mid_points[i][j].x, pixel_window_mid_points[i][j].y, pixels_image_colors[i][j].x, pixels_image_colors[i][j].y, pixels_image_colors[i][j].z);
-//            image_bitmap_pixel.set_pixel(i, j, pixels_image_colors[767-i][j].x, pixels_image_colors[767-i][j].y, pixels_image_colors[767-i][j].z);
+            ray.assignRay(initial_pos, direction_vect); //initialize the ray.
+            Vector3D color_this_pixel = find_intersection_color_for_each_pixel(ray, i, j);
+            image_bitmap_pixel.set_pixel(i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
         }
 //        pixel_deb << endl << endl;
         //if(i%10 == 0){
