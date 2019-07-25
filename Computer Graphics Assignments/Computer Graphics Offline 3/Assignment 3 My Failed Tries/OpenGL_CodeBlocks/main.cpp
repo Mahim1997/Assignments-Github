@@ -75,6 +75,7 @@ bool isEqual(double val1, double val2, double threshold = EPSILON_COMPARISON){ /
     return false;
 }
 
+
 ///----------------------------- Class Vector begin -----------------------------
 
 class Vector3D ///This is a 4X4 vector used throughout
@@ -132,7 +133,20 @@ public:
         this->z = this->z * factor;
     }
 };
-
+bool isEqualVector(Vector3D p1, Vector3D p2, double thresh = EPSILON_COMPARISON)
+{
+    if(isEqual(p1.x, p2.x, thresh) == false){
+        return false;
+    }
+    if(isEqual(p1.y, p2.y, thresh) == false){
+        return false;
+    }
+    if(isEqual(p1.z, p2.z, thresh) == false){
+        return false;
+    }
+    //All equal
+    return true;
+}
 //-------------------------------------- Vector functions begin ------------------------------
 double vectorGetDistanceBetweenTwo(Vector3D a, Vector3D b)
 {
@@ -1149,6 +1163,8 @@ public:
     }
 };
 
+
+
 IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
 {
     IntersectionObject intersectingObj; //return this object
@@ -1294,29 +1310,48 @@ void find_intersection_points()
             //----- FOR EACH LIGHT SOURCE -----
             for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++){
                 lightSourcePosition = light_sources[light_src_cnt];
-
-                _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
 //                _incident_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
+            // ---------------------------------------------------------------------------------
+                //Cast ray using this lightSourcePosition as origin
+                Ray ray2;
+                ray2.initial_position.assignVector(lightSourcePosition);
+                Vector3D dir_vect_for_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
+                dir_vect_for_ray.normalise();
+                ray2.direction_vector.assignVector(dir_vect_for_ray);
+                ray2.normalise();
+                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
+//                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
+//                cout << " , intersection_point = "; intersecting_point.printVector();
 
-                _incident_ray.normalise();
-                normal_vector = intersectionObj.normal;
-                normal_vector.normalise();
-                //refl = 2*(L.N)N - L
-                _reflected_ray = vectorSubtraction(_incident_ray,
-                                       vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
-//                _reflected_ray = vectorSubtraction(vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))),
-//                                       _incident_ray); //Sir method
-                _reflected_ray.normalise();
-//                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //intersection point - pos
-                _ray_from_eye_to_intersection = vectorSubtraction(intersecting_point, pos); //intersection point - pos
-                _ray_from_eye_to_intersection.normalise();
+                bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
+                if(is_equal == false){ //put diffuse and specular as BLACK
+                    specular_coefficient = 0.0;
+                    diffuse_coefficient = 0.0;
+                }
+                else{
+                    _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
+                    _incident_ray.normalise();
+                    normal_vector = intersectionObj.normal;
+                    normal_vector.normalise();
+                    //refl = 2*(L.N)N - L
+                    _reflected_ray = vectorSubtraction(_incident_ray,
+                                           vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
+    //                _reflected_ray = vectorSubtraction(vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))),
+    //                                       _incident_ray); //Sir method
+                    _reflected_ray.normalise();
+    //                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //intersection point - pos
+                    _ray_from_eye_to_intersection = vectorSubtraction(intersecting_point, pos); //intersection point - pos
+                    _ray_from_eye_to_intersection.normalise();
 
-                cos_theta_sum += max((vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude()), 0.0);
+                    cos_theta_sum += max((vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude()), 0.0);
 
-                double temp = max( ( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection))), 0.0); // cos phi
-                temp = pow(temp, intersectionObj.specular_exp); //cos phi to the power specular_exponent
+                    double temp = max( ( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection))), 0.0); // cos phi
+                    temp = pow(temp, intersectionObj.specular_exp); //cos phi to the power specular_exponent
 
-                cos_phi_sum += temp;
+                    cos_phi_sum += temp;
+                }
+
+
             }
             // FOR EACH LIGHT SOURCE COMPUTED VALUES
 
