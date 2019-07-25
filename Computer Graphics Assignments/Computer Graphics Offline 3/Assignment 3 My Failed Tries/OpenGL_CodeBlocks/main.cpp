@@ -1272,6 +1272,45 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
     return intersectingObj;
 }
 
+===================================== TO DO =============================================
+
+bool any_objects_in_between(Ray ray, Vector3D intersection_point)
+{
+    double t = MAX_VAL;
+    double min_t = MAX_VAL;
+
+    //All pyramids
+    for(int i=0; i<pyramids_list.size(); i++){
+        for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
+            Triangle triangle = pyramids_list[i].triangles[j];
+            t = triangle.find_intersecting_value_t(ray);
+            if(t != NULL_VALUE_T){
+                min_t = t;
+            }
+        }
+    }
+    //All spheres
+    for(int i=0; i<spheres_list.size(); i++){
+        Sphere sphere = spheres_list[i];
+        t = sphere.find_intersecting_value_t(ray);
+        if(t != NULL_VALUE_T){
+            min_t = t;
+        }
+    }
+
+    Vector3D point;
+    //Use the value of min_t
+    ray.normalise();
+    if(min_t >= 0 && min_t < MAX_VAL){
+        point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
+        if(isEqualVector(point, intersection_point)){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void find_intersection_points()
 {
 //FOR EACH PIXEL
@@ -1319,9 +1358,15 @@ void find_intersection_points()
                 dir_vect_for_ray.normalise();
                 ray2.direction_vector.assignVector(dir_vect_for_ray);
                 ray2.normalise();
-                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
+
+                if(any_objects_in_between(ray2, intersecting_point) == true){
+
+                }
+
+//                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
 //                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
 //                cout << " , intersection_point = "; intersecting_point.printVector();
+
 
                 bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
                 if(is_equal == false){ //put diffuse and specular as BLACK
