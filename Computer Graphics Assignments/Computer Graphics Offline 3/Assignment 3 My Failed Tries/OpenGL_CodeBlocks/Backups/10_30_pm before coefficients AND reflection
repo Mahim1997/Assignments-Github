@@ -31,7 +31,7 @@
 #define DEGREE_ANGLE_INIT 5  //movement angle
 
 #define SPHERE_TYPE 1
-#define TRIANGLE_TYPE 2
+#define PYRAMID_TYPE 2
 #define FLOOR_TYPE 3
 
 #define EPSILON_COMPARISON 0.00001  // for comparison of two doubles or floats
@@ -105,9 +105,7 @@ public:
         this->y = b;
         this->z = c;
     }
-    void assignVector(Vector3D v){
-        x = v.x; y = v.y; z = v.z;
-    }
+
     void printVector(bool flag = false)
     {
         if(flag == true){
@@ -122,14 +120,6 @@ public:
         double ans = (x*x) + (y*y) + (z*z);
         ans = sqrt(ans);
         return ans;
-    }
-    void normalise()
-    {
-        double factor = this->magnitude();
-        factor = (double)(1.0 / factor);
-        this->x = this->x * factor;
-        this->y = this->y * factor;
-        this->z = this->z * factor;
     }
 };
 
@@ -492,7 +482,7 @@ public:
 
     Pyramid()
     {
-        this->typeOfObject = TRIANGLE_TYPE;
+        this->typeOfObject = PYRAMID_TYPE;
         for(int i=0; i<NUM_TRIANGLES_IN_PYRAMID; i++){
             triangles[i].id_triangle = i;
         }
@@ -553,7 +543,7 @@ public:
                      double color_r, double color_g, double color_b,
                      double co_am, double co_dif, double co_spec, double co_ref,
                      double spec_exp){
-        this->typeOfObject = TRIANGLE_TYPE;
+        this->typeOfObject = PYRAMID_TYPE;
         formTriangles(lowest_x, lowest_y, lowest_z, len_base, len_height);
         assignCoefficients(co_am, co_dif, co_spec, co_ref);
         assignColors(color_r, color_g, color_b);
@@ -1109,7 +1099,6 @@ class IntersectionObject
 {
 public:
     int type = -1;
-    Vector3D normal;
     Vector3D color;
     Vector3D intersection_point;
     double co_efficients[4]; //co-efficients of those surfaces
@@ -1127,10 +1116,6 @@ public:
     }
     void assignIntersectionPoint(Vector3D p){
         intersection_point.assignVector(p.x, p.y, p.z);
-    }
-    void assignNormal(Vector3D n){
-        normal.assignVector(n.x, n.y, n.z);
-        normal = vectorNormalize(normal);
     }
     void assignCoEfficients(double ambient, double diffuse, double specular, double reflective){
         co_efficients[0] = ambient;
@@ -1156,7 +1141,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
     Vector3D colors_so_far;
     colors_so_far.assignVector(0, 0, 0);
 
-    bool is_triangle = false, is_sphere = false;
+    bool is_triangle = false, is_sphere = false, is_checker = false;
     //Triangles...
 
     for(int i=0; i<pyramids_list.size(); i++){
@@ -1173,18 +1158,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
                     min_t = t; //min_t stores t.
                     colors_so_far.assignVector(triangle.colors.x, triangle.colors.y, triangle.colors.z); ////assign the color of this triangle
                     intersectingObj.assignCoEfficients(pyramids_list[i].co_efficients);
-                    intersectingObj.type = TRIANGLE_TYPE;
-                    //assign normal here...
-                    Vector3D _normal_vector, _P, _A, _B, _AP, _BP;
-                    _A.assignVector(triangle.point1.x, triangle.point1.y, triangle.point1.z);
-                    _B.assignVector(triangle.point2.x, triangle.point2.y, triangle.point2.z);
-                    ray.normalise();
-                    _P = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
-                    _AP = vectorAddition(_P, vectorScale(_A, -1));
-                    _BP = vectorAddition(_P, vectorScale(_B, -1));
-                    _normal_vector = vectorCrossProduct(_AP, _BP);
-                    _normal_vector.normalise();
-                    intersectingObj.normal.assignVector(_normal_vector);
+                    intersectingObj.type = PYRAMID_TYPE;
                 }
             }
         }
@@ -1206,11 +1180,6 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
                 colors_so_far.assignVector(sphere.colors[0], sphere.colors[1], sphere.colors[2]); //assign the color of this sphere
                 intersectingObj.assignCoEfficients(sphere.co_efficients);
                 intersectingObj.type = SPHERE_TYPE;
-                Vector3D _normal;
-                Vector3D _P = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
-                _normal.assignVector(vectorAddition(sphere.center, vectorScale(_P , -1))); //center - intersection = normal
-                _normal.normalise();
-                intersectingObj.assignNormal(_normal);
             }
         }
     }
@@ -1219,6 +1188,8 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
     bool is_checker_board = false;
     t = -(ray.initial_position.z) / (ray.direction_vector.z);
     if((t < min_t) && (t >= 0)){
+//        cout << "====-->>FLOOR MATCH FOR i = " << row_val << " , j = " << col_val << endl;
+        is_checker = true;
         is_sphere = false;
         min_t = t;
         is_checker_board = true;
@@ -1235,14 +1206,12 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
     if(is_checker_board == true)
     {
         intersectingObj.type = FLOOR_TYPE;
-        intersectingObj.assignNormal(Vector3D(0, 0, 1)); //(0, 0, 1) is the normal i.e. z-axis
         //find which color's tile is this vector in.
         colors_so_far = color_of_pixel_checker_board(intersection_point);
         intersectingObj.assignCoEfficients(FLOOR_COEFFICIENTS); //assign floor's co-efficients ...
     }
     intersectingObj.assignIntersectionPoint(intersection_point);
     intersectingObj.assignColor(colors_so_far);
-
 
     return intersectingObj;
 }
@@ -1270,41 +1239,6 @@ void find_intersection_points()
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
             IntersectionObject intersectionObj = find_intersection_color_for_each_pixel(ray, i, j);
             Vector3D color_this_pixel = intersectionObj.color;
-            Vector3D intersecting_point = intersectionObj.intersection_point;
-            Vector3D normal_vector = intersectionObj.normal;
-            normal_vector.normalise();
-            //add the ambient effects
-            double ambient_coeffcient = intersectionObj.co_efficients[AMBIENT_INDEX];
-            double diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
-            double specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
-
-            //add diffuse effect FOR EACH LIGHT SOURCE ...
-            Vector3D lightSourcePosition, _incident_ray, _reflected_ray, _ray_from_eye_to_intersection;
-            double cos_theta_sum = 0, cos_phi_sum = 0;
-
-            //----- FOR EACH LIGHT SOURCE -----
-            for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++){
-                lightSourcePosition = light_sources[light_src_cnt];
-                _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
-                //refl = 2*(L.N)N - L
-                _reflected_ray = vectorSubtraction(vectorScale(_incident_ray, (2 * vectorDotProduct(_incident_ray, normal_vector))), _incident_ray);
-
-                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //eye - intersection point
-                cos_theta_sum += max(vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude(), 0.0);
-                cos_phi_sum += vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection) / (_ray_from_eye_to_intersection.magnitude() * _reflected_ray.magnitude());
-            }
-            // FOR EACH LIGHT SOURCE COMPUTED VALUES
-
-            Vector3D _ambient_rgb_component = vectorScale(color_this_pixel, ambient_coeffcient); //ambient_coeff * [r, g, b]
-            double diffuse_multiplier = diffuse_coefficient * cos_theta_sum;
-            Vector3D _diffuse_rgb_component = vectorScale(color_this_pixel, diffuse_multiplier);
-
-
-            //Only ambient
-            color_this_pixel = vectorAddition(color_this_pixel, _ambient_rgb_component);
-
-            //Add diffuse component too
-            color_this_pixel = vectorAddition(color_this_pixel, _diffuse_rgb_component);
 
             //image_bitmap_pixel.set_pixel(767-i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
             image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i,color_this_pixel.x * 255, color_this_pixel.y * 255, color_this_pixel.z * 255);
