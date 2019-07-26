@@ -1376,11 +1376,10 @@ void find_intersection_points()
             //add the ambient effects
             double ambient_coefficient, diffuse_coefficient, specular_coefficient;
             ambient_coefficient = intersectionObj.co_efficients[AMBIENT_INDEX];
-            diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
-            specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
+
             //add diffuse effect FOR EACH LIGHT SOURCE ...
             Vector3D lightSourcePosition, _incident_ray, _reflected_ray, _ray_from_eye_to_intersection;
-            double cos_theta_sum = 0.0, cos_phi_sum = 0.0;
+            double cos_theta_sum = 0, cos_phi_sum = 0;
 
             Vector3D null_intersection_point(farDistance, farDistance, farDistance);
             bool is_dark_intersection = isEqualVector(null_intersection_point, intersecting_point);
@@ -1395,6 +1394,8 @@ void find_intersection_points()
     //                _incident_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
                 // ---------------------------------------------------------------------------------
                     //Cast ray using this lightSourcePosition as origin
+                    diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
+                    specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
                     Ray ray2;
                     ray2.initial_position.assignVector(lightSourcePosition);
                     Vector3D dir_vect_for_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
@@ -1417,7 +1418,14 @@ void find_intersection_points()
     //                bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
                     //No object in between === false i.e. OBJECT IN BETWEEN, so,
 
-                    if(does_obj_exist_bet == false){ // no objects
+                    if(does_obj_exist_bet == true){ //is_any_obj_in_bet == true //put diffuse and specular as BLACK
+                        //printf("--++--> OBJ IN BETWEEN FOR i = %d, j = %d ", i, j);
+//                        pixel_deb << "++-->>OBJ EXISTS for (" << i << "," << j << ")";
+//                        pixel_deb << "Type: " << get_type_object(intersectionObj.type) << " self.rgb " << intersectionObj.color.x << " " << intersectionObj.color.y << " " << intersectionObj.color.z  << " onno type: " << get_type_object(iObj.type) << " , onno.color: " << iObj.color.x << " " << iObj.color.y << " " << iObj.color.z <<  endl;
+                        specular_coefficient = 0.0;
+                        diffuse_coefficient = 0.0;
+                    }
+                    else{
                         //No object in between
 //                        pixel_deb << "===>>> Obj Not Exists for (" << i << "," << j << ")";
 //                        pixel_deb << "Type: " << get_type_object(intersectionObj.type) << " self.rgb " << intersectionObj.color.x << " " << intersectionObj.color.y << " " << intersectionObj.color.z  << " onno type: " << get_type_object(iObj.type) << " , onno.color: " << iObj.color.x << " " << iObj.color.y << " " << iObj.color.z <<  endl;
