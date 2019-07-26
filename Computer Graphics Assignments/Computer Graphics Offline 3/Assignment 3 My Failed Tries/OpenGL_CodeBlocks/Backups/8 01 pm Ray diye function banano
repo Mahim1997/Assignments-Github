@@ -1511,9 +1511,7 @@ string get_type_object(int type)
 
 Vector3D getColorOfPixel(Ray ray, int depth)
 {
-    if(depth == 0){
-        return Vector3D(0.0, 0.0, 0.0);
-    }
+
     ///Function call
     IntersectionObject intersectionObj = find_intersection_color_for_each_pixel(ray, -1, -1, nearDistance, farDistance); // -1, -1 is row, col ... not needed
     //Function call done
@@ -1522,11 +1520,10 @@ Vector3D getColorOfPixel(Ray ray, int depth)
     Vector3D normal_vector = intersectionObj.normal;
     normal_vector.normalise();
     //add the ambient effects
-    double ambient_coefficient, diffuse_coefficient, specular_coefficient, reflection_coefficient;
+    double ambient_coefficient, diffuse_coefficient, specular_coefficient;
     ambient_coefficient = intersectionObj.co_efficients[AMBIENT_INDEX];
     diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
     specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
-    reflection_coefficient = intersectionObj.co_efficients[REFLECTION_INDEX];
     //add diffuse effect FOR EACH LIGHT SOURCE ...
     Vector3D lightSourcePosition, _incident_ray, _reflected_ray, _ray_from_eye_to_intersection;
     double cos_theta_sum = 0.0, cos_phi_sum = 0.0;
@@ -1540,8 +1537,8 @@ Vector3D getColorOfPixel(Ray ray, int depth)
     }
     else
     {
+//                cout << "IS NOT DARK for i = " << i << " , j = " << j << endl;
         //----- FOR EACH LIGHT SOURCE -----
-
         for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++)
         {
             lightSourcePosition = light_sources[light_src_cnt];
@@ -1588,6 +1585,12 @@ Vector3D getColorOfPixel(Ray ray, int depth)
 
                 cos_phi_sum += pow_temp;
             }
+            else
+            {
+//                        pixels_debugger_output << "===>>> OBJECT EXISTS FOR (" << i << "," << j << ")" << endl;
+            }
+
+
         }
         // FOR EACH LIGHT SOURCE COMPUTED VALUES
     }
@@ -1616,26 +1619,9 @@ Vector3D getColorOfPixel(Ray ray, int depth)
 
     ///--------------- TO DO ----------------
     /*
-        Construct new ray here ...
-        1. Reflected Ray
-        2. Call using this function, depth - 1
+        Construct ray here ...
+
     */
-    //-------------- FOR REFLECTION ------------
-    if(is_dark_intersection == false){
-        Vector3D intersc_point = intersectionObj.intersection_point;
-        Vector3D _incident_ray = ray.direction_vector;
-        Vector3D normal_vector = intersectionObj.normal;
-        normal_vector.normalise();
-        _incident_ray.normalise();
-        //Compute reflected ray
-        Vector3D _reflected_ray = vectorSubtraction(_incident_ray,
-                                                   vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
-        Ray newRay;
-        newRay.assignRay(intersc_point, _reflected_ray);
-        Vector3D color_ret = getColorOfPixel(newRay, depth - 1);
-        color_ret = vectorScale(color_ret, reflection_coefficient); //Multiply with reflection coefficient
-        color_this_pixel = vectorAddition(color_this_pixel, color_ret); //Ultimately add with previous colors
-    }
 
     color_this_pixel.x = min(color_this_pixel.x, 1.0);
     color_this_pixel.y = min(color_this_pixel.y, 1.0);
