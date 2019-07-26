@@ -301,7 +301,7 @@ public:
         assignSpecularExponent(spec_exp);
     }
 
-    double find_intersecting_value_t(Ray ray)
+    double find_intersecting_value_t(Ray ray, double near_distance, double far_distance)
     {
 //        cout << "Inside find_intersecting_value_t of sphere ... " ;
 
@@ -343,10 +343,10 @@ public:
             Vector3D point2 = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t2));
             dist2 = vectorGetDistanceBetweenTwo(ray.initial_position, point2);
         }
-        if((dist1 < dist2) && (dist1 >= nearDistance) && (dist1 <= farDistance)){
+        if((dist1 < dist2) && (dist1 >= near_distance) && (dist1 <= far_distance)){
             t = t1;
         }
-        else if((dist2 < dist1) && (dist2 >= nearDistance) && (dist2 <= farDistance)){
+        else if((dist2 < dist1) && (dist2 >= near_distance) && (dist2 <= far_distance)){
             t = t2;
         }
 
@@ -423,7 +423,7 @@ public:
         cout << "Colors <R,G,B> " << colors.x << " " << colors.y << " " << colors.z;
         cout << endl;
     }
-    double find_intersecting_value_t(Ray ray)
+    double find_intersecting_value_t(Ray ray, double near_dist, double far_dist)
     {
         //find CLOSEST intersecting point with THIS ray.
         ray.normalise(); //normalize the direction vector
@@ -485,10 +485,18 @@ public:
             //each should be greater or equal than 0
             if((alpha >= 0) && (beta >= 0) && (gamma >= 0)){
                 //Inside the triangle THIS intersecting point lies.
-                return t;
+                //Check if WITHIN range DISTANCE
+                ray.normalise(); ///TRIANGLE DISTANCE CHECKING
+                Vector3D intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t));
+                double dist = vectorGetDistanceBetweenTwo(intersection_point, ray.initial_position);
+                if((dist >= near_dist) && (dist <= far_dist)){
+                    return t;
+                }
+                else{
+                    return NULL_VALUE_T;
+                }
             }
         }
-        //else return NULL_VALUE_T
         return NULL_VALUE_T;
     }
 };
@@ -888,10 +896,6 @@ void drawTriangle(Triangle triangle)
     p1 = triangle.point1;
     p2 = triangle.point2;
     p3 = triangle.point3;
-//    printf("--->>About to draw triangle ... \n");
-//    cout << "p1:"; p1.printVector();
-//    cout << "p2:"; p2.printVector();
-//    cout << "p3:"; p3.printVector();
     glBegin(GL_TRIANGLES);
     {
         glVertex3f(p1.x, p1.y, p1.z);
@@ -948,16 +952,6 @@ void drawCircle(double radius)
         glEnd();
     }
 }
-void drawDebugCircle(double x, double y, double z)
-{
-    glPushMatrix();
-    {
-        glTranslatef(x, y, z);
-    }
-    drawCircle(10);
-    glPopMatrix();
-}
-
 void drawLightSources()
 {
     for(int i=0; i<num_light_sources; i++){
@@ -972,17 +966,13 @@ void drawLightSources()
     }
 }
 
-void drawAllObjects()
+void drawAllObjects() ///Main draw all objects function
 {
     //Draw all objects in opengl
     drawCheckerBoard(); //draw checker-board
     drawPyramids(); //draw pyramids
     drawSpheres(); //draw spheres
     drawLightSources(); //draw light-sources
-//    glColor3f(1,0,0);
-//    drawDebugCircle(50, 50, 100); //debugger circle
-//    glColor3f(1, 0, 0);
-//    drawDebugCircle(50, 50, 0); //debugger circle
 }
 
 
@@ -1165,7 +1155,8 @@ public:
 
 
 
-IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val) //ray.initial_position contains the initial position
+IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val, int col_val
+                                        ,double near_distance, double far_distance) //ray.initial_position contains the initial position
 {
     IntersectionObject intersectingObj; //return this object
 
@@ -1183,7 +1174,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
             //FOR EACH TRIANGLE ...
             Triangle triangle = pyramids_list[i].triangles[j];
-            double temp = triangle.find_intersecting_value_t(ray);
+            double temp = triangle.find_intersecting_value_t(ray, near_distance, far_distance);
             if(temp != NULL_VALUE_T){
                 t = temp;
 //                cout << "TRIANGLE t returned for i = " << row_val << " , j = " << col_val << " is " << t << endl;
@@ -1215,7 +1206,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
 
     for(int i=0; i<spheres_list.size(); i++){
         Sphere sphere = spheres_list[i];
-        t = sphere.find_intersecting_value_t(ray);
+        t = sphere.find_intersecting_value_t(ray, near_distance, far_distance);
 //        cout << "SPHERE t returned for i = " << row_val << " , j = " << col_val << " is " << t << endl;
         if(t != NULL_VALUE_T){
             //if not null then compare if min or not
@@ -1274,7 +1265,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
 
 //===================================== TO DO =============================================
 
-bool any_objects_in_between(Ray ray, Vector3D intersection_point)
+bool any_objects_in_between(Ray ray, Vector3D intersection_point, double near_dist, double far_dist)
 {
     double t = MAX_VAL;
     double min_t = MAX_VAL;
@@ -1284,7 +1275,7 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point)
     for(int i=0; i<pyramids_list.size(); i++){
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
             Triangle triangle = pyramids_list[i].triangles[j];
-            t = triangle.find_intersecting_value_t(ray);
+            t = triangle.find_intersecting_value_t(ray, near_dist, far_dist);
             if(t != NULL_VALUE_T){
                 min_t = t;
             }
@@ -1293,7 +1284,7 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point)
     //All spheres
     for(int i=0; i<spheres_list.size(); i++){
         Sphere sphere = spheres_list[i];
-        t = sphere.find_intersecting_value_t(ray);
+        t = sphere.find_intersecting_value_t(ray, near_dist, far_dist);
         if(t != NULL_VALUE_T){
             min_t = t;
         }
@@ -1306,6 +1297,7 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point)
 
 
     if(min_t >= 0 && min_t < MAX_VAL){
+        ray.normalise();
         point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, min_t));
 
         if(isEqualVector(null_point, point) == true){
@@ -1313,7 +1305,7 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point)
         }
 
         if(isEqualVector(point, intersection_point) == true){
-            return false;
+            return false; //NO OBJECTS IN BETWEEN
         }
     }
 
@@ -1341,7 +1333,9 @@ void find_intersection_points()
             direction_vect = vectorNormalize(direction_vect);
 
             ray.assignRay(initial_pos, direction_vect); //initialize the ray.
-            IntersectionObject intersectionObj = find_intersection_color_for_each_pixel(ray, i, j);
+        ///Function call
+            IntersectionObject intersectionObj = find_intersection_color_for_each_pixel(ray, i, j, nearDistance, farDistance);
+        //Function call done
             Vector3D color_this_pixel = intersectionObj.color;
             Vector3D intersecting_point = intersectionObj.intersection_point;
             Vector3D normal_vector = intersectionObj.normal;
@@ -1368,10 +1362,9 @@ void find_intersection_points()
                 ray2.direction_vector.assignVector(dir_vect_for_ray);
                 ray2.normalise();
 
-                bool is_equal = true;
-                if(any_objects_in_between(ray2, intersecting_point) == true){
-                    is_equal = false;
-                }
+                double near_dist = 0 + EPSILON_COMPARISON; ///0.00001
+                double far_dist = vectorGetDistanceBetweenTwo(intersecting_point, lightSourcePosition) - EPSILON_COMPARISON;
+                bool is_any_obj_in_bet = any_objects_in_between(ray2, intersecting_point, near_dist, far_dist);
 
 //                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
 //                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
@@ -1379,7 +1372,7 @@ void find_intersection_points()
 
 
 //                bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
-                if(is_equal == false){ //put diffuse and specular as BLACK
+                if(is_any_obj_in_bet == true){ //put diffuse and specular as BLACK
                     specular_coefficient = 0.0;
                     diffuse_coefficient = 0.0;
                 }
