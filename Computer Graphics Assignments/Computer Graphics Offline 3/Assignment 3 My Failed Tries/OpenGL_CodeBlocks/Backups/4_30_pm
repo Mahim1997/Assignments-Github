@@ -1280,7 +1280,6 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point)
     double min_t = MAX_VAL;
     ray.normalise();
     //All pyramids
-
     for(int i=0; i<pyramids_list.size(); i++){
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++){
             Triangle triangle = pyramids_list[i].triangles[j];
@@ -1369,9 +1368,9 @@ void find_intersection_points()
                 ray2.normalise();
 
                 bool is_equal = true;
-                if(any_objects_in_between(ray2, intersecting_point) == true){
-                    is_equal = false;
-                }
+//                if(any_objects_in_between(ray2, intersecting_point) == true){
+//                    is_equal = false;
+//                }
 
 //                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
 //                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
@@ -1418,7 +1417,7 @@ void find_intersection_points()
             double specular_multiplier = specular_coefficient * cos_phi_sum;
             Vector3D _specular_rgb_component = vectorScale(Vector3D(1.0, 1.0, 1.0), specular_multiplier);
 
-//            pixel_deb << "Idx(" << i << "," << j << " : specular rgb: " << _specular_rgb_component.x << " " << _specular_rgb_component.y << " " << _specular_rgb_component.z << endl;
+            pixel_deb << "Idx(" << i << "," << j << " : specular rgb: " << _specular_rgb_component.x << " " << _specular_rgb_component.y << " " << _specular_rgb_component.z << endl;
 
 //            cout << "Specular multiplier = " << specular_multiplier << " , Specular RGB COMPONENT "; _specular_rgb_component.printVector();
 
