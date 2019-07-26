@@ -34,7 +34,7 @@
 #define TRIANGLE_TYPE 2
 #define FLOOR_TYPE 3
 
-#define EPSILON_COMPARISON 0.00001  // for comparison of two doubles or floats
+#define EPSILON_COMPARISON 0.00001  // for comparison of two doubles or floats = 0.00001
 #define NUM_TRIANGLES_IN_PYRAMID 6  // NUM_TRIANGLES_IN_PYRAMID is 6 [4 triangles + square base (2 triangles)]
 
 #define pi (2*acos(0.0))
@@ -1312,6 +1312,20 @@ bool any_objects_in_between(Ray ray, Vector3D intersection_point, double near_di
     return true;
 }
 
+string get_type_object(int type)
+{
+    if(type == TRIANGLE_TYPE){
+        return "TRIANGLE";
+    }
+    else if(type == SPHERE_TYPE){
+        return "SPHERE";
+    }
+    else if(type == FLOOR_TYPE){
+        return "FLOOR";
+    }
+    return "NULL_TYPE";
+}
+
 void find_intersection_points()
 {
 //FOR EACH PIXEL
@@ -1349,59 +1363,93 @@ void find_intersection_points()
             Vector3D lightSourcePosition, _incident_ray, _reflected_ray, _ray_from_eye_to_intersection;
             double cos_theta_sum = 0, cos_phi_sum = 0;
 
-            //----- FOR EACH LIGHT SOURCE -----
-            for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++){
-                lightSourcePosition = light_sources[light_src_cnt];
-//                _incident_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
-            // ---------------------------------------------------------------------------------
-                //Cast ray using this lightSourcePosition as origin
-                Ray ray2;
-                ray2.initial_position.assignVector(lightSourcePosition);
-                Vector3D dir_vect_for_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
-                dir_vect_for_ray.normalise();
-                ray2.direction_vector.assignVector(dir_vect_for_ray);
-                ray2.normalise();
+            Vector3D null_intersection_point(farDistance, farDistance, farDistance);
+            bool is_dark_intersection = isEqualVector(null_intersection_point, intersecting_point);
+            if(is_dark_intersection == true){
 
-                double near_dist = 0 + EPSILON_COMPARISON; ///0.00001
-                double far_dist = vectorGetDistanceBetweenTwo(intersecting_point, lightSourcePosition) - EPSILON_COMPARISON;
-                bool is_any_obj_in_bet = any_objects_in_between(ray2, intersecting_point, near_dist, far_dist);
+                specular_coefficient = 0.0;
+                diffuse_coefficient = 0.0;
+            }else{
+//                cout << "IS NOT DARK for i = " << i << " , j = " << j << endl;
+                //----- FOR EACH LIGHT SOURCE -----
+                for(int light_src_cnt = 0; light_src_cnt < light_sources.size(); light_src_cnt++){
+                    lightSourcePosition = light_sources[light_src_cnt];
+    //                _incident_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
+                // ---------------------------------------------------------------------------------
+                    //Cast ray using this lightSourcePosition as origin
+                    Ray ray2;
+                    ray2.initial_position.assignVector(lightSourcePosition);
+                    Vector3D dir_vect_for_ray = vectorSubtraction(intersecting_point, lightSourcePosition);
+                    dir_vect_for_ray.normalise();
+                    ray2.direction_vector.assignVector(dir_vect_for_ray);
+                    ray2.normalise();
 
-//                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
-//                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
-//                cout << " , intersection_point = "; intersecting_point.printVector();
+                    double near_dist = 0 + EPSILON_COMPARISON; ///0.00001
+                    double far_dist = vectorGetDistanceBetweenTwo(intersecting_point, lightSourcePosition) - EPSILON_COMPARISON;
+                    //bool is_any_obj_in_bet = any_objects_in_between(ray2, intersecting_point, near_dist, far_dist);
+                    IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1, near_dist, far_dist);
+
+                    bool are_points_equal = isEqualVector(iObj.intersection_point, intersectionObj.intersection_point);
+
+    //                IntersectionObject iObj = find_intersection_color_for_each_pixel(ray2, -1, -1);
+    //                cout << "iObj.intersectionPoint = "; iObj.intersection_point.printVector();
+    //                cout << " , intersection_point = "; intersecting_point.printVector();
 
 
-//                bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
-                if(is_any_obj_in_bet == true){ //put diffuse and specular as BLACK
-                    specular_coefficient = 0.0;
-                    diffuse_coefficient = 0.0;
+    //                bool is_equal = isEqualVector(iObj.intersection_point, intersecting_point);
+                    //No object in between === false i.e. OBJECT IN BETWEEN, so,
+                    if(false){ //is_any_obj_in_bet == true //put diffuse and specular as BLACK
+                        //printf("--++--> OBJ IN BETWEEN FOR i = %d, j = %d ", i, j);
+                        pixel_deb << "++-->>NOT EQUAL for (" << i << "," << j << ")";
+                        pixel_deb << "Type: " << get_type_object(intersectionObj.type) << " self.rgb " << intersectionObj.color.x << " " << intersectionObj.color.y << " " << intersectionObj.color.z  << " onno type: " << get_type_object(iObj.type) << " , onno.color: " << iObj.color.x << " " << iObj.color.y << " " << iObj.color.z <<  endl;
+                        specular_coefficient = 0.0;
+                        diffuse_coefficient = 0.0;
+                    }
+                    else{
+                        //No object in between
+                        pixel_deb << "===>>> Is equal for (" << i << "," << j << ")";
+                        pixel_deb << "Type: " << get_type_object(intersectionObj.type) << " self.rgb " << intersectionObj.color.x << " " << intersectionObj.color.y << " " << intersectionObj.color.z  << " onno type: " << get_type_object(iObj.type) << " , onno.color: " << iObj.color.x << " " << iObj.color.y << " " << iObj.color.z <<  endl;
+                        _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
+                        _incident_ray.normalise();
+
+                        normal_vector = intersectionObj.normal;
+                        normal_vector.normalise();
+                        //refl = 2*(L.N)N - L
+                        _reflected_ray = vectorSubtraction(_incident_ray,
+                                               vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
+        //                _reflected_ray = vectorSubtraction(vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))),
+        //                                       _incident_ray); //Sir method
+                        _reflected_ray.normalise();
+
+        //                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //intersection point - pos
+                        _ray_from_eye_to_intersection = vectorSubtraction(intersecting_point, pos); //intersection point - pos
+                        _ray_from_eye_to_intersection.normalise();
+
+
+                        cos_theta_sum += max((vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude()), 0.0);
+
+//                        double temp = max( ( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection))), 0.0); // cos phi
+                        double temp = max(vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection), 0.0); // cos phi
+                        double pow_temp = pow(temp, intersectionObj.specular_exp); //cos phi to the power specular_exponent
+
+                        if((i == 329) && (j == 452)){
+                            printf("(%d, %d) -> TYPE = %d ", i, j, intersectionObj.type);
+                            cout << "Type:" << get_type_object(intersectionObj.type);
+                            cout << endl;
+                            _incident_ray.printVector();
+                            _reflected_ray.printVector();
+                            normal_vector.printVector();
+                            _ray_from_eye_to_intersection.printVector();
+                            cout << "SPEC ret = " << temp << " , pow_temp = " << pow_temp << endl << endl;
+                        }
+
+                        cos_phi_sum += pow_temp;
+                    }
+
+
                 }
-                else{
-                    _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
-                    _incident_ray.normalise();
-                    normal_vector = intersectionObj.normal;
-                    normal_vector.normalise();
-                    //refl = 2*(L.N)N - L
-                    _reflected_ray = vectorSubtraction(_incident_ray,
-                                           vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
-    //                _reflected_ray = vectorSubtraction(vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))),
-    //                                       _incident_ray); //Sir method
-                    _reflected_ray.normalise();
-    //                _ray_from_eye_to_intersection = vectorSubtraction(pos, intersecting_point); //intersection point - pos
-                    _ray_from_eye_to_intersection = vectorSubtraction(intersecting_point, pos); //intersection point - pos
-                    _ray_from_eye_to_intersection.normalise();
-
-                    cos_theta_sum += max((vectorDotProduct(_incident_ray, normal_vector) / _incident_ray.magnitude()), 0.0);
-
-                    double temp = max( ( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection))), 0.0); // cos phi
-                    temp = pow(temp, intersectionObj.specular_exp); //cos phi to the power specular_exponent
-
-                    cos_phi_sum += temp;
-                }
-
-
+                // FOR EACH LIGHT SOURCE COMPUTED VALUES
             }
-            // FOR EACH LIGHT SOURCE COMPUTED VALUES
 
             Vector3D _ambient_rgb_component = vectorScale(color_this_pixel, ambient_coeffcient); //ambient_coeff * [r, g, b]
 
@@ -1411,6 +1459,13 @@ void find_intersection_points()
             double specular_multiplier = specular_coefficient * cos_phi_sum;
             Vector3D _specular_rgb_component = vectorScale(Vector3D(1.0, 1.0, 1.0), specular_multiplier);
 
+            if((i == 329) && (j == 452)){
+                printf("For (%d, %d), specular = ", i, j);
+                _specular_rgb_component.printVector();
+                printf("Intersection point .. ");
+                intersectionObj.intersection_point.printVector();
+
+            }
 //            pixel_deb << "Idx(" << i << "," << j << " : specular rgb: " << _specular_rgb_component.x << " " << _specular_rgb_component.y << " " << _specular_rgb_component.z << endl;
 
 //            cout << "Specular multiplier = " << specular_multiplier << " , Specular RGB COMPONENT "; _specular_rgb_component.printVector();
