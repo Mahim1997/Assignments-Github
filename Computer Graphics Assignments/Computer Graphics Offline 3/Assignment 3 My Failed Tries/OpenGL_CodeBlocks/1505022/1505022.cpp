@@ -52,16 +52,6 @@
 
 using namespace std ;
 
-int ROW_TO_DEB = 329;
-int COL_TO_DEB = 446;
-int row_idx_deb ;//= 329;
-int col_idx_deb ;//= 446;
-
-bool IS_DEBUG_CONDITION()
-{
-    return ( (row_idx_deb == ROW_TO_DEB) && (col_idx_deb == COL_TO_DEB) ) ;
-}
-
 int drawaxes;
 int angle;
 int drawgrid = 0;
@@ -365,9 +355,6 @@ public:
 
 //        cout << endl << "Inside sphere.findInters() .. ray is "; ray.printRay();
 //        cout << "Discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , discriminant returned = %lf\n", row_idx_deb, col_idx_deb, discriminant);
-        }
 
         if(discriminant < 0)
         {
@@ -382,11 +369,7 @@ public:
 //        cout << "  ,  t1 = " << t1 << " , t2 = " << t2;
 
         t = NULL_VALUE_T; //initialize as null
-        double dist1 = MAX_VAL, dist2 = MAX_VAL; //to take which 't'
-
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , t1 = %lf, t2 = %lf\n", row_idx_deb, col_idx_deb, t1, t2);
-        }
+        double dist1 = -1, dist2 = -1; //to take which 't'
 
         if(t1 >= 0)  //compare with ACTUAL eye/camera position
         {
@@ -407,14 +390,7 @@ public:
             t = t2;
         }
 
-        if(IS_DEBUG_CONDITION()){
-            printf("--->>dist1 = %lf, dist2 = %lf\n", dist1, dist2);
-        }
-
 //        cout << " -->> Here, returning t = " << t << endl;
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , about to return t = %lf\n", row_idx_deb, col_idx_deb, t);
-        }
 
         return t;
     }
@@ -1466,14 +1442,6 @@ bool does_object_exist_in_between(Vector3D source,Vector3D intersect)
 
     double init_dist = vectorGetDistanceBetweenTwo(tmp_intersect,source);
     //fout3<<"Init dist: "<<init_dist;
-
-    if(row_idx_deb == ROW_TO_DEB){
-        if(col_idx_deb == COL_TO_DEB){
-            printf("Idx (%d, %d), init_dist = %lf, direction_vect = (%lf, %lf, %lf)\n", row_idx_deb, col_idx_deb, init_dist,
-                   dir_vect.x, dir_vect.y, dir_vect.z);
-        }
-    }
-
     for(int i=0; i<pyramids_list.size(); i++)
     {
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++)
@@ -1506,7 +1474,6 @@ bool does_object_exist_in_between(Vector3D source,Vector3D intersect)
         double t = sphere.find_intersecting_value_t(ray, 0, farDistance); //for now ... farDistance is kept
         if(t != NULL_VALUE_T)
         {
-
             approx_point.x=tmp_intersect.x+t*dir_vect.x;
             approx_point.y=tmp_intersect.y+t*dir_vect.y;
             approx_point.z=tmp_intersect.z+t*dir_vect.z;
@@ -1693,9 +1660,6 @@ void find_intersection_points()
     {
         for(int j=0; j<PIXEL_NUM; j++)
         {
-            row_idx_deb = i;
-            col_idx_deb = j;
-
             pixel_pos = pixel_window_mid_points[i][j];
             Ray ray;
             Vector3D direction_vect;
