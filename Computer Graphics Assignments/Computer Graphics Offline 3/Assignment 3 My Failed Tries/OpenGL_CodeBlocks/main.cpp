@@ -1630,8 +1630,10 @@ Vector3D getColorOfPixel(Ray ray, int depth)
         //Compute reflected ray
         Vector3D _reflected_ray = vectorSubtraction(_incident_ray,
                                                    vectorScale(normal_vector, (2 * vectorDotProduct(_incident_ray, normal_vector))));
+        _reflected_ray.normalise();
         Ray newRay;
-        newRay.assignRay(intersc_point, _reflected_ray);
+        Vector3D new_intersec_point = vectorAddition(intersc_point, vectorScale(_reflected_ray, 1.0));
+        newRay.assignRay(new_intersec_point, _reflected_ray);
         Vector3D color_ret = getColorOfPixel(newRay, depth - 1);
         color_ret = vectorScale(color_ret, reflection_coefficient); //Multiply with reflection coefficient
         color_this_pixel = vectorAddition(color_this_pixel, color_ret); //Ultimately add with previous colors
