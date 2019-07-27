@@ -52,8 +52,8 @@
 
 using namespace std ;
 
-int ROW_TO_DEB = 329;
-int COL_TO_DEB = 446;
+int ROW_TO_DEB = 368;
+int COL_TO_DEB = 456;
 int row_idx_deb ;//= 329;
 int col_idx_deb ;//= 446;
 
@@ -365,9 +365,9 @@ public:
 
 //        cout << endl << "Inside sphere.findInters() .. ray is "; ray.printRay();
 //        cout << "Discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , discriminant returned = %lf\n", row_idx_deb, col_idx_deb, discriminant);
-        }
+//        if(IS_DEBUG_CONDITION()){
+//            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , discriminant returned = %lf\n", row_idx_deb, col_idx_deb, discriminant);
+//        }
 
         if(discriminant < 0)
         {
@@ -384,9 +384,9 @@ public:
         t = NULL_VALUE_T; //initialize as null
         double dist1 = MAX_VAL, dist2 = MAX_VAL; //to take which 't'
 
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , t1 = %lf, t2 = %lf\n", row_idx_deb, col_idx_deb, t1, t2);
-        }
+//        if(IS_DEBUG_CONDITION()){
+//            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , t1 = %lf, t2 = %lf\n", row_idx_deb, col_idx_deb, t1, t2);
+//        }
 
         if(t1 >= 0)  //compare with ACTUAL eye/camera position
         {
@@ -407,14 +407,12 @@ public:
             t = t2;
         }
 
-        if(IS_DEBUG_CONDITION()){
-            printf("--->>dist1 = %lf, dist2 = %lf\n", dist1, dist2);
-        }
-
-//        cout << " -->> Here, returning t = " << t << endl;
-        if(IS_DEBUG_CONDITION()){
-            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , about to return t = %lf\n", row_idx_deb, col_idx_deb, t);
-        }
+//        if(IS_DEBUG_CONDITION()){
+//            printf("--->>dist1 = %lf, dist2 = %lf\n", dist1, dist2);
+//        }
+//        if(IS_DEBUG_CONDITION()){
+//            printf("--->In sphere.getValueOfT() ... idx = (%d, %d) , about to return t = %lf\n", row_idx_deb, col_idx_deb, t);
+//        }
 
         return t;
     }
@@ -564,6 +562,17 @@ public:
         alpha = 1.0 - (beta + gamma);
         t = mat_for_t.getDeterminant() / A.getDeterminant();
 
+        if(IS_DEBUG_CONDITION()){
+            printf("\n\nDEBUGGING\n");
+//            point1.printVector();
+//            point2.printVector();
+//            point3.printVector();
+//            ray.initial_position.printVector();
+            direction_vect.printVector();
+            printf("Found t = %lf, determinant = %lf, beta = %lf, gamma = %lf, alpha = %lf, beta_upper = %lf, gamma_upper = %lf, t_mat_upper %lf..... ",
+                   t, A.getDeterminant(), beta, gamma, alpha, mat_for_beta.getDeterminant(), mat_for_gamma.getDeterminant(), mat_for_t.getDeterminant());
+        }
+
         if(t >= 0)
         {
             //intersects ...
@@ -572,17 +581,24 @@ public:
             {
                 //Inside the triangle THIS intersecting point lies.
                 //Check if WITHIN range DISTANCE
-                return t;
-//                ray.normalise(); ///TRIANGLE DISTANCE CHECKING
-//                Vector3D intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t));
-//                double dist = vectorGetDistanceBetweenTwo(intersection_point, ray.initial_position);
-//                if((dist >= near_dist) && (dist <= far_dist)){
-//                    return t;
-//                }
-//                else{
-//                    return NULL_VALUE_T;
-//                }
+                if(IS_DEBUG_CONDITION()){
+                    printf("\n--->>RETURING t = %lf\n", t);
+                }
+//                return t;
+                ray.normalise(); ///TRIANGLE DISTANCE CHECKING
+                Vector3D intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t));
+                double dist = vectorGetDistanceBetweenTwo(intersection_point, ray.initial_position);
+                if((dist >= near_dist) && (dist <= far_dist)){
+                    return t;
+                }
+                else{
+                    return NULL_VALUE_T;
+                }
             }
+        }
+        if(IS_DEBUG_CONDITION()){
+            printf("\n--->>RETURING t = NULL_VALUE_T ");
+            cout << NULL_VALUE_T << endl;
         }
         return NULL_VALUE_T;
     }
@@ -1541,10 +1557,10 @@ string get_type_object(int type)
     return "NULL_TYPE";
 }
 
-
+///Recursive call
 Vector3D getColorOfPixel(Ray ray, int depth)
 {
-    if(depth == 0){
+    if(depth <= 0){
         return Vector3D(0.0, 0.0, 0.0);
     }
     ///Function call
@@ -1568,8 +1584,10 @@ Vector3D getColorOfPixel(Ray ray, int depth)
     bool is_dark_intersection = isEqualVector(null_intersection_point, intersecting_point);
     if(is_dark_intersection == true)
     {
-        specular_coefficient = 0.0;
-        diffuse_coefficient = 0.0;
+//        specular_coefficient = 0.0;
+//        diffuse_coefficient = 0.0;
+//        ambient_coefficient = 0.0; ///???
+            return Vector3D(0.0, 0.0, 0.0);
     }
     else
     {
