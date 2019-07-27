@@ -1695,9 +1695,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
         Ray newRay;
         Vector3D new_intersec_point = vectorAddition(intersc_point, vectorScale(_reflected_ray, 1.0));
         newRay.assignRay(new_intersec_point, _reflected_ray);
-        ///RECURSIVE CALL INITIATION
         Vector3D color_ret = getColorOfPixel(newRay, depth - 1);
-        ///RECURIVE CALL ANSWER OBTAINED
         color_ret = vectorScale(color_ret, reflection_coefficient); //Multiply with reflection coefficient
         color_this_pixel = vectorAddition(color_this_pixel, color_ret); //Ultimately add with previous colors
     }

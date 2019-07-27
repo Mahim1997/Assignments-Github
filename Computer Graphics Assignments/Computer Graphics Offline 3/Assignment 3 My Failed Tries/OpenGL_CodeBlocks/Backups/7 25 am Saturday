@@ -819,14 +819,10 @@ void drawSquare(double b)
 //    glTranslatef(translation_vect.x, translation_vect.y, translation_vect.z);
     glBegin(GL_QUADS);
     {
-        glVertex3f( 0, 0, 0);
-        glVertex3f( 0, b, 0);
-        glVertex3f( b, b, 0);
-        glVertex3f( b, 0, 0);
-//        glVertex3f( a, a,0);
-//        glVertex3f( a,-a,0);
-//        glVertex3f(-a,-a,0);
-//        glVertex3f(-a, a,0);
+        glVertex3f( a, a,0);
+        glVertex3f( a,-a,0);
+        glVertex3f(-a,-a,0);
+        glVertex3f(-a, a,0);
     }
     glEnd();
 //    glPopMatrix();
@@ -1015,7 +1011,7 @@ void loadAllData()
 void drawCheckerBoard()
 {
     int col_inner = 1, col_outer = 1;
-    int deb_val = 900; //1000
+    int deb_val = INFINITE_INDEX; //1000
     int checkerBoardWidth = WIDTH_CHECKER_BOARD;
 //    int i = 0;
     for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth)
@@ -1024,7 +1020,7 @@ void drawCheckerBoard()
         for(int j= -deb_val; j<deb_val; j+=checkerBoardWidth)
         {
 //            printf("-->> Value at (%d, %d), col = %d\n", i, j, col);
-            glColor3f(1 - col_inner, 1 - col_inner, 1 - col_inner); //1,1,1 -> white
+            glColor3f(col_inner, col_inner, col_inner); //1,1,1 -> white
             glPushMatrix();
             glTranslatef((double)j, (double)i, 0.0);
             drawSquare(checkerBoardWidth);
@@ -1259,15 +1255,9 @@ Vector3D color_of_pixel_checker_board(Vector3D p)
     //B|_   _|W
     //    C
     //W|_   _|B
-    bottom_most_left_point.assignVector(-900.0, -900.0, 0.0);
+
     p.x = p.x + abs(bottom_most_left_point.x);
     p.y = p.y + abs(bottom_most_left_point.y);
-
-
-
-//        cout << "=---->>> Inside COLOR OF PIXEL CHECKER BOARD ... bottom_most_left_point =  ";
-//        bottom_most_left_point.printVector();
-
 
     int checker_x=(int)(p.x/WIDTH_CHECKER_BOARD);
     int checker_y=(int)(p.y/WIDTH_CHECKER_BOARD);
@@ -1695,9 +1685,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
         Ray newRay;
         Vector3D new_intersec_point = vectorAddition(intersc_point, vectorScale(_reflected_ray, 1.0));
         newRay.assignRay(new_intersec_point, _reflected_ray);
-        ///RECURSIVE CALL INITIATION
         Vector3D color_ret = getColorOfPixel(newRay, depth - 1);
-        ///RECURIVE CALL ANSWER OBTAINED
         color_ret = vectorScale(color_ret, reflection_coefficient); //Multiply with reflection coefficient
         color_this_pixel = vectorAddition(color_this_pixel, color_ret); //Ultimately add with previous colors
     }
