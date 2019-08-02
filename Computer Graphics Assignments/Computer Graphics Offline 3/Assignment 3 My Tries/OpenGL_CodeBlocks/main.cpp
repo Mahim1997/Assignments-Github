@@ -9,7 +9,6 @@
 #include <windows.h>
 #include <glut.h>
 
-#define CHECKER_BOARD_ULTIMATE_VAL 900
 
 #define AMBIENT_INDEX 0
 #define DIFFUSE_INDEX 1
@@ -19,12 +18,17 @@
 #define MAX_VAL 9999999
 #define NULL_VALUE_T -1000
 
+#define DEBUG_SPHERE 0
+#define DEBUG 0
+#define DEBUG_MID_POINTS 1
+
 #define DRAW_GRID 1
 
 #define WHITE 7
 #define BLACK 10
 
-#define DEGREE_ANGLE_INIT 1.0  //movement angle
+#define RADIUS_SHAPE 20
+#define DEGREE_ANGLE_INIT 5  //movement angle
 
 #define SPHERE_TYPE 1
 #define TRIANGLE_TYPE 2
@@ -37,6 +41,9 @@
 #define DEGREE_TO_RAD(x) ((x * pi) / 180)
 #define RAD_TO_DEGREE(x) (x * 180 / pi)
 
+#define NUM_TILES 66 // 2*1000 / 30 = 2000/30 = 66.6667 =~ 67
+#define NUM_TILES_HALF 33
+
 #define WIDTH_CHECKER_BOARD 30 //width of each tile of checker-board is 30
 #define INFINITE_INDEX 1000
 
@@ -45,21 +52,18 @@
 
 using namespace std ;
 
-///FOR DEBUGGING one pixel purposes
-int ROW_TO_DEB = 368;
-int COL_TO_DEB = 456;
-int row_idx_deb ;//= 329;
-int col_idx_deb ;//= 446;
-
-bool IS_DEBUG_CONDITION()
-{
-    return ( (row_idx_deb == ROW_TO_DEB) && (col_idx_deb == COL_TO_DEB) ) ;
-}
-
 int drawaxes;
 int angle;
+int drawgrid = 0;
 ///------------------- My global variables and functions -----------------
 ifstream fin; // for description.txt reading
+
+//floor co-efficients //0.4 0.2 0.2 0.2 3
+
+//double FLOOR_AMBIENT = 0.4;
+//double FLOOR_DIFFUSE = 0.2;
+//double FLOOR_SPECULAR = 0.2;
+//double FLOOR_REFLECTIVE = 0.2;
 
 double FLOOR_COEFFICIENTS[4] = {0.4, 0.2, 0.2, 0.2};
 double FLOOR_SPECULAR_EXPONENT = 1.0;
@@ -224,7 +228,7 @@ double farDistance = 1000;
 double WINDOW_SIZE = 500;
 double field_angle = 90; //degrees
 // ----------------- Other parameters ------------------
-int recursion_level = 1; //default -> 1 [READ FROM FILE]
+int recursion_level = 1; //default -> 1
 int num_pixels_along_axes;
 int num_objects;
 
@@ -349,6 +353,9 @@ public:
 
         double discriminant = (b * b) - (4.0 * a * c);
 
+//        cout << endl << "Inside sphere.findInters() .. ray is "; ray.printRay();
+//        cout << "Discriminant = " << discriminant << " a = " << a << " b = " << b << " c = " << c ;
+
         if(discriminant < 0)
         {
             return NULL_VALUE_T;
@@ -359,9 +366,10 @@ public:
         double t1 = (-b - discriminant)/(2.0 * a);
         double t2 = (-b + discriminant)/(2.0 * a);
 
+//        cout << "  ,  t1 = " << t1 << " , t2 = " << t2;
 
         t = NULL_VALUE_T; //initialize as null
-        double dist1 = MAX_VAL, dist2 = MAX_VAL; //to take which 't'
+        double dist1 = -1, dist2 = -1; //to take which 't'
 
         if(t1 >= 0)  //compare with ACTUAL eye/camera position
         {
@@ -381,6 +389,8 @@ public:
         {
             t = t2;
         }
+
+//        cout << " -->> Here, returning t = " << t << endl;
 
         return t;
     }
@@ -538,16 +548,16 @@ public:
             {
                 //Inside the triangle THIS intersecting point lies.
                 //Check if WITHIN range DISTANCE
-//                return t;
-                ray.normalise(); ///TRIANGLE DISTANCE CHECKING
-                Vector3D intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t));
-                double dist = vectorGetDistanceBetweenTwo(intersection_point, ray.initial_position);
-                if((dist >= near_dist) && (dist <= far_dist)){
-                    return t;
-                }
-                else{
-                    return NULL_VALUE_T;
-                }
+                return t;
+//                ray.normalise(); ///TRIANGLE DISTANCE CHECKING
+//                Vector3D intersection_point = vectorAddition(ray.initial_position, vectorScale(ray.direction_vector, t));
+//                double dist = vectorGetDistanceBetweenTwo(intersection_point, ray.initial_position);
+//                if((dist >= near_dist) && (dist <= far_dist)){
+//                    return t;
+//                }
+//                else{
+//                    return NULL_VALUE_T;
+//                }
             }
         }
         return NULL_VALUE_T;
@@ -711,10 +721,36 @@ vector<Vector3D> light_sources; //positions of light sources
 // ---------------------- Objects list i.e. vector<Objects> ------------------
 vector<Sphere> spheres_list;
 vector<Pyramid> pyramids_list;
+CheckerBoardTile checker_board[NUM_TILES][NUM_TILES]; //2D array
 
 ///------------------------------ GLOBAL vars again end ----------------------------------
 
+void drawGrid()
+{
+    int i;
+    if(drawgrid==1)
+    {
+        glColor3f(0.6, 0.6, 0.6);	//grey
+        glBegin(GL_LINES);
+        {
+            for(i=-8; i<=8; i++)
+            {
 
+                if(i==0)
+                    continue;	//SKIP the MAIN axes
+
+                //lines parallel to Y-axis
+                glVertex3f(i*10, -90, 0);
+                glVertex3f(i*10,  90, 0);
+
+                //lines parallel to X-axis
+                glVertex3f(-90, i*10, 0);
+                glVertex3f( 90, i*10, 0);
+            }
+        }
+        glEnd();
+    }
+}
 void drawAxes()
 {
     if(drawaxes==1)
@@ -737,14 +773,19 @@ void drawAxes()
 
 void drawSquare(double b)
 {
+    double a = (double)(b * 0.5);
+    //glColor3f(1.0,0.0,0.0);
+//    glPushMatrix();
+//    glTranslatef(translation_vect.x, translation_vect.y, translation_vect.z);
     glBegin(GL_QUADS);
     {
-        glVertex3f( 0, 0, 0);
-        glVertex3f( 0, b, 0);
-        glVertex3f( b, b, 0);
-        glVertex3f( b, 0, 0);
+        glVertex3f( a, a,0);
+        glVertex3f( a,-a,0);
+        glVertex3f(-a,-a,0);
+        glVertex3f(-a, a,0);
     }
     glEnd();
+//    glPopMatrix();
 }
 
 void drawSphere(double radius)
@@ -796,13 +837,14 @@ void initialiseParams()
     u.assignVector(0, 0, 1);
     r.assignVector(-1/sqrt(2), 1/sqrt(2), 0);
     l.assignVector(-1/sqrt(2), -1/sqrt(2), 0);
+//    pos.assignVector(100, 100, 0);
+//    pos.assignVector(50,50,100); //50,50,100
     pos.assignVector(100,100,50);
 }
 
-void printAllShapes()
+void printAllData()
 {
     cout << "----------------------- Printing Data Begin ---------------------" << endl ;
-    cout << "RECURSION LEVEL REFLECTION: " << recursion_level << endl;
     cout << "Printing Spheres:\n";
     for(int i=0; i<spheres_list.size(); i++)
     {
@@ -813,21 +855,35 @@ void printAllShapes()
     {
         pyramids_list[i].printPyramid();
     }
+//    cout << "\nPrinting Checkerboard\n";
+//    for(int i=0; i<NUM_TILES; i++){
+//        for(int j=0; j<NUM_TILES; j++){
+//            checker_board[i][j].printCheckerBoardTile();
+//        }
+//    }
     cout << "\nPrinting Light Sources num_light_sources = " << num_light_sources << "\n";
     for(int i=0; i<num_light_sources; i++)
     {
         light_sources[i].printVector();
     }
-    cout << "\nPrinting Checker-Board coefficients: \n";
-    for(int i=0; i<4; i++){
-        cout << coefficients_arr[i] << ":" << FLOOR_COEFFICIENTS[i] << "  ";
-    }
-    cout << " Floor Specular Exponent: " << FLOOR_SPECULAR_EXPONENT << endl;
-    cout << "RECURSION LEVEL DEPTH: " << recursion_level << endl;
-    cout << "WHITE Spheres indicate light sources" << endl;
+
     cout << endl << "----------------------- Printing Data ENDS ---------------------" << endl ;
 }
 
+void loadCheckerBoard()
+{
+    checker_board[0][0] = CheckerBoardTile(WHITE);
+    checker_board[0][0].left_most_point.assignVector(0, 0, 0); //origin as left-most point having WHITE color
+
+    Vector3D point_left_most(0, 0, 0); //the left-most point
+    int col;
+
+    double x_last, y_last;
+    x_last = -INFINITE_INDEX * WIDTH_CHECKER_BOARD;
+    y_last = -INFINITE_INDEX * WIDTH_CHECKER_BOARD;
+
+    ///---------- NOTHING IS DONE FOR NOW -------------------
+}
 string trim(const string& str) //trim string function
 {
     size_t first = str.find_first_not_of(' ');
@@ -846,6 +902,10 @@ void loadAllData()
     fin >> recursion_level;
     fin >> num_pixels_along_axes;
     fin >> num_objects;
+
+//    cout << "----->> RECURSION LEVEL = " << recursion_level << ", NUM_PIXELS_ALONG_AXES = " << num_pixels_along_axes << ", NUM_OBJ = " << num_objects << endl;
+
+    //Now read the objects
     string inputString;
 
     double x, y, z, c_r, c_g, c_b, base, height, radius, coef_am, coef_dif, coef_spec, coef_ref, spec_exp;
@@ -854,6 +914,7 @@ void loadAllData()
     while(num_ob_rec_so_far < num_objects)
     {
         getline(fin, inputString); // Saves the line in inputString [input command]
+//        cout << "----->>>getLIne inputsString got is <" << inputString << ">\n";
         if(inputString == "")
         {
             continue;
@@ -862,10 +923,12 @@ void loadAllData()
         {
             continue;
         }
+//        cout << "===+++>>>> Now num_ob_so_far = " << num_ob_rec_so_far << endl;
         num_ob_rec_so_far++;
         if(trim(inputString) == "pyramid")
         {
             //load pyramid
+//            cout << "---------->>> PYRAMID READING\n";
             fin >> x >> y >> z; //lowest points
             fin >> base >> height; //base length and height
             fin >> c_r >> c_g >> c_b; //colors r,g,b
@@ -879,6 +942,7 @@ void loadAllData()
         else if(trim(inputString) == "sphere")
         {
             //load sphere
+//            cout << "---------->>> SPHERE READING\n";
             fin >> x >> y >> z; //center
             fin >> radius; //radius
             fin >> c_r >> c_g >> c_b; //colors r,g,b
@@ -900,20 +964,23 @@ void loadAllData()
         light_sources.push_back(vec);
     }
 
-
+    loadCheckerBoard();
+    printAllData();
 }
 
 void drawCheckerBoard()
 {
     int col_inner = 1, col_outer = 1;
-    int deb_val = CHECKER_BOARD_ULTIMATE_VAL; //1000
+    int deb_val = INFINITE_INDEX; //1000
     int checkerBoardWidth = WIDTH_CHECKER_BOARD;
+//    int i = 0;
     for(int i= -deb_val; i<deb_val; i+=checkerBoardWidth)
     {
         col_inner = col_outer;
         for(int j= -deb_val; j<deb_val; j+=checkerBoardWidth)
         {
-            glColor3f(1 - col_inner, 1 - col_inner, 1 - col_inner); //To keep consistent with bmp image ...
+//            printf("-->> Value at (%d, %d), col = %d\n", i, j, col);
+            glColor3f(col_inner, col_inner, col_inner); //1,1,1 -> white
             glPushMatrix();
             glTranslatef((double)j, (double)i, 0.0);
             drawSquare(checkerBoardWidth);
@@ -927,6 +994,7 @@ void drawCheckerBoard()
                 col_inner = 1;
             }
 
+//            drawSquare(vect, CHECKER_BOARD_WIDTH);
         }
         if(col_outer == 1)
         {
@@ -976,12 +1044,36 @@ void drawSpheres()
         Sphere sphere = spheres_list[i];
         glColor3f(sphere.colors[0], sphere.colors[1], sphere.colors[2]);
         glPushMatrix();
+//        printf("--->>Sphere radius = %lf, <%lf, %lf, %lf>\n", sphere.radius, sphere.center.x, sphere.center.y, sphere.center.z);
         glTranslatef(sphere.center.x, sphere.center.y, sphere.center.z);
         drawSphere(sphere.radius);
         glPopMatrix();
     }
 }
 
+void drawCircle(double radius)
+{
+    int segments = 50;
+    int i;
+    Vector3D points[100];
+
+    //generate points
+    for(i=0; i<=segments; i++)
+    {
+        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
+        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
+    }
+    //draw segments using generated points
+    for(i=0; i<segments; i++)
+    {
+        glBegin(GL_LINES);
+        {
+            glVertex3f(points[i].x,points[i].y,0);
+            glVertex3f(points[i+1].x,points[i+1].y,0);
+        }
+        glEnd();
+    }
+}
 void drawLightSources()
 {
     for(int i=0; i<num_light_sources; i++)
@@ -989,10 +1081,9 @@ void drawLightSources()
         Vector3D light = light_sources[i];
         glPushMatrix();
         {
-            glColor3f(1, 1, 1); //white
+            glColor3f(1, 0, 1); //white
             glTranslatef(light.x, light.y, light.z);
-//            drawSphere(1);
-            glutSolidSphere(1, 50, 50);
+            drawSphere(2);
         }
         glPopMatrix();
     }
@@ -1031,11 +1122,26 @@ void computePixelsWindow()
     double increment_width  = (double)(width_pixel_window  / PIXEL_NUM);
     double increment_height = (double)(height_pixel_window / PIXEL_NUM);
 
+    cout << "Inside drawPixelsWindow() ... \n";
+    cout << "--->> Width of pixel_window = " << width_pixel_window << " , Height of pixel_window = " << height_pixel_window << endl;
+    cout << "-->Mid-point of pixel window is ";
+    mid_point_pixel_window.printVector();
+    cout << "Here, increment_width = " << increment_width << ", increment_height = " << increment_height << endl;
 
     //384 down, 384 left
     double to_move_left = increment_width * (PIXEL_NUM / 2);
     double to_move_down = increment_height * (PIXEL_NUM / 2);
 
+    cout << "To Move left = " << to_move_left << ", to move down = " << to_move_down << endl;
+
+//    ------------------------------------------------------------- TO DO ------------------------------------
+
+//    Vector3D bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(r, -(to_move_left * 1.0)), vectorScale(u, -(to_move_down * 1.0))));
+
+    cout << "Here, u = ";
+    u.printVector(false);
+    cout << " , r = ";
+    r.printVector();
 
     bottom_most_left_point = vectorAddition(mid_point_pixel_window, vectorAddition(vectorScale(u, -1), vectorScale(r, -1)));
 
@@ -1043,6 +1149,11 @@ void computePixelsWindow()
     Vector3D bottom_most_left_mid_point = vectorAddition(bottom_most_left_point,
                                           vectorAddition(vectorScale(r, (0.5 * increment_width)),
                                                   vectorScale(u, (0.5 * increment_height))));
+
+    cout << "BOTTOM MOST LEFT POINT ";
+    bottom_most_left_point.printVector();
+    cout << "Bottom most left mid-point :";
+    bottom_most_left_mid_point.printVector();
 
     //make each zero
     for(int i=0; i<PIXEL_NUM; i++)
@@ -1052,6 +1163,13 @@ void computePixelsWindow()
             pixel_window_mid_points[i][j].assignVector(0, 0, 0);
         }
     }
+    /*
+            //top-down approach
+                pixel_window_mid_points[i][j] = vectorAddition(
+                                            vectorAddition(bottom_most_left_mid_point, vectorScale(r, (j * increment_width))),
+                                            vectorScale(u, ((PIXEL_NUM - 1 - i) * increment_height)));
+    */
+
     Vector3D top_moft_left_mid_point = vectorAddition(bottom_most_left_mid_point, Vector3D(0, (PIXEL_NUM - 1) * increment_height, 0));
     for(int i=0; i<PIXEL_NUM; i++)
     {
@@ -1062,40 +1180,71 @@ void computePixelsWindow()
                                                 vectorScale(u, (i * increment_height)));
         }
     }
-    ///Pixels calculations DONE
+
+
+    cout << "FIRST POINT IS: ";
+    pixel_window_mid_points[0][0].printVector();
+    cout << "LAST POINT IS: ";
+    pixel_window_mid_points[PIXEL_NUM - 1][PIXEL_NUM - 1].printVector();
+
+#ifdef DEBUG_MID_POINTS
+#define DEBUG_MID_POINTS 0
+#endif // DEBUG_MID_POINTS
+
+
+#if DEBUG_MID_POINTS == 1
+    ofstream out;
+    out.open("mid_points.txt");
+    for(int i=0; i<PIXEL_NUM; i++)
+    {
+        for(int j=0; j<PIXEL_NUM; j++)
+        {
+//            cout << "for i = " << i << " , j = " << j << endl;
+            out << "Index:(" << i << "," << j << ") -> " << pixel_window_mid_points[i][j].x << ", " << pixel_window_mid_points[i][j].y << ", " << pixel_window_mid_points[i][j].z << endl;
+        }
+//        cout << endl << endl;
+        out << endl << endl;
+    }
+    out.close();
+#endif // DEBUG_MID_POINTS
+
 }
 
 Vector3D color_of_pixel_checker_board(Vector3D p)
 {
-    Vector3D bottom_left_point_checker_board;
-    bottom_left_point_checker_board.assignVector(-900.0, -900.0, 0.0);
+    //B|_   _|W
+    //    C
+    //W|_   _|B
 
-    p.x = p.x + abs(bottom_left_point_checker_board.x);
-    p.y = p.y + abs(bottom_left_point_checker_board.y);
+    p.x = p.x + abs(bottom_most_left_point.x);
+    p.y = p.y + abs(bottom_most_left_point.y);
 
-    int checker_x = (int)(p.x/WIDTH_CHECKER_BOARD);
-    int checker_y = (int)(p.y/WIDTH_CHECKER_BOARD);
+    int checker_x=(int)(p.x/WIDTH_CHECKER_BOARD);
+    int checker_y=(int)(p.y/WIDTH_CHECKER_BOARD);
 
-    Vector3D color(0, 0, 0); //auto return black
+    Vector3D colour(0, 0, 0); //auto return black
 
     if((checker_x % 2) == 0)
     {
         if((checker_y) % 2 != 0)
         {
-            color.assignVector(1, 1, 1); //make white
+            colour.assignVector(1, 1, 1); //make white
         }
     }
     else
     {
         if((checker_y) % 2 == 0)
         {
-            color.assignVector(1, 1, 1); //make white
+            colour.assignVector(1, 1, 1); //make white
         }
     }
-    return color;
+    return colour;
 }
 
-bitmap_image image_bitmap_pixel; ///for image production
+//ofstream pixels_debugger_output; //for pixel debugging ...
+bitmap_image image_bitmap_pixel;
+
+
 //Object for intersection things...
 class IntersectionObject
 {
@@ -1154,6 +1303,7 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
         ,double near_distance, double far_distance) //ray.initial_position contains the initial position
 {
     IntersectionObject intersectingObj; //return this object
+
     ray.normalise(); //normalize just in case !! [LoL]
     //FOR EACH OBJECT ... first start with triangle's surface
     double min_t = MAX_VAL; //MAX VALUE
@@ -1162,9 +1312,9 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
     colors_so_far.assignVector(0, 0, 0);
 
     bool is_triangle = false, is_sphere = false;
+    //Triangles...
 
-
-    for(int i=0; i<pyramids_list.size(); i++) //Triangles...
+    for(int i=0; i<pyramids_list.size(); i++)
     {
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++)
         {
@@ -1199,8 +1349,10 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
             }
         }
     }
+    //Spheres ...
+//    cout << "SPHERE.list.size = " << spheres_list.size() << endl;
 
-    for(int i=0; i<spheres_list.size(); i++) //Spheres ...
+    for(int i=0; i<spheres_list.size(); i++)
     {
         Sphere sphere = spheres_list[i];
         t = sphere.find_intersecting_value_t(ray, near_distance, far_distance);
@@ -1228,10 +1380,9 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
             }
         }
     }
-
     //Checkerboard...
     //O_z + t.direction_z = 0 --> find value of t
-    bool is_checker_board = false; //Checkerboard...
+    bool is_checker_board = false;
     t = -(ray.initial_position.z) / (ray.direction_vector.z);
     if((t < min_t) && (t >= 0))
     {
@@ -1269,31 +1420,45 @@ IntersectionObject find_intersection_color_for_each_pixel(Ray &ray, int row_val,
 
 //===================================== TO DO =============================================
 
-bool does_object_exist_in_between(Vector3D source, Vector3D intersecting_point_initial)
+bool does_object_exist_in_between(Vector3D source,Vector3D intersect)
 {
     //double init_dist=get_dist(source,intersect);
-    Vector3D intersecting_point_temporary, approx_point, dir_vect ;
-    intersecting_point_temporary.assignVector(intersecting_point_initial);
-    dir_vect = vectorSubtraction(source, intersecting_point_initial);
+    Vector3D tmp_intersect;
+    tmp_intersect.x=intersect.x;
+    tmp_intersect.y=intersect.y;
+    tmp_intersect.z=intersect.z;
+
+    Vector3D approx_point;
+    Vector3D dir_vect;
+
+    dir_vect.x=source.x-intersect.x;
+    dir_vect.y=source.y-intersect.y;
+    dir_vect.z=source.z-intersect.z;
     dir_vect.normalise();
-    intersecting_point_temporary = vectorAddition(intersecting_point_temporary, vectorScale(dir_vect, 1.0));  //just change a lil bit
 
-    double initial_distance_of_point = vectorGetDistanceBetweenTwo(intersecting_point_temporary,source);
+    tmp_intersect.x+=dir_vect.x*1; //just change a lil bit
+    tmp_intersect.y+=dir_vect.y*1;
+    tmp_intersect.z+=dir_vect.z*1;
 
+    double init_dist = vectorGetDistanceBetweenTwo(tmp_intersect,source);
+    //fout3<<"Init dist: "<<init_dist;
     for(int i=0; i<pyramids_list.size(); i++)
     {
         for(int j=0; j<NUM_TRIANGLES_IN_PYRAMID; j++)
         {
             Triangle triangle = pyramids_list[i].triangles[j];
             Ray ray;
-            ray.assignRay(intersecting_point_temporary, dir_vect);
+            ray.assignRay(tmp_intersect, dir_vect);
             double t = triangle.find_intersecting_value_t(ray, 0, farDistance); //for now ... farDistance is kept
             if(t != NULL_VALUE_T)
             {
-                approx_point = vectorAddition(intersecting_point_temporary, vectorScale(dir_vect, t));
-                double distance_now_of_point = vectorGetDistanceBetweenTwo(intersecting_point_temporary,approx_point);
-                if(distance_now_of_point < initial_distance_of_point)
+                approx_point.x=tmp_intersect.x+t*dir_vect.x;
+                approx_point.y=tmp_intersect.y+t*dir_vect.y;
+                approx_point.z=tmp_intersect.z+t*dir_vect.z;
+                double tmp = vectorGetDistanceBetweenTwo(tmp_intersect,approx_point);
+                if(tmp<init_dist)
                 {
+                    //fout3<<"true\n";
                     return true;
                 }
             }
@@ -1305,27 +1470,48 @@ bool does_object_exist_in_between(Vector3D source, Vector3D intersecting_point_i
     {
         Sphere sphere = spheres_list[i];
         Ray ray;
-        ray.assignRay(intersecting_point_temporary, dir_vect);
+        ray.assignRay(tmp_intersect, dir_vect);
         double t = sphere.find_intersecting_value_t(ray, 0, farDistance); //for now ... farDistance is kept
         if(t != NULL_VALUE_T)
         {
-            approx_point = vectorAddition(intersecting_point_temporary, vectorScale(dir_vect, t));
-            double distance_now_of_point = vectorGetDistanceBetweenTwo(intersecting_point_temporary,approx_point);
-            if(distance_now_of_point < initial_distance_of_point)
+            approx_point.x=tmp_intersect.x+t*dir_vect.x;
+            approx_point.y=tmp_intersect.y+t*dir_vect.y;
+            approx_point.z=tmp_intersect.z+t*dir_vect.z;
+            double tmp = vectorGetDistanceBetweenTwo(tmp_intersect,approx_point);
+            if(tmp<init_dist)
             {
+                //fout3<<"true\n";
                 return true;
             }
         }
     }
 
+    //fout3<<"false\n";
     return false;
 }
 
 
-///Recursive call
+string get_type_object(int type)
+{
+    if(type == TRIANGLE_TYPE)
+    {
+        return "TRIANGLE";
+    }
+    else if(type == SPHERE_TYPE)
+    {
+        return "SPHERE";
+    }
+    else if(type == FLOOR_TYPE)
+    {
+        return "FLOOR";
+    }
+    return "NULL_TYPE";
+}
+
+
 Vector3D getColorOfPixel(Ray ray, int depth)
 {
-    if(depth <= 0){
+    if(depth == 0){
         return Vector3D(0.0, 0.0, 0.0);
     }
     ///Function call
@@ -1336,12 +1522,11 @@ Vector3D getColorOfPixel(Ray ray, int depth)
     Vector3D normal_vector = intersectionObj.normal;
     normal_vector.normalise();
     //add the ambient effects
-    double ambient_coefficient = intersectionObj.co_efficients[AMBIENT_INDEX];
-    double diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
-    double specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
-    double reflection_coefficient = intersectionObj.co_efficients[REFLECTION_INDEX];
-    double specular_exponent =  intersectionObj.specular_exp;
-
+    double ambient_coefficient, diffuse_coefficient, specular_coefficient, reflection_coefficient;
+    ambient_coefficient = intersectionObj.co_efficients[AMBIENT_INDEX];
+    diffuse_coefficient = intersectionObj.co_efficients[DIFFUSE_INDEX];
+    specular_coefficient = intersectionObj.co_efficients[SPECULAR_INDEX];
+    reflection_coefficient = intersectionObj.co_efficients[REFLECTION_INDEX];
     //add diffuse effect FOR EACH LIGHT SOURCE ...
     Vector3D lightSourcePosition, _incident_ray, _reflected_ray, _ray_from_eye_to_intersection;
     double cos_theta_sum = 0.0, cos_phi_sum = 0.0;
@@ -1349,8 +1534,9 @@ Vector3D getColorOfPixel(Ray ray, int depth)
     Vector3D null_intersection_point(farDistance, farDistance, farDistance);
     bool is_dark_intersection = isEqualVector(null_intersection_point, intersecting_point);
     if(is_dark_intersection == true)
-    { //no intersecting points available ... so return black color ... no need for further computation
-        return Vector3D(0.0, 0.0, 0.0);
+    {
+        specular_coefficient = 0.0;
+        diffuse_coefficient = 0.0;
     }
     else
     {
@@ -1376,6 +1562,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
             if(does_obj_exist_bet == false)  // no objects
             {
                 //No object in between
+//                        pixels_debugger_output << "===>>> Obj Not Exists for (" << i << "," << j << ")" << endl ;
                 _incident_ray = vectorSubtraction(lightSourcePosition, intersecting_point);
                 _incident_ray.normalise();
 
@@ -1397,7 +1584,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
 
 //                        double temp = max( ( (vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection))), 0.0); // cos phi
                 double temp = max(vectorDotProduct(_reflected_ray, _ray_from_eye_to_intersection), 0.0); // cos phi
-                double pow_temp = pow(temp, specular_exponent); //cos phi to the power specular_exponent
+                double pow_temp = pow(temp, intersectionObj.specular_exp); //cos phi to the power specular_exponent
 
                 cos_phi_sum += pow_temp;
             }
@@ -1412,6 +1599,10 @@ Vector3D getColorOfPixel(Ray ray, int depth)
 
     double specular_multiplier = specular_coefficient * cos_phi_sum;
     Vector3D _specular_rgb_component = vectorScale(Vector3D(1.0, 1.0, 1.0), specular_multiplier);
+
+//            pixel_deb << "Idx(" << i << "," << j << " : specular rgb: " << _specular_rgb_component.x << " " << _specular_rgb_component.y << " " << _specular_rgb_component.z << endl;
+
+//            cout << "Specular multiplier = " << specular_multiplier << " , Specular RGB COMPONENT "; _specular_rgb_component.printVector();
 
     //Only ambient [initialize]
     color_this_pixel.assignVector(_ambient_rgb_component);  //vectorAddition(Vector3D(0.0, 0.0, 0.0), _ambient_rgb_component);
@@ -1443,9 +1634,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
         Ray newRay;
         Vector3D new_intersec_point = vectorAddition(intersc_point, vectorScale(_reflected_ray, 1.0));
         newRay.assignRay(new_intersec_point, _reflected_ray);
-        ///RECURSIVE CALL INITIATION
         Vector3D color_ret = getColorOfPixel(newRay, depth - 1);
-        ///RECURIVE CALL ANSWER OBTAINED
         color_ret = vectorScale(color_ret, reflection_coefficient); //Multiply with reflection coefficient
         color_this_pixel = vectorAddition(color_this_pixel, color_ret); //Ultimately add with previous colors
     }
@@ -1462,7 +1651,7 @@ Vector3D getColorOfPixel(Ray ray, int depth)
 void find_intersection_points()
 {
 //FOR EACH PIXEL
-    cout << "--->>Trying to render image... Please wait ... " << endl ;
+    cout << "--->>Inside find_intersection_points ... saving image " << endl ;
     //debugging with only one pixel
     Vector3D initial_pos, pixel_pos;
     initial_pos.assignVector(pos.x, pos.y, pos.z);
@@ -1471,17 +1660,17 @@ void find_intersection_points()
     {
         for(int j=0; j<PIXEL_NUM; j++)
         {
-            row_idx_deb = i;
-            col_idx_deb = j;
             pixel_pos = pixel_window_mid_points[i][j];
-
-            Vector3D direction_vect = vectorSubtraction(pixel_pos, initial_pos);
-            direction_vect.normalise();
-
             Ray ray;
-            ray.assignRay(initial_pos, direction_vect); //initialize the ray.
+            Vector3D direction_vect;
+            direction_vect.x = pixel_pos.x - initial_pos.x;
+            direction_vect.y = pixel_pos.y - initial_pos.y;
+            direction_vect.z = pixel_pos.z - initial_pos.z;
+            direction_vect = vectorNormalize(direction_vect);
 
-            Vector3D color_this_pixel = getColorOfPixel(ray, recursion_level); ///Using recursion_level [Global variable] call ...
+            ray.assignRay(initial_pos, direction_vect); //initialize the ray.
+//            int depth = 2;
+            Vector3D color_this_pixel = getColorOfPixel(ray, recursion_level);
 
             //image_bitmap_pixel.set_pixel(767-i, j, 255 * color_this_pixel.x, 255 * color_this_pixel.y, 255 * color_this_pixel.z);
             image_bitmap_pixel.set_pixel(j,PIXEL_NUM - 1 - i, color_this_pixel.x * 255, color_this_pixel.y * 255,
@@ -1489,7 +1678,7 @@ void find_intersection_points()
         }
 
     }
-    cout << "\n---->>>SUCCESSFULLY rendered image.. in out.bmp file\n" << endl;
+    cout << "DONE Saving IMAGE to out.bmp\n";
     image_bitmap_pixel.save_image("out.bmp");
 }
 
@@ -1550,7 +1739,6 @@ void keyboardListener(unsigned char key, int x,int y)
         break;
     case '0':
         captureImage();
-        cout << "-->>CAPTURED IMAGE SUCCESSFULLY\n";
         break;
     default:
         break;
@@ -1616,6 +1804,10 @@ void mouseListener(int button, int state, int x, int y) 	//x, y is the x-y of th
         break;
 
     case GLUT_MIDDLE_BUTTON:
+        if(state == GLUT_DOWN)
+        {
+            drawgrid = 1 - drawgrid;
+        }
         break;
 
     default:
@@ -1660,7 +1852,9 @@ void display()
     / Add your objects from here
     ****************************/
     //add objects
+
     drawAxes();
+    drawGrid();
 
 ///CODE FOR DRAWING OBJECT BEGIN
     drawAllObjects();
@@ -1685,7 +1879,8 @@ void init()
 //    cameraHeight=150.0;
 //    cameraAngle=1.0;
     angle=0;
-    drawaxes = 0; ///do not draw axes
+    drawaxes = 1;
+    drawgrid = 0;
     //clear the screen
     glClearColor(0,0,0,0);
 
@@ -1716,8 +1911,8 @@ int main(int argc, char **argv)
 
     ///Initialize pos, u, l, and r begin
     fin.open("description.txt");
-    loadAllData(); //load all data from input file
-    printAllShapes(); //print all the shapes accordingly
+    loadAllData();
+//    pixels_debugger_output.open("pixel_deb.txt");
     image_bitmap_pixel.setwidth_height(PIXEL_NUM, PIXEL_NUM);
     ///Initialize pos, u, l, and r done
 

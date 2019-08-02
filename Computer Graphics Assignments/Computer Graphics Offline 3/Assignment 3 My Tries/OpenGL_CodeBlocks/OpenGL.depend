@@ -42,3 +42,30 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
+1564482200 source:f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3 my tries\opengl_codeblocks\main.cpp
+	"bitmap_image.hpp"
+	<iostream>
+	<cstdio>
+	<cstdlib>
+	<cmath>
+	<cstring>
+	<fstream>
+	<vector>
+	<windows.h>
+	<glut.h>
+
+1479975262 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3 my tries\opengl_codeblocks\bitmap_image.hpp
+	<algorithm>
+	<cmath>
+	<cstdlib>
+	<fstream>
+	<iostream>
+	<iterator>
+	<limits>
+	<string>
+
+1392007564 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\computer graphics offline 3\assignment 3 my tries\opengl_codeblocks\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
