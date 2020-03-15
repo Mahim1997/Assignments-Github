@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1573779428 source:f:\programs c and java\sessional things\assignments-github\computer graphics assignments\hexagon structure test\opengl_codeblocks\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<windows.h>
+	<glut.h>
+
+1392007564 f:\programs c and java\sessional things\assignments-github\computer graphics assignments\hexagon structure test\opengl_codeblocks\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
