@@ -1,0 +1,365 @@
+
+
+==========================================================
+
+Running with Strategy: AlphaBetaPruning Time Limit(s) = 0.1 ,(without Iterative) Depth limit for player 1: 2 , For Player 2: 7
+
+Player 1 heuristic 2 and Player 2 heuristic 1
+
+---------------------Iter = 1 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 2 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 11
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 3 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 4 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 5 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 18
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 6 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 19
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 7 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 17 W2 = 18
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 8 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 9 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 18 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 10 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 14
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 11 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 14 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 12 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 13 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 17
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 14 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 15
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 15 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 18 W2 = 17
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 16 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 19
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 17 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 19
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 18 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 19 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 14
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 20 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 21 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 19
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 22 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 10 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 23 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 17 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 24 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 17 W2 = 11
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 25 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 12
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 26 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 15 W2 = 18
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 27 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 15 W2 = 14
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 28 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 13
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 29 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 11
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 30 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 12
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 31 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 19
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 32 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 11
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 33 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 18
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 34 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 15
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 35 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 15 W2 = 17
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 36 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 17
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 37 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 18 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 38 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 39 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 14
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 40 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 41 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 11 W2 = 12
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 42 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 16 W2 = 12
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 43 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 15
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 44 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 15
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 45 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 13 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 46 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 14 W2 = 16
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 47 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 10 W2 = 17
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 48 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 19 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+---------------------Iter = 49 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 18
+Player 2 Heuristic Weights: 
+Player 1 Score : 11 , Player 2 Score: 37
+Winner: Player2
+
+---------------------Iter = 50 begins --------------------------
+
+Player 1 Heuristic Weights: W1 = 12 W2 = 10
+Player 2 Heuristic Weights: 
+Player 1 Score : 18 , Player 2 Score: 30
+Winner: Player2
+
+
+--------------------------------------------------------
+
+Finally , number of wins for player 1 = 0 , for player 2 = 50 tied = 0
+
+==========================================================
+

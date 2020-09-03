@@ -1,0 +1,25 @@
+# depslib dependency file v1.0
+1463127289 source:d:\digital_clock_1505022\imain.cpp
+	"iGraphics.h"
+
+1462431260 d:\digital_clock_1505022\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<gl/glut.h>
+	<time.h>
+	<math.h>
+	<windows.h>
+	<gl/glaux.h>
+
+1463127372 source:f:\programs c and java\sessional things\assignments-github\c sessional igraphics framework\digital clock igraphics\imain.cpp
+	"iGraphics.h"
+
+1462431260 f:\programs c and java\sessional things\assignments-github\c sessional igraphics framework\digital clock igraphics\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<gl/glut.h>
+	<time.h>
+	<math.h>
+	<windows.h>
+	<gl/glaux.h>
+

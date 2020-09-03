@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1465767760 source:d:\snakes\imain.cpp
+	"iGraphics.h"
+	<windows.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+
+1462431260 d:\snakes\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<gl/glut.h>
+	<time.h>
+	<math.h>
+	<windows.h>
+	<gl/glaux.h>
+
+1465767760 source:c:\users\dr. moklesur\desktop\1505020-1505022\1505020 & 1505022\imain.cpp
+	"iGraphics.h"
+	<windows.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+
+1462431260 c:\users\dr. moklesur\desktop\1505020-1505022\1505020 & 1505022\igraphics.h
+	<stdio.h>
+	<stdlib.h>
+	<gl/glut.h>
+	<time.h>
+	<math.h>
+	<windows.h>
+	<gl/glaux.h>
+

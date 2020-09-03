@@ -1,0 +1,2 @@
+EBP:0xbfffeb48
+Buffer:0xbfffeadc

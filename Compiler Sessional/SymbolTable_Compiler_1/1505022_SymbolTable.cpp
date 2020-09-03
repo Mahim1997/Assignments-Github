@@ -1,0 +1,740 @@
+#include<iostream>
+#include<cstdio>
+#include<cstdlib>
+#include<cmath>
+#include<fstream>
+#include <set>
+#include <iterator>
+#include<vector>
+#include<algorithm>
+#include<istream>
+#include <sstream>
+#include<cstring>
+#include <sstream>
+#define prime_number 13
+#define dummy "dummy"
+using namespace std ;
+
+int bucketSize = 0 ;
+int current_scope_number = 1;
+
+
+
+void printArray(char c[], int len)
+{
+    cout << "LENGTH = " << len << endl ;
+    for(int i=0; i<len; i++){
+        cout << c[i] << " , " ;
+    }
+    cout << endl ;
+}
+class SymbolInfoNode
+{
+private:
+	string symbol_name; //key used for hash table.
+	string symbol_type;
+	SymbolInfoNode *next;
+public:
+	//Constructor
+	SymbolInfoNode(string name, string type)
+	{
+		setName(name);
+		setType(type);
+		next = 0 ;
+	}
+	SymbolInfoNode()
+	{
+		setName(dummy);
+		setType(dummy);
+		next = 0;
+	}
+	bool isDummy()
+	{
+	    if(symbol_name == dummy && symbol_type == dummy)
+            return true ;
+        return false ;
+	}
+	SymbolInfoNode(string name, string type, SymbolInfoNode *next_pointer)
+	{
+		setName(name);
+		setType(type);
+		next = 0 ;
+		next = next_pointer ;
+	}
+	//Destructor
+	~SymbolInfoNode()
+	{
+//	    printf("==-->>Calling Destructor for Node = "); printNode();
+		deleteNextNode();
+	}
+	//Getter and Setter
+	void setName(string name)
+	{
+		symbol_name = name;
+	}
+	void setType(string type)
+	{
+		symbol_type = type;
+	}
+	string getName()
+	{
+		return symbol_name;
+	}
+	string getType()
+	{
+		return symbol_type;
+	}
+	void deleteNextNode()
+	{
+		if(next)
+			delete next ;
+		next = 0;
+	}
+	void printNode()
+	{
+		cout << "<" << symbol_name << " : " << symbol_type << ">" << endl ;
+	}
+	void printForTable()
+	{
+	    cout << "<" << symbol_name << " : " << symbol_type << ">" <<  "  " ;
+	}
+	SymbolInfoNode *makeNewNode(string name, string type)
+	{
+	    SymbolInfoNode *node = new SymbolInfoNode(name, type);
+	    node->next = 0;
+        return node ;
+	}
+	void printLinkedList(SymbolInfoNode *head){
+        while(head->next != 0){
+            if(head->isDummy() == true){
+                head = head->next;
+            }
+            else{
+                head->printForTable();
+                printf("   ");
+                head = head->next;
+            }
+        }
+	}
+    SymbolInfoNode *getNext(){return next;};
+    void setNext(SymbolInfoNode *next_ptr)
+    {
+//        deleteNextNode();
+        next = next_ptr;
+    }
+};
+class ScopeTableNode
+{
+private:
+	int numberOfBuckets;
+	//Array Of Pointers of SymbolInfoNode i.e. double pointers each single pointed to initially 1.
+	SymbolInfoNode **array_of_pointers ;
+	int uniqueID ;
+
+	ScopeTableNode *parentScope;
+public:
+	//Constructor
+	ScopeTableNode()
+	{
+	    array_of_pointers = 0;
+	    parentScope = 0;
+	}
+	ScopeTableNode(int n)
+	{
+		numberOfBuckets = n;
+		uniqueID = 0;
+//		current_scope_number++ ;
+		initialiseArray(n);
+		parentScope = 0;
+	}
+	ScopeTableNode(int n, int id)
+	{
+		numberOfBuckets = n;
+		uniqueID = id;
+//		current_scope_number = id + 1 ;
+		initialiseArray(n);
+		parentScope = 0;
+	}
+	//Destructor
+	~ScopeTableNode()
+	{
+//	    printf("++-->>Calling destructor for id = %d\n", getID());
+		if(array_of_pointers)
+			delete [] array_of_pointers ;
+		array_of_pointers = 0 ;
+		if(parentScope)
+            delete  parentScope ;
+
+        parentScope = 0;
+	}
+	//Functions
+    int getNumberOfBuckets(){return numberOfBuckets;}
+    void initialiseArray(int n)
+	{
+		array_of_pointers = new SymbolInfoNode*[n];
+		for(int i=0; i<n; i++){
+            array_of_pointers[i] = new SymbolInfoNode(); /// dummy nodes.
+		}
+	}
+
+    int getID(){return uniqueID;}
+    int hashFunction(string s)
+	{
+	    char a[s.size() + 1] ;
+        copy(s.begin(), s.end(), a);
+//        printArray(a, s.size());
+        int tot = 0;
+        for(int i=0; i<s.size(); i++)
+        {
+            tot += a[i]*pow(prime_number, i);
+//            printf("tot += a[i]*pow(prime_number, i); =--> %d += %d*pow(%d, %d)\n", tot, a[i], prime_number, i);
+        }
+        tot = tot%numberOfBuckets ;
+//        cout << "tot = " << tot << endl ;
+        return tot ;
+	}
+
+	SymbolInfoNode *lookup(string s)
+	{
+        int idx = hashFunction(s);
+        SymbolInfoNode *nullNode = 0;
+        SymbolInfoNode *head = array_of_pointers[idx];
+        int pos = lookup(s, idx);
+        if(pos == -1){
+//            printf("\tNot Found in ScopeTableNode #%d\n", uniqueID);
+            return nullNode ;
+        }
+        else{
+//            printf("\tFound in ScopeTableNode #%d at position %d, %d\n", uniqueID, idx, pos);
+            while(head != 0){
+                if(head->getName() == s)
+                    return head ;
+                head = head -> getNext();
+            }
+        }
+	}
+    int lookup(string s, int index)
+    {
+        SymbolInfoNode *head = array_of_pointers[index];
+        ///Then Search head of that linked list.
+        int cnt = -1;
+        while(head != 0)
+        {
+            if(head->getName() == s)
+                return cnt ;
+            else{
+                head = head->getNext();
+                cnt++;
+            }
+        }
+        return -1 ;
+    }
+	bool insert(string s, string type )
+	{
+	    int flag = lookup(s, hashFunction(s));
+	    if(flag != -1)///already exists{
+        {
+            SymbolInfoNode x(s, type);
+//            printf("    ");
+//            x.printForTable();
+//            printf(" already exists in ScopeTableNode # %d at position %d, %d\n", uniqueID, hashFunction(s), flag);
+            return false ;
+	    }
+        int f = insert(s,type,hashFunction(s));
+//        printf("    Inserted in ScopeTableNode # %d at position %d, %d\n", uniqueID, hashFunction(s), f);
+        return true;
+	}
+	int insert(string s, string type, int index)
+	{
+        SymbolInfoNode *ptr = array_of_pointers[index];
+        ///get the SymbolInfo pointer of the array of pointers...
+        SymbolInfoNode *newNode = ptr->makeNewNode(s, type);
+//        printf("Inside insert at idx = %d.. newNode is ", index); newNode->printNode();
+
+        int cnt = 0;
+        while(ptr->getNext() != 0){
+            ptr = ptr->getNext();
+            cnt++ ;
+        }
+        ///Go to the very end ..
+        ptr->setNext(newNode);
+        newNode->setNext(0);
+
+        return cnt ;
+	}
+	bool deleteFromTable(string s)
+	{
+        int firstIdx = hashFunction(s);
+        int secondIdx = lookup(s, firstIdx);
+        SymbolInfoNode *ptr = lookup(s);
+        if(ptr == 0){
+//            printf("    Cannot delete since "); cout << s ; printf(" doesn't exist.\n");
+            return false ;
+        }
+        else{
+//            ptr->printForTable(); printf(" is deleted from ScopeTableNode #%d at position %d, %d\n",
+//                                         uniqueID, firstIdx, secondIdx);
+            actuallyDelete(ptr, firstIdx);
+            return true ;
+        }
+	}
+	void actuallyDelete(SymbolInfoNode *pointer, int firstIdx)
+	{
+        SymbolInfoNode *previous = array_of_pointers[firstIdx];
+        while(previous->getNext() != pointer)
+            previous = previous->getNext();
+//        printf("==--->>>==>>PREV is found , printing prev.."); previous->printNode();
+//        printf("Printng priv->next.. "); previous->getNext()->printNode();
+        previous->setNext(pointer->getNext());
+        pointer->setNext(0);
+        if(pointer)
+            delete pointer ;
+        pointer = 0;
+
+	}
+    void printTable()
+    {
+        cout << endl << endl ;
+        cout << "ScopeTable #" << getID() << endl ;
+        //printf("Number of Buckets = %d\n", getNumberOfBuckets());
+        for(int i=0; i<numberOfBuckets; i++)
+        {
+
+            SymbolInfoNode *ptr = array_of_pointers[i]; //0th is a head of linked list or pointers
+            cout << i << " :---> " ;
+
+
+            while (ptr!=0)
+            {
+                if(ptr->isDummy() == true)
+                    ptr = ptr->getNext();
+                else{
+                    ptr->printForTable();
+                    ptr = ptr->getNext();
+                }
+            }
+            cout << endl;
+        }
+        cout << "------------------*****------------------" << endl ;
+    }
+    void setParent(ScopeTableNode *parent)
+    {
+//        if(parentScope)
+//            delete parentScope ;
+        parentScope = parent ;
+    }
+    ScopeTableNode *getParent()
+    {
+        return parentScope ;
+    }
+};
+
+class SymbolTable
+{
+private:
+    int number_of_buckets_for_all;
+    int counter_scopeTable ;
+//    ScopeTableNode *initialScopeTableNode ; ///same as head
+    ScopeTableNode *currentScopeTable ; ///This pointer changes with new scope or exit scope
+
+public:
+    SymbolTable(int n)
+    {
+        number_of_buckets_for_all = n ;
+        currentScopeTable = 0 ;
+        counter_scopeTable = 1 ;
+    }
+    ~SymbolTable()
+    {
+        if(currentScopeTable)
+            delete currentScopeTable ;
+        currentScopeTable = 0 ;
+    }
+    void enterScope()
+    {
+        ScopeTableNode *tab = new ScopeTableNode(number_of_buckets_for_all, counter_scopeTable);
+        if(currentScopeTable == 0){
+            /// or we couldve used if(counter == 0)
+            //then initialize the initialScopeTable
+            currentScopeTable = tab ;
+            currentScopeTable->setParent(0);
+        }
+        else{
+            ///create a new scope table and insert parent pointer accordingly
+            tab->setParent(currentScopeTable) ;
+            currentScopeTable = tab ;
+        }
+        counter_scopeTable ++ ;
+        cout << "New Scope Table with id = " << currentScopeTable->getID() << " is created.\n" ;
+//        printf("New Scope Table with id = %d is created.\n", currentScopeTable->getID());
+    }
+    void exitScope()
+    {
+        ///Removes current scope table
+        ScopeTableNode *curr = currentScopeTable ;
+        ///If empty
+        if(curr == 0){
+            cout << "\tSymbol Table is empty.\n";
+            return ;
+        }
+        ///This is the head
+        else if(curr->getParent() == 0){
+            cout << "\tScope Table with id = " << curr->getID() <<  " is removed.\n" ;
+            curr->setParent(0);
+            if(curr)
+                delete curr ;
+            curr = 0 ;
+            currentScopeTable = 0 ;
+            counter_scopeTable--;
+//            printf("RETURNING FROM <ELSE-IF> in EXIT_SCOPE FUNC\n");
+            return ;
+        }
+        currentScopeTable = curr->getParent() ;
+
+        cout << "\tScope Table with id = " << curr->getID() <<  " is removed.\n";
+
+//        printf("\tScope Table with id = %d is removed.\n", curr->getID());
+        curr->setParent(0);
+        if(curr)
+            delete curr ;
+        curr = 0;
+        counter_scopeTable-- ;
+
+        return ;
+    }
+    bool Insert(string symbol_name, string symbol_type)
+    {
+        if(currentScopeTable == 0){
+            cout << "Can't Insert in Empty Symbol Table\n";
+//            printf("Can't Insert since Symbol Table is empty\n");
+            return false ;
+        }
+
+        SymbolInfoNode *node = currentScopeTable->lookup(symbol_name);
+        if(node != 0){
+            node->printForTable() ;cout << " already exists in the current ScopeTable\n" ;
+            return false ;
+        }
+        bool flag = currentScopeTable->insert(symbol_name, symbol_type);
+        int pos = currentScopeTable->lookup(symbol_name, currentScopeTable->hashFunction(symbol_name));
+
+        cout << "\tInserted in ScopeTable #" << currentScopeTable->getID() << " at position " <<
+                currentScopeTable->hashFunction(symbol_name) << " , " << pos << endl ;
+//        printf("\tInserted in ScopeTable #%d at position %d, %d\n",
+//               currentScopeTable->getID(), currentScopeTable->hashFunction(symbol_name), pos);
+        return true ;
+    }
+    bool Remove(string symbolName)
+    {
+        if(currentScopeTable == 0){
+            cout << "SymbolTable is empty." << endl ;
+            return false ;
+        }
+        int pos = currentScopeTable->lookup(symbolName, currentScopeTable->hashFunction(symbolName));
+        SymbolInfoNode *node = currentScopeTable->lookup(symbolName);
+        if(node == 0){
+            cout << "\tNot present in SymbolTable" << endl ;
+            return false ;
+        }
+        cout << "\t" << symbolName << " " ;
+        cout << "is present in ScopeTable #" << currentScopeTable->getID() << " at position " << currentScopeTable->hashFunction(symbolName)
+             << " , " << pos << endl ;
+//        printf("is present in ScopeTable #%d at position %d, %d\n", currentScopeTable->getID(),
+//               currentScopeTable->hashFunction(symbolName), pos);
+        ///Function call..
+        currentScopeTable->deleteFromTable(symbolName);
+
+//        printf("Deleted entry at %d, %d from current ScopeTable\n", currentScopeTable->hashFunction(symbolName), pos);
+        cout << "Deleted entry at " << currentScopeTable->hashFunction(symbolName) << ", " << pos << " from current ScopeTable\n";
+        return true ;
+    }
+
+    SymbolInfoNode *LookUp(string name)
+    {
+        SymbolInfoNode *node = 0 ;
+        ScopeTableNode *itr = currentScopeTable ;
+        while(itr  != 0)
+        {
+            node = itr->lookup(name);
+            if(node != 0){
+//                printf("Found at ScopeTable %d")
+                int pos = itr->lookup(name, itr->hashFunction(name));
+//                printf("\tFound in ScopeTable %d at position %d, %d\n", itr->getID(), itr->hashFunction(name), pos);
+                cout << "\tFound in ScopeTable " << itr->getID() << " at position " << itr->hashFunction(name) << " , " << pos << endl ;
+                return node ;
+            }
+            itr = currentScopeTable->getParent();
+        }
+//        printf("\tDoes not exist in the Symbol Table\n");
+        cout << "\tDoes not exist in the Symbol Table\n" << endl ;
+        return 0 ;
+    }
+    void printCurrent()
+    {
+        if(currentScopeTable == 0){
+//            printf("Empty SymbolTable\n");
+            cout << "Empty SymbolTable" << endl ;
+            return ;
+        }
+        currentScopeTable ->printTable();
+    }
+    void printAll()
+    {
+        if(currentScopeTable == 0){
+//            printf("Empty SymbolTable\n");
+            cout << "Empty SymbolTable" << endl ;
+            return ;
+        }
+        ScopeTableNode *itr = currentScopeTable;
+        while(itr != 0){
+            itr->printTable();
+            itr = itr->getParent();
+        }
+    }
+};
+
+/// ------------------*****------------------------------------*****------------------
+vector<string> splitString(const string& a, char delim)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(a);
+    while (std::getline(tokenStream, token, delim))
+    {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+//
+
+void printArray(string arr[], int n)
+{
+    cout << endl ;
+    for(int i=0; i<n; i++)
+    {
+        cout << arr[i] << " " ;
+    }
+    cout << endl << endl  ;
+}
+void printArray(string s)
+{
+    cout << endl ;
+    cout << s << endl << endl  ;
+}
+int main()
+{
+    int n = 0;
+    const char *nameOfFile = "1505022_InputFile_Assignment1.txt";
+    ifstream fin(nameOfFile);
+
+    if(!fin)
+    {
+        cout << "FileName Problems...\nThere should exist an input file with name : " << nameOfFile << " in the same folder." << endl ;
+        return -1;
+    }
+    const char *outputFileName = "AssignmentOutput_1505022.txt";
+    std::ofstream out(outputFileName);
+    std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+    std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+
+//    fin >> n ;
+
+//    cout << "Size of hashtable = " << n << endl ;
+
+    string oneLineString;
+
+    ///FIRST LINE ...
+
+
+    getline(fin, oneLineString);
+    stringstream streamer(oneLineString);
+
+    streamer >> n ;
+
+    SymbolTable tab(n);
+
+//    printf("Table is created of length = %d\n", n);
+//    vector<string> firstLineVector = splitString(oneLineString, ' ');
+
+    tab.enterScope();
+
+    ///next ...
+    while(getline(fin , oneLineString))
+    {
+//        cout << "===>> " << oneLineString << endl ;
+        int sizeString = oneLineString.length();
+//        cout << "SIZE OF STRING " << oneLineString << " = " << sizeString << endl ;
+
+        vector<string> list_string  = splitString(oneLineString, ' ');
+
+        int noOfToknes = (int)list_string.size();
+        vector<string>::iterator iter1 = list_string.begin();
+
+        if(noOfToknes == 1)
+        {
+            ///Either enter or exit scope
+//            cout << "No of tokens = " << 1 << endl ;
+//            cout << "Token is " << *iter1 << endl ;
+            string str1 = *iter1 ;
+            printArray(str1);
+            if(!str1.compare("S"))
+            {
+                ///Enter new scope...
+                tab.enterScope();
+
+            }
+            else if(!str1.compare("E"))
+            {
+                ///Exit this scope...
+                tab.exitScope();
+            }
+
+        }
+        else if(noOfToknes == 2)
+        {
+            ///P A or P C or L <string> or D <string>
+//            cout << "No of tokens = " << 2 << endl ;
+            string str2[2]; int cnt = 0;
+            for(iter1 = list_string.begin(), cnt = 0; iter1!=list_string.end(); iter1++, cnt++)
+            {
+//                cout << *iter1 << " , " ;
+                str2[cnt] = *iter1 ;
+            }
+            printArray(str2, noOfToknes);
+            if(!str2[0].compare("P"))
+            {
+                ///either P A or P C
+                if(!str2[1].compare("A"))
+                {
+                    ///P A so print all..
+                    tab.printAll();
+                }
+                else if(!str2[1].compare("C"))
+                {
+                    ///P C so print current ...
+                    tab.printCurrent();
+                }
+            }
+            else if(!str2[0].compare("L"))
+            {
+                string symbolName = str2[1];
+                ///Lookup L <symbolName>
+                tab.LookUp(symbolName);
+            }
+            else if(!str2[0].compare("D"))
+            {
+                string symbolName = str2[1];
+                ///Delete D <symbolName>
+                tab.Remove(symbolName);
+            }
+//            cout << endl ;
+        }
+        else if(noOfToknes == 3)
+        {
+            ///I <name> <type>
+//            cout << "No of tokens = " << 3 << endl ;
+            string str3[3]; int cnt = 0;
+            for(iter1 = list_string.begin(), cnt = 0; iter1!=list_string.end(); iter1++, cnt++)
+            {
+//                cout << *iter1 << " , " ;
+                str3[cnt] = *iter1 ;
+            }
+            printArray(str3, noOfToknes);
+            if(!str3[0].compare("I"))
+            {
+                string name = str3[1];
+                string type = str3[2];
+//                cout << "Insert < " << name << " , " << type << " >\n";
+                ///I <name> <type>
+                tab.Insert(name, type);
+            }
+//            cout << endl ;
+        }
+
+
+    }
+
+    std::cout.rdbuf(coutbuf); //reset to standard output again
+    cout << "Output is written to the file name : " << outputFileName << endl ;
+
+    cout << "Printing to console.. \n\n";
+
+    ifstream fin2(outputFileName);
+    string oneLine ;
+    while(getline(fin2 , oneLine))
+    {
+        cout << oneLine << endl ;
+    }
+
+	return 0 ;
+}
+//    SymbolTable tab(7);
+
+
+    /*while(true)
+    {
+        int ch; char x ;
+        char c; string name, type;
+
+        cin >> ch ;
+        switch(ch)
+        {
+        case 1:
+            cin >> c >> name >> type ;
+            tab.Insert(name, type);
+            break ;
+        case 2:
+            cin >> c >> name ;
+            tab.LookUp(name);
+            break ;
+        case 3:
+            cin >> c >> name ;
+            tab.Remove(name);
+            break ;
+        case 4:
+//            cin >> c >> x ;
+            tab.printAll();
+            break ;
+        case 7:
+//            cin >> c >> x;
+            tab.printCurrent();
+            break;
+        case 5:
+            tab.enterScope();
+            break;
+        case 6:
+            tab.exitScope();
+            break ;
+        case 10:
+            return -1;
+        }
+
+
+        printf("\n\n");
+    }
+*/
+/*
+int main()
+{
+    std::ifstream in("in.txt");
+    std::streambuf *cinbuf = std::cin.rdbuf(); //save old buf
+    std::cin.rdbuf(in.rdbuf()); //redirect std::cin to in.txt!
+
+    std::ofstream out("out.txt");
+    std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+    std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+
+    std::string word;
+    std::cin >> word;           //input from the file in.txt
+    std::cout << word << "  ";  //output to the file out.txt
+
+    f(); //call function
+
+
+    std::cin.rdbuf(cinbuf);   //reset to standard input again
+    std::cout.rdbuf(coutbuf); //reset to standard output again
+
+    std::cin >> word;   //input from the standard input
+    std::cout << word;  //output to the standard input
+}
+*/

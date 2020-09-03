@@ -1,0 +1,12 @@
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:42 BDT 2018, request = GET / HTTP/1.1, status = 200, size = 389
+
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:42 BDT 2018, request = GET /favicon.ico HTTP/1.1, status = 404, size = 205
+
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:48 BDT 2018, request = POST /form_submited HTTP/1.1, status = 200, size = 413
+
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:48 BDT 2018, request = GET /favicon.ico HTTP/1.1, status = 404, size = 205
+
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:54 BDT 2018, request = GET /server_log.txt HTTP/1.1, status = 200, size = 516
+
+IPAddress = 0:0:0:0:0:0:0:1, date = Wed Nov 07 06:36:54 BDT 2018, request = GET /favicon.ico HTTP/1.1, status = 404, size = 205
+
