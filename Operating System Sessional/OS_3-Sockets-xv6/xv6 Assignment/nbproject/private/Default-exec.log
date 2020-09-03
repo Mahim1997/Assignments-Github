@@ -1,0 +1,1127 @@
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-dumpspecs
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-dumpspecs
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: /usr/bin/ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-V
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-fno-pic
+	-O
+	-nostdinc
+	-I.
+	-c
+	bootmain.c
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-fno-pic
+	-nostdinc
+	-I.
+	-c
+	bootasm.S
+
+called: ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-m
+	elf_i386
+	-N
+	-e
+	start
+	-Ttext
+	0x7C00
+	-o
+	bootblock.o
+	bootasm.o
+	bootmain.o
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	bio.o
+	bio.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	console.o
+	console.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	exec.o
+	exec.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	file.o
+	file.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	fs.o
+	fs.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	ide.o
+	ide.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	ioapic.o
+	ioapic.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	kalloc.o
+	kalloc.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	kbd.o
+	kbd.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	lapic.o
+	lapic.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	log.o
+	log.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	main.o
+	main.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	mp.o
+	mp.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	picirq.o
+	picirq.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	pipe.o
+	pipe.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	proc.o
+	proc.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	sleeplock.o
+	sleeplock.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	sock.o
+	sock.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	spinlock.o
+	spinlock.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	string.o
+	string.c
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-m32
+	-gdwarf-2
+	-Wa,-divide
+	-c
+	-o
+	swtch.o
+	swtch.S
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	syscall.o
+	syscall.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	sysfile.o
+	sysfile.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	sysproc.o
+	sysproc.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	syssock.o
+	syssock.c
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-m32
+	-gdwarf-2
+	-Wa,-divide
+	-c
+	-o
+	trapasm.o
+	trapasm.S
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	trap.o
+	trap.c
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	uart.o
+	uart.c
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-m32
+	-gdwarf-2
+	-Wa,-divide
+	-c
+	-o
+	vectors.o
+	vectors.S
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-c
+	-o
+	vm.o
+	vm.c
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-m32
+	-gdwarf-2
+	-Wa,-divide
+	-c
+	-o
+	entry.o
+	entry.S
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: /usr/bin/ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-V
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-fno-pic
+	-nostdinc
+	-I.
+	-c
+	entryother.S
+
+called: ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-m
+	elf_i386
+	-N
+	-e
+	start
+	-Ttext
+	0x7000
+	-o
+	bootblockother.o
+	entryother.o
+
+called: /usr/bin/gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-stack-protector
+	-E
+	-x
+	c
+	/dev/null
+
+called: /usr/bin/ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-V
+
+called: gcc
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	gcc
+	-fno-pic
+	-static
+	-fno-builtin
+	-fno-strict-aliasing
+	-O2
+	-Wall
+	-MD
+	-ggdb
+	-m32
+	-Werror
+	-fno-omit-frame-pointer
+	-fno-stack-protector
+	-fno-pie
+	-no-pie
+	-nostdinc
+	-I.
+	-c
+	initcode.S
+
+called: ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-m
+	elf_i386
+	-N
+	-e
+	start
+	-Ttext
+	0
+	-o
+	initcode.out
+	initcode.o
+
+called: /usr/bin/ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-V
+
+called: ld
+	/home/mahim/Desktop/XV6 Assignment 2/XV6_Socket_Implementation/xv6 Assignment
+	ld
+	-m
+	elf_i386
+	-T
+	kernel.ld
+	-o
+	kernel
+	entry.o
+	bio.o
+	console.o
+	exec.o
+	file.o
+	fs.o
+	ide.o
+	ioapic.o
+	kalloc.o
+	kbd.o
+	lapic.o
+	log.o
+	main.o
+	mp.o
+	picirq.o
+	pipe.o
+	proc.o
+	sleeplock.o
+	sock.o
+	spinlock.o
+	string.o
+	swtch.o
+	syscall.o
+	sysfile.o
+	sysproc.o
+	syssock.o
+	trapasm.o
+	trap.o
+	uart.o
+	vectors.o
+	vm.o
+	-b
+	binary
+	initcode
+	entryother
+

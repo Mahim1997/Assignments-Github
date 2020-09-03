@@ -1,0 +1,11 @@
+#!/bin/bash
+#sublime-text.subl 
+arr=('proc.h' 'vm.c' 'mmu.h' 'kalloc.c' 'proc.c' 'proc.h' 'fs.c' 'memlayout.h' 'sysfile.c' 'trap.c' 'lapic.c' 'entry.S' 'defs.h' 'sysproc.c');
+
+for (( i = 0; i < ${#arr[@]}; i++ )); do
+	#statement
+	file=${arr[$i]};
+	#echo "$file"
+	#echo "sublime-text.subl "$file" "
+	sublime-text.subl "$file"
+done

@@ -1,0 +1,7 @@
+clear;
+echo "make clean"
+make clean
+echo "make"
+make
+echo "make qemu"
+make qemu
