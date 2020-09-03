@@ -1,6 +1,6 @@
 # Assignments-Github
 
-## This repository contains all assignments of undergraduation.
+## This repository contains all assignments of undergraduation courses.
 
 1. Computer Security Sessional, 4-1
     * Port Scanner (SYN-Scanning, full TCP-Scanning)
